@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant U as Client người học
+    participant A as Spring Boot
+    participant D as MySQL
+    participant M as Client admin
+    U->>A: GET /api/auth/csrf
+    A-->>U: token + cookie
+    U->>A: POST /api/auth/login + CSRF
+    A->>D: Xác thực + trạng thái tài khoản
+    A-->>U: UserView + session
+    U->>A: WebSocket handshake + cookie + Origin
+    A->>D: Kiểm tra quyền / security_version
+    A-->>U: CONNECTED
+    M->>A: PATCH /api/admin/users/id/status + CSRF
+    A->>D: Transaction, khóa actor/target, status LOCKED, tăng version
+    D-->>A: Commit
+    A-->>M: UserView đã khóa
+    A-->>U: Thu hồi session, đóng socket 1008
+    U->>A: GET /api/auth/me
+    A-->>U: 401 đăng nhập lại

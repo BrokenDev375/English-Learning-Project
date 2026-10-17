@@ -1,0 +1,50 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      timeout: 8h
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  application:
+    name: english-learning-server
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/english_learning?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useUnicode=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:english_app}
+    password: ${DB_PASSWORD:local-app-change-me}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 10000
+  flyway:
+    enabled: true
+  jackson:
+    time-zone: UTC
+    deserialization:
+      fail-on-unknown-properties: true
+app:
+  assets:
+    directory: ${ASSET_DIRECTORY:./data/assets}
+  demo:
+    enabled: ${DEMO_ENABLED:false}
+    teacher-email: ${DEMO_TEACHER_EMAIL:teacher@english.local}
+    teacher-password: ${DEMO_TEACHER_PASSWORD:}
+    student-email: ${DEMO_STUDENT_EMAIL:student@english.local}
+    student-password: ${DEMO_STUDENT_PASSWORD:}
+
+
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:admin@english.local}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  socket:
+    allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}

@@ -1,0 +1,18 @@
+import { chromium } from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
+const output = path.resolve('../../statics/results');
+await fs.mkdir(output, { recursive: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+await page.goto(process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173');
+await page.getByRole('button', { name: 'Đăng nhập', exact: true }).waitFor();
+await page.screenshot({ path: path.join(output, 'module-1-login.png'), fullPage: true });
+await page.getByLabel('Email', { exact: true }).fill(process.env.E2E_TEACHER_EMAIL ?? 'teacher@ielts.local');
+await page.getByLabel('Mật khẩu', { exact: true }).fill(process.env.E2E_TEACHER_PASSWORD ?? 'Teacher@12345');
+await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+await page.getByRole('heading', { name: 'Lớp học của tôi.' }).waitFor();
+await page.locator('.class-card').first().waitFor();
+await page.screenshot({ path: path.join(output, 'module-1-teacher.png'), fullPage: true });
+await browser.close();
+console.log('Saved actual local-demo screenshots.');

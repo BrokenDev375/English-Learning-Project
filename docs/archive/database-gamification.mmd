@@ -1,0 +1,11 @@
+erDiagram
+    users ||--o{ reward_events : experience
+    assignments ||--o{ reward_events : unique_activity
+    submissions ||--o{ reward_events : completion_evidence
+    gamification_rule_versions ||--o{ reward_events : rule_snapshot
+    users ||--o{ daily_learning_activities : unique_days
+    submissions ||--o{ daily_learning_activities : first_valid_activity
+    gamification_rule_versions ||--o{ daily_learning_activities : day_rule
+    users ||--o{ earned_badges : earns
+    badge_definitions ||--o{ earned_badges : definition_version
+    users ||--o{ experiment_runs : records_measurement

@@ -1,0 +1,8 @@
+flowchart LR
+    C["Client React: người học / biên soạn / admin"] <-->|"HTTP JSON + cookie + CSRF"| P["Nginx / Vite proxy"]
+    C <-->|"WebSocket /ws/events"| P
+    P <--> A["Spring Boot: auth / tài khoản / quyền"]
+    A -->|"JPA / Hibernate / transaction"| D[("MySQL 8.4")]
+    D --- V["mysql_data"]
+    A --> F["asset_data: kho file cho module sau"]
+    A --- R["RAM: session / registry socket"]

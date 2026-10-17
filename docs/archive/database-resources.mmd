@@ -1,0 +1,21 @@
+erDiagram
+    users ||--o{ classrooms : teacher
+    classrooms ||--o{ class_members : contains
+    users ||--o{ class_members : member
+    users ||--o{ resources : owns
+    resources ||--o{ resource_versions : versions
+    resource_versions ||--o{ questions : includes
+    questions ||--o{ question_options : choices
+    learning_labels o|--o{ questions : primary_label
+    resource_versions ||--o{ resource_labels : classified
+    learning_labels ||--o{ resource_labels : definition
+    resource_versions ||--o{ resource_assets : attachments
+    assets ||--o{ resource_assets : file
+    listening_media ||--o{ listening_transcript_versions : revisions
+    listening_media ||--o{ listening_segments : source
+    listening_transcript_versions o|--o{ listening_segments : reference
+    resource_versions ||--o{ listening_segments : intervals
+    classrooms ||--o{ assignments : receives
+    resource_versions ||--o{ assignments : fixed_version
+    assignments ||--o{ assignment_recipients : recipient_snapshot
+    users ||--o{ assignment_recipients : learner

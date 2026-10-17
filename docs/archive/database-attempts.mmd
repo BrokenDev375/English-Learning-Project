@@ -1,0 +1,20 @@
+erDiagram
+    assignment_recipients ||--o{ learning_attempts : attempts
+    assignments ||--o{ learning_attempts : fixed_version
+    learning_attempts ||--o| attempt_drafts : draft
+    learning_attempts ||--o{ attempt_answers : draft_choices
+    questions ||--o{ attempt_answers : question
+    question_options o|--o{ attempt_answers : selected
+    learning_attempts ||--o{ attempt_listening_progress : segment_draft
+    listening_segments ||--o{ attempt_listening_progress : segment
+    learning_attempts ||--o{ listening_segment_submissions : immutable_dictation
+    listening_segments ||--o{ listening_segment_submissions : fixed_transcript
+    learning_attempts ||--o| submissions : final_snapshot
+    submissions o|--o{ submissions : previous_revision
+    submissions ||--o{ submission_answers : submitted_choices
+    questions ||--o{ submission_answers : question
+    submissions ||--o{ submission_assets : recordings
+    assets ||--o{ submission_assets : stored_file
+    learning_attempts ||--o{ attempt_review_events : review_history
+    questions o|--o{ attempt_review_events : question_target
+    listening_segments o|--o{ attempt_review_events : segment_target

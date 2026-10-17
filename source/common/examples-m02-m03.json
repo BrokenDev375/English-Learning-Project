@@ -1,0 +1,708 @@
+{
+  "contractVersion": "1.0.0",
+  "examples": [
+    {
+      "name": "createTopic",
+      "schema": "#/components/schemas/TopicCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "code": "daily-routines",
+        "name": "Sinh hoạt hằng ngày",
+        "description": "Từ vựng và cấu trúc giao tiếp hằng ngày."
+      }
+    },
+    {
+      "name": "createObjective",
+      "schema": "#/components/schemas/ObjectiveCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000002",
+        "topicId": 1,
+        "code": "present-simple-third-person",
+        "name": "Hiện tại đơn — ngôi thứ ba",
+        "description": "Chọn và dùng động từ phù hợp với he/she/it."
+      }
+    },
+    {
+      "name": "createUnit",
+      "schema": "#/components/schemas/UnitCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000003",
+        "topicId": 1,
+        "title": "Thói quen hằng ngày — cơ bản",
+        "description": "Chặng nội dung đầu tiên.",
+        "stage": 1,
+        "sortOrder": 0
+      }
+    },
+    {
+      "name": "createReading",
+      "schema": "#/components/schemas/MaterialCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000004",
+        "kind": "READING",
+        "title": "A school day",
+        "readingText": "Linh wakes up at six. She goes to school at seven.",
+        "assetId": null,
+        "altText": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        }
+      }
+    },
+    {
+      "name": "createAudio",
+      "schema": "#/components/schemas/MaterialCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000005",
+        "kind": "AUDIO",
+        "title": "Morning routines",
+        "assetId": 301,
+        "transcript": "She goes to school every day.",
+        "startSeconds": 0,
+        "endSeconds": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        }
+      }
+    },
+    {
+      "name": "singleChoiceDraft",
+      "schema": "#/components/schemas/QuestionCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000006",
+        "type": "SINGLE_CHOICE",
+        "topicId": 1,
+        "objectiveId": 11,
+        "difficulty": "EASY",
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+        "hint": null,
+        "materialVersionId": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        },
+        "prompt": "Chọn dạng đúng: She ___ to school every day.",
+        "content": {
+          "options": [
+            {
+              "id": "opt-go",
+              "text": "go"
+            },
+            {
+              "id": "opt-goes",
+              "text": "goes"
+            },
+            {
+              "id": "opt-going",
+              "text": "going"
+            }
+          ]
+        },
+        "answerKey": {
+          "correctOptionId": "opt-goes"
+        }
+      }
+    },
+    {
+      "name": "fillBlankDraft",
+      "schema": "#/components/schemas/QuestionCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000007",
+        "type": "FILL_BLANK",
+        "topicId": 1,
+        "objectiveId": 11,
+        "difficulty": "EASY",
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+        "hint": null,
+        "materialVersionId": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        },
+        "prompt": "Điền dạng đúng của go.",
+        "content": {
+          "parts": [
+            {
+              "kind": "TEXT",
+              "text": "She "
+            },
+            {
+              "kind": "BLANK",
+              "blankId": "b1"
+            },
+            {
+              "kind": "TEXT",
+              "text": " to school every day."
+            }
+          ]
+        },
+        "answerKey": {
+          "blanks": [
+            {
+              "blankId": "b1",
+              "acceptedAnswers": [
+                "goes"
+              ]
+            }
+          ],
+          "caseSensitive": false,
+          "normalizeWhitespace": true
+        }
+      }
+    },
+    {
+      "name": "matchingDraft",
+      "schema": "#/components/schemas/QuestionCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000008",
+        "type": "MATCHING",
+        "topicId": 1,
+        "objectiveId": 12,
+        "difficulty": "EASY",
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+        "hint": null,
+        "materialVersionId": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        },
+        "prompt": "Ghép cụm từ với nghĩa.",
+        "content": {
+          "leftItems": [
+            {
+              "id": "l1",
+              "text": "wake up"
+            },
+            {
+              "id": "l2",
+              "text": "have lunch"
+            },
+            {
+              "id": "l3",
+              "text": "go to school"
+            }
+          ],
+          "rightItems": [
+            {
+              "id": "r1",
+              "text": "ăn trưa"
+            },
+            {
+              "id": "r2",
+              "text": "đi học"
+            },
+            {
+              "id": "r3",
+              "text": "thức dậy"
+            }
+          ]
+        },
+        "answerKey": {
+          "pairs": [
+            {
+              "leftId": "l1",
+              "rightId": "r3"
+            },
+            {
+              "leftId": "l2",
+              "rightId": "r1"
+            },
+            {
+              "leftId": "l3",
+              "rightId": "r2"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "saveQuestionDraft",
+      "schema": "#/components/schemas/QuestionUpdate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000009",
+        "type": "SINGLE_CHOICE",
+        "topicId": 1,
+        "objectiveId": 11,
+        "difficulty": "EASY",
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+        "hint": null,
+        "materialVersionId": null,
+        "source": {
+          "label": "Tự biên soạn",
+          "url": null,
+          "license": "Original coursework material"
+        },
+        "prompt": "Chọn dạng đúng: She ___ to school every day.",
+        "content": {
+          "options": [
+            {
+              "id": "opt-go",
+              "text": "go"
+            },
+            {
+              "id": "opt-goes",
+              "text": "goes"
+            },
+            {
+              "id": "opt-going",
+              "text": "going"
+            }
+          ]
+        },
+        "answerKey": {
+          "correctOptionId": "opt-goes"
+        },
+        "draftVersionId": 501,
+        "baseRevision": 0
+      }
+    },
+    {
+      "name": "createLesson",
+      "schema": "#/components/schemas/LessonCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000010",
+        "unitId": 101,
+        "unitBaseRevision": 0,
+        "title": "Miêu tả một ngày",
+        "description": "Bài ví dụ thu gọn để đọc hợp đồng, không phải seed 15 câu.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Dùng động từ thêm s/es với he/she/it."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "She goes to school.",
+            "translation": "Cô ấy đi học."
+          }
+        ],
+        "objectiveIds": [
+          11
+        ],
+        "questions": [
+          {
+            "questionVersionId": 501,
+            "practiceRole": "GUIDED",
+            "position": 0
+          },
+          {
+            "questionVersionId": 502,
+            "practiceRole": "INDEPENDENT",
+            "position": 0
+          },
+          {
+            "questionVersionId": 503,
+            "practiceRole": "REVIEW_VARIANT",
+            "position": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "publishLesson",
+      "schema": "#/components/schemas/Publish",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000011",
+        "draftVersionId": 601,
+        "baseRevision": 0,
+        "previewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "learnStart",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000012",
+        "mode": "LEARN",
+        "lessonId": 201
+      }
+    },
+    {
+      "name": "practiceStart",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000013",
+        "mode": "PRACTICE",
+        "topicId": 1,
+        "difficulty": "EASY",
+        "count": 10
+      }
+    },
+    {
+      "name": "reviewReserved",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000014",
+        "mode": "REVIEW",
+        "reviewKind": "DUE",
+        "topicId": null,
+        "count": 10
+      }
+    },
+    {
+      "name": "saveDraftFullSnapshot",
+      "schema": "#/components/schemas/AttemptMutation",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000015",
+        "baseRevision": 0,
+        "answers": [
+          {
+            "attemptQuestionId": 1001,
+            "response": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            }
+          },
+          {
+            "attemptQuestionId": 1002,
+            "response": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            }
+          }
+        ],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        }
+      }
+    },
+    {
+      "name": "draftAck",
+      "schema": "#/components/schemas/DraftAck",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000015",
+        "attemptId": 901,
+        "revision": 1,
+        "state": "IN_PROGRESS",
+        "savedAt": "2026-10-16T04:00:00Z",
+        "answeredCount": 2
+      }
+    },
+    {
+      "name": "checkGuidedFirstWrong",
+      "schema": "#/components/schemas/Check",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "baseRevision": 1,
+        "response": {
+          "type": "SINGLE_CHOICE",
+          "optionId": "opt-go"
+        }
+      }
+    },
+    {
+      "name": "checkFeedback",
+      "schema": "#/components/schemas/Feedback",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "attemptId": 901,
+        "revision": 2,
+        "attemptQuestionId": 1001,
+        "trialId": 2001,
+        "trialNo": 1,
+        "kind": "FIRST",
+        "outcome": "INCORRECT",
+        "responseComplete": true,
+        "supportUsed": false,
+        "answerKey": {
+          "correctOptionId": "opt-goes"
+        },
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn."
+      }
+    },
+    {
+      "name": "submitIncludesFinalAnswers",
+      "schema": "#/components/schemas/AttemptMutation",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000017",
+        "baseRevision": 2,
+        "answers": [
+          {
+            "attemptQuestionId": 1001,
+            "response": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            }
+          },
+          {
+            "attemptQuestionId": 1002,
+            "response": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            }
+          }
+        ],
+        "playerState": {
+          "currentAttemptQuestionId": 1002,
+          "audioPositions": []
+        }
+      }
+    },
+    {
+      "name": "attemptSnapshotNoKeys",
+      "schema": "#/components/schemas/AttemptSnapshot",
+      "body": {
+        "attemptId": 901,
+        "mode": "LEARN",
+        "state": "IN_PROGRESS",
+        "lessonVersionId": 601,
+        "revision": 0,
+        "createdAt": "2026-10-16T03:59:00Z",
+        "updatedAt": "2026-10-16T03:59:00Z",
+        "submittedAt": null,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "GUIDED",
+            "position": 0,
+            "wasSeenBefore": false,
+            "hintAvailable": true,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "SINGLE_CHOICE",
+              "prompt": "Chọn dạng đúng: She ___ to school every day.",
+              "content": {
+                "options": [
+                  {
+                    "id": "opt-go",
+                    "text": "go"
+                  },
+                  {
+                    "id": "opt-goes",
+                    "text": "goes"
+                  },
+                  {
+                    "id": "opt-going",
+                    "text": "going"
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "INDEPENDENT",
+            "position": 1,
+            "wasSeenBefore": false,
+            "hintAvailable": false,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "FILL_BLANK",
+              "prompt": "Điền dạng đúng của go.",
+              "content": {
+                "parts": [
+                  {
+                    "kind": "TEXT",
+                    "text": "She "
+                  },
+                  {
+                    "kind": "BLANK",
+                    "blankId": "b1"
+                  },
+                  {
+                    "kind": "TEXT",
+                    "text": " to school every day."
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          }
+        ],
+        "materials": [],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        },
+        "submissionId": null,
+        "lesson": {
+          "lesson": {
+            "id": 401,
+            "unitId": 301,
+            "lessonVersionId": 601,
+            "title": "Daily routines — present simple",
+            "description": "Present simple in daily routines.",
+            "sortOrder": 0,
+            "objectiveIds": [
+              11
+            ],
+            "questionCounts": {
+              "guided": 1,
+              "independent": 1,
+              "reviewVariant": 1
+            }
+          },
+          "instructions": [
+            {
+              "kind": "TEXT",
+              "text": "Với he/she/it, động từ hiện tại đơn thường thêm s/es."
+            }
+          ],
+          "objectives": [
+            {
+              "id": 11,
+              "ownerId": 7,
+              "topicId": 1,
+              "code": "DAILY_PRESENT_SIMPLE",
+              "name": "Hiện tại đơn — ngôi thứ ba",
+              "description": "Dùng dạng động từ phù hợp.",
+              "revision": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "immutableResult",
+      "schema": "#/components/schemas/Result",
+      "body": {
+        "factsSchemaVersion": 1,
+        "submissionId": 3001,
+        "attemptId": 901,
+        "mode": "LEARN",
+        "lessonVersionId": 601,
+        "submittedAt": "2026-10-16T04:02:00Z",
+        "submittedRevision": 3,
+        "totalQuestions": 2,
+        "answeredCount": 2,
+        "unansweredCount": 0,
+        "correctCount": 2,
+        "scorePercent": 100,
+        "independentFreshAnsweredCount": 1,
+        "independentFreshCorrectCount": 1,
+        "lessonCompleted": true,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "practiceRole": "GUIDED",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-go"
+            },
+            "firstOutcome": "INCORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "correctOptionId": "opt-goes"
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "practiceRole": "INDEPENDENT",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "firstOutcome": "CORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "goes"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          }
+        ],
+        "materialFeedback": []
+      }
+    },
+    {
+      "name": "correctionAfterSubmit",
+      "schema": "#/components/schemas/Check",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000018",
+        "baseRevision": 3,
+        "response": {
+          "type": "FILL_BLANK",
+          "values": [
+            {
+              "blankId": "b1",
+              "value": "go"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "revisionConflict",
+      "schema": "#/components/schemas/ApiError",
+      "body": {
+        "code": "REVISION_CONFLICT",
+        "message": "Bản nháp trên server đã thay đổi. Tải snapshot để đối soát.",
+        "fieldErrors": {}
+      }
+    }
+  ]
+}

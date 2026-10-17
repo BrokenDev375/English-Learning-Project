@@ -1,0 +1,5 @@
+# Expose MySQL only to the local machine for IDE development.
+services:
+  mysql:
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"

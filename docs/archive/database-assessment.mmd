@@ -1,0 +1,23 @@
+erDiagram
+    learning_attempts ||--o{ speaking_outline_versions : preparation
+    speaking_outline_versions o|--o| submissions : used_outline
+    submissions o|--o{ ai_analyses : suggestion
+    speaking_outline_versions o|--o{ ai_analyses : outline_review
+    submissions ||--o{ teacher_assessments : feedback_revisions
+    rubric_versions ||--o{ teacher_assessments : rubric
+    ai_analyses o|--o{ teacher_assessments : consulted
+    assessment_cycles ||--o{ cycle_assignments : tasks
+    assignments ||--o{ cycle_assignments : linked
+    assessment_cycles o|--o{ skill_assessments : assessment_period
+    users ||--o| learner_profiles : one_global_profile
+    learner_profiles ||--o{ skill_profiles : four_skills
+    skill_assessments o|--o| skill_profiles : current_confirmed_source
+    users ||--o{ skill_assessments : confirmed_history
+    users ||--o{ profile_history : profile_snapshots
+    profile_history o|--o| learner_profiles : current_snapshot
+    users ||--o{ learner_needs : needs
+    learning_labels ||--o{ learner_needs : goal
+    learner_needs ||--o{ learner_need_events : evidence_history
+    learner_needs ||--o{ remedial_recommendations : remedial_choice
+    resource_versions ||--o{ remedial_recommendations : chosen_material
+    assignments o|--o{ remedial_recommendations : assigned
