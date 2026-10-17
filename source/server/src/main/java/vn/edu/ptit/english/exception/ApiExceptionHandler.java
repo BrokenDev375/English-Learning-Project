@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import vn.edu.ptit.english.dto.ApiError;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -21,7 +25,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     ResponseEntity<ApiError> api(ApiException ex) {
-        return ResponseEntity.status(ex.status()).body(new ApiError(ex.code(), ex.getMessage()));
+        return ResponseEntity.status(ex.status()).body(new ApiError(ex.code(), ex.getMessage(),ex.fieldErrors()));
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiError> validation(MethodArgumentNotValidException ex) {
@@ -33,6 +37,10 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiError> malformed() {
         return ResponseEntity.badRequest().body(new ApiError("INVALID_REQUEST", "Dữ liệu yêu cầu không đúng định dạng."));
     }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ApiError> uploadSize(){return ResponseEntity.status(413).body(new ApiError("FILE_TOO_LARGE","File tối đa 5 MiB."));}
+    @ExceptionHandler({MultipartException.class,MissingServletRequestPartException.class,MissingServletRequestParameterException.class})
+    ResponseEntity<ApiError> multipart(){return ResponseEntity.badRequest().body(new ApiError("VALIDATION_FAILED","Cần gửi một file và mã yêu cầu hợp lệ."));}
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     ResponseEntity<ApiError> invalidParameter() {
         return ResponseEntity.badRequest().body(new ApiError("INVALID_REQUEST", "Mã tài nguyên không đúng định dạng."));

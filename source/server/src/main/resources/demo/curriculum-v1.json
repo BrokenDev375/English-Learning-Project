@@ -1,0 +1,5199 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "m02-demo-1.0.0",
+  "materials": [
+    {
+      "seedKey": "m02-seed-m-daily-morning-reading",
+      "legacyAlias": "m02-material-reading",
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "A day with Linh",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "Every morning, Linh gets up at seven. She eats breakfast at home and takes the bus to school. In the evening, she reads a book and goes to bed at ten.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-daily-morning-audio",
+      "legacyAlias": "m02-material-audio",
+      "file": "daily-routine.wav",
+      "sha256": "437645190facb29a922ab53a0064bc237ccdd9141c2ea40ff9826e41f4672529",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: Linh’s daily routine",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "Every morning, Linh gets up at seven. She eats breakfast at home and takes the bus to school. In the evening, she reads a book and goes to bed at ten.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-daily-morning-image",
+      "legacyAlias": "m02-material-image",
+      "file": "daily-routine.png",
+      "sha256": "26c44e081b5ccc8c1698f97c56d07bf5413bd64ecf938240872be5ff3ac52868",
+      "data": {
+        "kind": "IMAGE",
+        "title": "Linh’s routine in pictures",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "assetId": null,
+        "altText": "Lịch của Linh: dậy lúc 7 giờ, ăn sáng 7 giờ 30, đi học 8 giờ, đi ngủ 22 giờ.",
+        "caption": "Look at the times. Talk about her routine."
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-daily-library-reading",
+      "legacyAlias": null,
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "Saturday at the library",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "On Saturday, Nam visits the community library with his sister. The library opens at nine. They arrive at nine thirty. Nam borrows two science books, and his sister chooses a comic. They leave before lunch and walk home together.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-daily-library-audio",
+      "legacyAlias": null,
+      "file": "daily-library.wav",
+      "sha256": "32ea52334e6d35bf616e27c0d621b4b99448f354f504827e610ddf29044420e0",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: Nam’s week",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "Hello, I am Nam. On weekdays I cycle to school at seven fifteen. After school, I play badminton with An. On Saturdays, I go to the library with my sister. We walk there because it is near our home.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-food-cafe-reading",
+      "legacyAlias": null,
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "Lunch at Green Cup Café",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "At Green Cup Café, a bowl of soup costs four dollars and a cheese sandwich costs five dollars. Apple juice costs two dollars. Tea costs one dollar. The café serves lunch from eleven to two. Mina orders soup and apple juice. She sits by the window.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-food-cafe-audio",
+      "legacyAlias": null,
+      "file": "food-cafe.wav",
+      "sha256": "0be94b751e6f2c9737bcd9941d1cadb5f885231a169ac29d9982423907e6c12d",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: A café order",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "Good afternoon. I would like a cheese sandwich and a cup of tea, please. I do not want sugar in my tea. Can I pay by card? I will eat here, at the small table beside the door. Thank you.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-food-market-reading",
+      "legacyAlias": null,
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "Shopping at River Market",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "On Sunday, Hana buys fruit at River Market. Apples cost three dollars a kilo, bananas cost two dollars a kilo, and oranges cost four dollars a kilo. She buys one kilo of apples and two kilos of bananas. She brings her own bag. The stall closes at noon.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-food-market-audio",
+      "legacyAlias": null,
+      "file": "food-market.wav",
+      "sha256": "e115fb97e8ef2f69041662871eb6ad485e98d1162bf64ae267ef8150495ec7e6",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: At the vegetable stall",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "Hello. Could I have half a kilo of tomatoes and one kilo of potatoes, please? Are these tomatoes fresh today? I have my own bag. Here is ten dollars. Thank you. Please put the receipt inside the bag.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-travel-museum-reading",
+      "legacyAlias": null,
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "Finding the town museum",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "The town museum is on King Street, opposite the post office. From the bus stop, walk straight to the traffic lights. Turn left into King Street. The museum is the second building on the right. It opens at ten and closes at five. Tickets cost three dollars.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-travel-museum-audio",
+      "legacyAlias": null,
+      "file": "travel-museum.wav",
+      "sha256": "52675ca637b7eaaf7b4d326f11de59cec29fe9fb489358306774645991fda150",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: Directions to the park",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "Excuse me, how can I get to the park? Walk along Pine Road and cross at the zebra crossing. Turn right after the bakery. The park entrance is beside the swimming pool. It is about a ten-minute walk from here.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-travel-trip-reading",
+      "legacyAlias": null,
+      "file": null,
+      "sha256": null,
+      "data": {
+        "kind": "READING",
+        "title": "A train trip to Lake Town",
+        "source": {
+          "label": "English Learning Project — nội dung tự biên soạn",
+          "url": null,
+          "license": "Dùng cho học tập trong dự án"
+        },
+        "readingText": "On Saturday, Tuan and his cousin take a train to Lake Town. Their train leaves at eight twenty and arrives at nine ten. A return ticket costs twelve dollars. They plan to visit the lake in the morning and the old market after lunch. Their return train leaves at four thirty.",
+        "assetId": null,
+        "altText": null
+      }
+    },
+    {
+      "seedKey": "m02-seed-m-travel-trip-audio",
+      "legacyAlias": null,
+      "file": "travel-trip.wav",
+      "sha256": "6bd1e143766cc374db2680c674b7629e5ecb961c1fb401421951690523bef0a0",
+      "data": {
+        "kind": "AUDIO",
+        "title": "Listen: The bus station announcement",
+        "source": {
+          "label": "Nội dung dự án; giọng tổng hợp Microsoft Zira Desktop",
+          "url": null,
+          "license": "Audio demo tạo trên máy phát triển"
+        },
+        "assetId": null,
+        "transcript": "This is an announcement for passengers travelling to Hill City. The nine forty bus will leave from platform three. Please arrive ten minutes before departure. Keep your ticket with you. The journey takes fifty minutes. Thank you for travelling with us.",
+        "startSeconds": 0,
+        "endSeconds": null
+      }
+    }
+  ],
+  "lessons": [
+    {
+      "seedKey": "m02-seed-l-daily-morning",
+      "legacyAlias": "m02-authoring-walkthrough",
+      "legacyBaseline": {
+        "title": "A day with Linh — Bài mẫu",
+        "description": "Bài mẫu ngắn với đoạn đọc, audio, ảnh và ba dạng câu hỏi.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Read about Linh, listen to her routine and use the picture to practise telling the time."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "She gets up at seven.",
+            "translation": "Cô ấy thức dậy lúc bảy giờ."
+          }
+        ]
+      },
+      "unitSeedKey": "m02-catalog-daily-routines",
+      "objectiveCode": "daily-actions",
+      "objectiveName": "Mô tả thói quen hằng ngày",
+      "data": {
+        "title": "A day with Linh — Morning routine",
+        "description": "Mô tả thói quen bằng hiện tại đơn; đọc lịch sinh hoạt và nghe các mốc thời gian.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Mô tả thói quen bằng hiện tại đơn; đọc lịch sinh hoạt và nghe các mốc thời gian."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "She gets up at seven.",
+            "translation": "Cô ấy thức dậy lúc bảy giờ."
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-daily-morning-guided-01",
+          "legacyAlias": "m02-authoring-question-reading",
+          "materialKey": "m02-seed-m-daily-morning-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "What time does Linh get up?",
+            "content": {
+              "options": [
+                {
+                  "id": "opt-seven",
+                  "text": "At seven."
+                },
+                {
+                  "id": "opt-eight",
+                  "text": "At eight."
+                },
+                {
+                  "id": "opt-ten",
+                  "text": "At ten."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "opt-seven"
+            },
+            "explanation": "The passage says: Linh gets up at seven.",
+            "hint": "Find the time after ‘gets up’ in the passage.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Use the present-simple form of “eat” to describe Mai’s usual breakfast.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Mai "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " breakfast at home."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "eats"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "With Mai (she), the present simple verb eat takes -s.",
+            "hint": "Mai is one person: use the she form.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-guided-03",
+          "legacyAlias": "m02-authoring-question-image",
+          "materialKey": "m02-seed-m-daily-morning-image",
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the activities with the times in Linh’s schedule.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "wake",
+                  "text": "Get up"
+                },
+                {
+                  "id": "school",
+                  "text": "Go to school"
+                },
+                {
+                  "id": "sleep",
+                  "text": "Go to bed"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "seven",
+                  "text": "07:00"
+                },
+                {
+                  "id": "eight",
+                  "text": "08:00"
+                },
+                {
+                  "id": "ten",
+                  "text": "22:00"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "wake",
+                  "rightId": "seven"
+                },
+                {
+                  "leftId": "school",
+                  "rightId": "eight"
+                },
+                {
+                  "leftId": "sleep",
+                  "rightId": "ten"
+                }
+              ]
+            },
+            "explanation": "Her schedule shows getting up at 07:00, school at 08:00 and bedtime at 22:00.",
+            "hint": "Read each time next to the activity in the picture.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-morning-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. How does Linh travel to school?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "By bike."
+                },
+                {
+                  "id": "b",
+                  "text": "By bus."
+                },
+                {
+                  "id": "c",
+                  "text": "On foot."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The audio says that she takes the bus to school.",
+            "hint": "Listen for the transport word.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-morning-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the place.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "She eats breakfast at "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "home"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The speaker says: She eats breakfast at home.",
+            "hint": "Listen after ‘at’.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-independent-01",
+          "legacyAlias": "m02-authoring-question-audio",
+          "materialKey": "m02-seed-m-daily-morning-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete Linh’s evening activity.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "In the evening, she "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "activity"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " a book."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "activity",
+                  "acceptedAnswers": [
+                    "reads"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The audio says: In the evening, she reads a book.",
+            "hint": "Listen for the verb before ‘a book’.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-morning-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "According to the reading, when does Linh go to bed?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "At eight."
+                },
+                {
+                  "id": "b",
+                  "text": "At nine."
+                },
+                {
+                  "id": "c",
+                  "text": "At ten."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "c"
+            },
+            "explanation": "The final clause says that she goes to bed at ten.",
+            "hint": "Find the last time in the passage.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-morning-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match each part of Linh’s day with its activity in the reading.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Morning"
+                },
+                {
+                  "id": "l2",
+                  "text": "Journey to school"
+                },
+                {
+                  "id": "l3",
+                  "text": "Evening"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Read a book"
+                },
+                {
+                  "id": "r2",
+                  "text": "Take the bus"
+                },
+                {
+                  "id": "r1",
+                  "text": "Get up at seven"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The passage gives these three activities in that order.",
+            "hint": "Read the morning, travel and evening sentences.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Choose the natural question for the answer: “I get up at six.”",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "What time do you get up?"
+                },
+                {
+                  "id": "b",
+                  "text": "Where do you get up?"
+                },
+                {
+                  "id": "c",
+                  "text": "Who do you get up?"
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "What time asks for a time; six is a time.",
+            "hint": "Choose the question word for a clock time.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the routine verbs with the words that complete them.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "brush"
+                },
+                {
+                  "id": "l2",
+                  "text": "take"
+                },
+                {
+                  "id": "l3",
+                  "text": "do"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "my homework"
+                },
+                {
+                  "id": "r2",
+                  "text": "a shower"
+                },
+                {
+                  "id": "r1",
+                  "text": "my teeth"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The common combinations are brush my teeth, take a shower and do my homework.",
+            "hint": "Think of everyday verb phrases.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Nora starts work at 09:00, has lunch at 12:30 and finishes work at 17:00. Match her activities with their times.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Start work"
+                },
+                {
+                  "id": "l2",
+                  "text": "Have lunch"
+                },
+                {
+                  "id": "l3",
+                  "text": "Finish work"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "17:00"
+                },
+                {
+                  "id": "r2",
+                  "text": "12:30"
+                },
+                {
+                  "id": "r1",
+                  "text": "09:00"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "All three times are stated in Nora’s workday, a different routine from Linh’s.",
+            "hint": "Use Nora’s schedule in the question.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Use the correct form of “go” in this negative sentence about Ben.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Ben does not "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " to school on Sundays."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "go"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "After does not, use the base form go, not goes.",
+            "hint": "The auxiliary does already carries the third-person ending.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Eva usually leaves home at 8:10. Today she leaves at 8:25. How much later does she leave?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Five minutes."
+                },
+                {
+                  "id": "b",
+                  "text": "Fifteen minutes."
+                },
+                {
+                  "id": "c",
+                  "text": "Twenty-five minutes."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "8:25 is fifteen minutes after 8:10.",
+            "hint": "Compare the minutes after eight.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Omar and I cook together every Friday. Complete the sentence.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "We "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " dinner every Friday."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "cook"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The subject we takes the base present-simple verb cook.",
+            "hint": "Use the verb from the question with we.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-morning-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new speakers with the frequency in what they say.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "I swim every day."
+                },
+                {
+                  "id": "l2",
+                  "text": "I visit on Saturday each week."
+                },
+                {
+                  "id": "l3",
+                  "text": "I call on the first day of each month."
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Monthly"
+                },
+                {
+                  "id": "r2",
+                  "text": "Weekly"
+                },
+                {
+                  "id": "r1",
+                  "text": "Daily"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Every day is daily, each week is weekly, and each month is monthly.",
+            "hint": "Look for day, week and month.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seedKey": "m02-seed-l-daily-library",
+      "legacyAlias": null,
+      "legacyBaseline": null,
+      "unitSeedKey": "m02-catalog-daily-routines",
+      "objectiveCode": "weekly-activities",
+      "objectiveName": "Mô tả hoạt động trong tuần và tần suất",
+      "data": {
+        "title": "Nam’s week and weekend",
+        "description": "Phân biệt hoạt động thường ngày và cuối tuần; hỏi về thời gian, phương tiện và tần suất.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Phân biệt hoạt động thường ngày và cuối tuần; hỏi về thời gian, phương tiện và tần suất."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "He visits the library on Saturdays.",
+            "translation": "Bạn ấy đến thư viện vào các ngày thứ Bảy."
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-daily-library-guided-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. Who goes to the library with Nam?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "His brother."
+                },
+                {
+                  "id": "b",
+                  "text": "His sister."
+                },
+                {
+                  "id": "c",
+                  "text": "His teacher."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The first sentence says that Nam visits with his sister.",
+            "hint": "Look after the word with.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Use the present-simple form of “read” for this regular activity.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "My sister "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " comics at the library."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "reads"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "My sister is singular, so read becomes reads.",
+            "hint": "Use the present-simple she form.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-guided-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the library words with their meanings.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "borrow"
+                },
+                {
+                  "id": "l2",
+                  "text": "return"
+                },
+                {
+                  "id": "l3",
+                  "text": "choose"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Decide which one you want"
+                },
+                {
+                  "id": "r2",
+                  "text": "Give something back"
+                },
+                {
+                  "id": "r1",
+                  "text": "Take something and return it later"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Borrow, return and choose describe different actions when using a library.",
+            "hint": "Think about what happens before and after using a book.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. How does Nam go to school on weekdays?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "He cycles."
+                },
+                {
+                  "id": "b",
+                  "text": "He walks."
+                },
+                {
+                  "id": "c",
+                  "text": "He takes a train."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "Nam says: On weekdays I cycle to school.",
+            "hint": "Listen to the sentence about weekdays.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the time.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Nam cycles to school at "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "seven fifteen",
+                    "7:15",
+                    "07:15"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The recording gives the departure time as seven fifteen.",
+            "hint": "Listen for the two numbers after at.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-independent-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete Nam’s after-school sport.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "He plays "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " with An."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "badminton"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Nam says that he plays badminton with An after school.",
+            "hint": "The sport comes after play.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. How many science books does Nam borrow?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "One."
+                },
+                {
+                  "id": "b",
+                  "text": "Two."
+                },
+                {
+                  "id": "c",
+                  "text": "Three."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The passage says he borrows two science books.",
+            "hint": "Find science books in the passage.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-daily-library-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match each library event with the detail in the reading.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Opening time"
+                },
+                {
+                  "id": "l2",
+                  "text": "Arrival time"
+                },
+                {
+                  "id": "l3",
+                  "text": "Time to leave"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Before lunch"
+                },
+                {
+                  "id": "r2",
+                  "text": "09:30"
+                },
+                {
+                  "id": "r1",
+                  "text": "09:00"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The library opens at nine, they arrive at nine thirty and leave before lunch.",
+            "hint": "Read the times carefully; opening is different from arrival.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Which question asks about frequency?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "How often do you visit the library?"
+                },
+                {
+                  "id": "b",
+                  "text": "Where is your library card?"
+                },
+                {
+                  "id": "c",
+                  "text": "What colour is the book?"
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "How often asks how frequently an activity happens.",
+            "hint": "Look for the phrase meaning frequency.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match each habit with its natural time phrase.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "I sleep"
+                },
+                {
+                  "id": "l2",
+                  "text": "I eat my morning meal"
+                },
+                {
+                  "id": "l3",
+                  "text": "I usually relax after work"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "in the evening"
+                },
+                {
+                  "id": "r2",
+                  "text": "in the morning"
+                },
+                {
+                  "id": "r1",
+                  "text": "at night"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "At night, in the morning and in the evening are common time expressions.",
+            "hint": "Notice the different preposition used with night.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Lena feeds her cat at 06:45, catches a bus at 07:20 and starts class at 08:00. Match the events with their times.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Feed the cat"
+                },
+                {
+                  "id": "l2",
+                  "text": "Catch the bus"
+                },
+                {
+                  "id": "l3",
+                  "text": "Start class"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "08:00"
+                },
+                {
+                  "id": "r2",
+                  "text": "07:20"
+                },
+                {
+                  "id": "r1",
+                  "text": "06:45"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "These are Lena’s own three times, not Nam’s library schedule.",
+            "hint": "Use the new schedule in the prompt.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the question to ask about Rui’s usual Saturday activity.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "What "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " Rui do on Saturdays?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "does"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Rui is one person; present-simple questions use does plus the base verb.",
+            "hint": "Choose do or does for he.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Ida practises piano on Monday and Thursday every week. How often does she practise?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Once a week."
+                },
+                {
+                  "id": "b",
+                  "text": "Twice a week."
+                },
+                {
+                  "id": "c",
+                  "text": "Every day."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "Monday and Thursday give two practice days in one week.",
+            "hint": "Count the two days, not the hours.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the sentence about two friends.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Leo and Kim "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " board games after dinner."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "play"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "A plural subject takes the base form play.",
+            "hint": "Use play in the present simple with they.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-daily-library-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new diary notes with their categories.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "07:10 — water the plants"
+                },
+                {
+                  "id": "l2",
+                  "text": "16:30 — finish school"
+                },
+                {
+                  "id": "l3",
+                  "text": "20:00 — write in a diary"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Evening routine"
+                },
+                {
+                  "id": "r2",
+                  "text": "Afternoon routine"
+                },
+                {
+                  "id": "r1",
+                  "text": "Morning routine"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "07:10 is morning, 16:30 is afternoon and 20:00 is evening.",
+            "hint": "Use the 24-hour clock to choose each part of the day.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seedKey": "m02-seed-l-food-cafe",
+      "legacyAlias": null,
+      "legacyBaseline": null,
+      "unitSeedKey": "m02-catalog-food-shopping",
+      "objectiveCode": "order-food",
+      "objectiveName": "Gọi món bằng mẫu câu đơn giản",
+      "data": {
+        "title": "Ordering lunch at a café",
+        "description": "Đọc thực đơn, gọi món lịch sự và hỏi cách thanh toán trong một quán cà phê giả định.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Đọc thực đơn, gọi món lịch sự và hỏi cách thanh toán trong một quán cà phê giả định."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "I would like a sandwich, please.",
+            "translation": "Cho tôi một chiếc bánh mì kẹp. "
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-food-cafe-guided-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read the menu. How much is a cheese sandwich?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Two dollars."
+                },
+                {
+                  "id": "b",
+                  "text": "Four dollars."
+                },
+                {
+                  "id": "c",
+                  "text": "Five dollars."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "c"
+            },
+            "explanation": "The menu lists a cheese sandwich at five dollars.",
+            "hint": "Find cheese sandwich, not soup.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete this polite order using the verb “like”.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "I would "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " a bowl of soup, please."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "like"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "I would like is a polite phrase for ordering food.",
+            "hint": "Use the verb in the expression would like.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-guided-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the menu words with the usual serving words.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "a bowl of"
+                },
+                {
+                  "id": "l2",
+                  "text": "a cup of"
+                },
+                {
+                  "id": "l3",
+                  "text": "a glass of"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "juice"
+                },
+                {
+                  "id": "r2",
+                  "text": "tea"
+                },
+                {
+                  "id": "r1",
+                  "text": "soup"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Soup is served in a bowl, tea in a cup, and juice in a glass.",
+            "hint": "Think about the container for each food or drink.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. Which drink does the customer order?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Tea."
+                },
+                {
+                  "id": "b",
+                  "text": "Apple juice."
+                },
+                {
+                  "id": "c",
+                  "text": "Coffee."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "The customer asks for a cup of tea.",
+            "hint": "Listen after and a cup of.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the request about tea.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The customer does not want "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "sugar"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The recording says: I do not want sugar in my tea.",
+            "hint": "Listen for what the customer wants to leave out.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-independent-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the payment question.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Can I pay by "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "card"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The customer asks whether payment by card is possible.",
+            "hint": "Listen after pay by.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. What does Mina order?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Soup and apple juice."
+                },
+                {
+                  "id": "b",
+                  "text": "A sandwich and tea."
+                },
+                {
+                  "id": "c",
+                  "text": "Soup and tea."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "The reading states that Mina orders soup and apple juice.",
+            "hint": "Mina’s order is in the last two sentences.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-cafe-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match each item with its menu price.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Soup"
+                },
+                {
+                  "id": "l2",
+                  "text": "Apple juice"
+                },
+                {
+                  "id": "l3",
+                  "text": "Tea"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "$1"
+                },
+                {
+                  "id": "r2",
+                  "text": "$2"
+                },
+                {
+                  "id": "r1",
+                  "text": "$4"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The listed prices are soup four, juice two and tea one dollar.",
+            "hint": "Read each item’s own price.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Which reply naturally follows “For here or to go?”",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "To go, please."
+                },
+                {
+                  "id": "b",
+                  "text": "At six o’clock."
+                },
+                {
+                  "id": "c",
+                  "text": "It is blue."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "To go means the customer will take the order away.",
+            "hint": "The question asks where the food will be eaten.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the café requests with what the customer needs.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Could I see the menu?"
+                },
+                {
+                  "id": "l2",
+                  "text": "Could I have the bill?"
+                },
+                {
+                  "id": "l3",
+                  "text": "Could I have some water?"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "A drink"
+                },
+                {
+                  "id": "r2",
+                  "text": "The amount to pay"
+                },
+                {
+                  "id": "r1",
+                  "text": "A list of food and prices"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Menu, bill and water each answer a different customer need.",
+            "hint": "Think about what the named object is used for.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "At the fictional Blue Bowl shop, noodles cost $6, rice costs $3 and lemonade costs $2. Match each item with its price.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Noodles"
+                },
+                {
+                  "id": "l2",
+                  "text": "Rice"
+                },
+                {
+                  "id": "l3",
+                  "text": "Lemonade"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "$2"
+                },
+                {
+                  "id": "r2",
+                  "text": "$3"
+                },
+                {
+                  "id": "r1",
+                  "text": "$6"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "These are the three prices in the new Blue Bowl menu.",
+            "hint": "Use this shop’s menu, not Green Cup Café’s.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the new customer’s request with “have” or “get”.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Could I "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " a glass of water, please?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "have",
+                    "get"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Could I have and Could I get are natural requests for a drink.",
+            "hint": "Choose a base verb used to request a drink.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "A snack costs $3 and a drink costs $2. Sam pays with $10. How much change should he get?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Three dollars."
+                },
+                {
+                  "id": "b",
+                  "text": "Five dollars."
+                },
+                {
+                  "id": "c",
+                  "text": "Seven dollars."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The total is five dollars; ten minus five leaves five dollars change.",
+            "hint": "Add the two prices, then subtract from ten.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Use the plural of “cup” in this order for two people.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "We would like two "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " of tea."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "cups"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Two requires the plural cups in two cups of tea.",
+            "hint": "Use the plural of cup.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-cafe-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new requests with the relevant dietary detail.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "No milk, please."
+                },
+                {
+                  "id": "l2",
+                  "text": "No ice, please."
+                },
+                {
+                  "id": "l3",
+                  "text": "Less salt, please."
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Reduce the amount of salt"
+                },
+                {
+                  "id": "r2",
+                  "text": "Serve without ice"
+                },
+                {
+                  "id": "r1",
+                  "text": "Leave out milk"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "No asks to omit an ingredient; less asks for a smaller amount.",
+            "hint": "Distinguish leaving something out from reducing it.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seedKey": "m02-seed-l-food-market",
+      "legacyAlias": null,
+      "legacyBaseline": null,
+      "unitSeedKey": "m02-catalog-food-shopping",
+      "objectiveCode": "buy-groceries",
+      "objectiveName": "Hỏi giá và số lượng khi mua thực phẩm",
+      "data": {
+        "title": "Buying fruit and vegetables",
+        "description": "Hỏi giá, số lượng và dùng các cụm đo lường khi mua hàng tại một khu chợ giả định.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Hỏi giá, số lượng và dùng các cụm đo lường khi mua hàng tại một khu chợ giả định."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "How much are the apples?",
+            "translation": "Táo giá bao nhiêu?"
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-food-market-guided-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. Which fruit costs two dollars a kilo?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Apples."
+                },
+                {
+                  "id": "b",
+                  "text": "Bananas."
+                },
+                {
+                  "id": "c",
+                  "text": "Oranges."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "Bananas cost two dollars per kilo in the reading.",
+            "hint": "Find the item beside the price two dollars.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the question about the price of these oranges.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "How "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " are these oranges?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "much"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "How much asks for a price.",
+            "hint": "Use the question phrase for price, not number.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-guided-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the quantities with their equivalent amounts.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "half a kilo"
+                },
+                {
+                  "id": "l2",
+                  "text": "one kilo"
+                },
+                {
+                  "id": "l3",
+                  "text": "two kilos"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "2,000 grams"
+                },
+                {
+                  "id": "r2",
+                  "text": "1,000 grams"
+                },
+                {
+                  "id": "r1",
+                  "text": "500 grams"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "One kilo is one thousand grams, so half is five hundred and two kilos is two thousand.",
+            "hint": "Use 1 kilo = 1,000 grams.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. What does the customer buy half a kilo of?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Potatoes."
+                },
+                {
+                  "id": "b",
+                  "text": "Tomatoes."
+                },
+                {
+                  "id": "c",
+                  "text": "Carrots."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The customer asks for half a kilo of tomatoes.",
+            "hint": "Listen to the first quantity in the order.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the second vegetable.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The customer buys one kilo of "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "potatoes"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The recording says one kilo of potatoes.",
+            "hint": "The second item follows and one kilo of.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-independent-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen. Where should the seller put the receipt?",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Put the receipt inside the "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "bag"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The last request is to put the receipt inside the bag.",
+            "hint": "Listen to the final sentence.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. How much does Hana’s fruit cost in total?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Five dollars."
+                },
+                {
+                  "id": "b",
+                  "text": "Seven dollars."
+                },
+                {
+                  "id": "c",
+                  "text": "Nine dollars."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "One kilo of apples is $3, and two kilos of bananas cost $4; the total is $7.",
+            "hint": "Multiply the banana price by two before adding.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-food-market-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match each detail with Hana’s shopping trip.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Shopping day"
+                },
+                {
+                  "id": "l2",
+                  "text": "Bag"
+                },
+                {
+                  "id": "l3",
+                  "text": "Stall closing time"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Noon"
+                },
+                {
+                  "id": "r2",
+                  "text": "Her own bag"
+                },
+                {
+                  "id": "r1",
+                  "text": "Sunday"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The passage says Sunday, her own bag, and closing at noon.",
+            "hint": "Look for the day, the bag and the last sentence.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Which question asks about the number of apples in a bag?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "How many apples are there?"
+                },
+                {
+                  "id": "b",
+                  "text": "How much is the bag?"
+                },
+                {
+                  "id": "c",
+                  "text": "Where is the market?"
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "Apples are countable, so how many asks for their number.",
+            "hint": "Choose the phrase used with countable plural nouns.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the shopping phrases with their purposes.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "How much is it?"
+                },
+                {
+                  "id": "l2",
+                  "text": "That is all, thank you."
+                },
+                {
+                  "id": "l3",
+                  "text": "Do you have a smaller size?"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Ask for a different size"
+                },
+                {
+                  "id": "r2",
+                  "text": "Finish the order"
+                },
+                {
+                  "id": "r1",
+                  "text": "Ask the price"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The three phrases ask a price, end an order and request another size.",
+            "hint": "Identify what the shopper wants to do.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "At Oak Farm’s fictional stall, pears are $5/kg, carrots are $2/kg and beans are $4/kg. Match the items with their prices.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Pears"
+                },
+                {
+                  "id": "l2",
+                  "text": "Carrots"
+                },
+                {
+                  "id": "l3",
+                  "text": "Beans"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "$4/kg"
+                },
+                {
+                  "id": "r2",
+                  "text": "$2/kg"
+                },
+                {
+                  "id": "r1",
+                  "text": "$5/kg"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "All prices come from the new Oak Farm stall in the prompt.",
+            "hint": "Do not reuse River Market prices.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the request with a weight unit meaning 1,000 grams.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "I would like half a "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " of grapes."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "kilo",
+                    "kilogram"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Kilo and kilogram both name the metric unit of 1,000 grams.",
+            "hint": "Use the metric weight unit from the lesson.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "A bag contains 6 peaches. Amir gives 2 to a friend and buys 3 more. How many peaches does he have now?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Five."
+                },
+                {
+                  "id": "b",
+                  "text": "Seven."
+                },
+                {
+                  "id": "c",
+                  "text": "Nine."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "Six minus two plus three equals seven peaches.",
+            "hint": "Follow the giving and buying actions in order.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Use the possessive form of “she” for this shopper’s own bag.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "She brings "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " own bag."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "her"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "She uses the possessive adjective her before own bag.",
+            "hint": "Choose the possessive form that matches she.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-food-market-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new stall labels with what they mean.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Sold out"
+                },
+                {
+                  "id": "l2",
+                  "text": "Special offer"
+                },
+                {
+                  "id": "l3",
+                  "text": "Exact change, please"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Pay the precise amount"
+                },
+                {
+                  "id": "r2",
+                  "text": "A promotion on an item"
+                },
+                {
+                  "id": "r1",
+                  "text": "None left to buy"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Sold out means unavailable; a special offer is a promotion; exact change is the precise price.",
+            "hint": "Read each label as a practical message to a shopper.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seedKey": "m02-seed-l-travel-museum",
+      "legacyAlias": null,
+      "legacyBaseline": null,
+      "unitSeedKey": "m02-catalog-travel-directions",
+      "objectiveCode": "ask-directions",
+      "objectiveName": "Hỏi và chỉ đường đến một địa điểm",
+      "data": {
+        "title": "Finding places in town",
+        "description": "Hỏi đường, theo dõi chỉ dẫn rẽ trái/phải và xác định vị trí các địa điểm trong một thị trấn giả định.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Hỏi đường, theo dõi chỉ dẫn rẽ trái/phải và xác định vị trí các địa điểm trong một thị trấn giả định."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "Turn left at the traffic lights.",
+            "translation": "Rẽ trái tại đèn giao thông."
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-travel-museum-guided-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. Where is the museum?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "On King Street."
+                },
+                {
+                  "id": "b",
+                  "text": "On Pine Road."
+                },
+                {
+                  "id": "c",
+                  "text": "Inside the post office."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "The first sentence places the museum on King Street.",
+            "hint": "Look for the street name in the first sentence.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the instruction to continue without turning.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Go "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " on."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "straight"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Go straight on means continue in the same direction.",
+            "hint": "Use the direction word meaning not left or right.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-guided-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the direction phrases with their meanings.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "turn left"
+                },
+                {
+                  "id": "l2",
+                  "text": "turn right"
+                },
+                {
+                  "id": "l3",
+                  "text": "cross the road"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Go from one side of the road to the other"
+                },
+                {
+                  "id": "r2",
+                  "text": "Change direction to the right"
+                },
+                {
+                  "id": "r1",
+                  "text": "Change direction to the left"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Each phrase describes a different movement through town.",
+            "hint": "Picture what a walker does for each instruction.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. After which place should the walker turn right?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The museum."
+                },
+                {
+                  "id": "b",
+                  "text": "The bakery."
+                },
+                {
+                  "id": "c",
+                  "text": "The post office."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The speaker says: Turn right after the bakery.",
+            "hint": "Listen for the place after after.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the landmark.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The park entrance is beside the swimming "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "pool"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The entrance is beside the swimming pool.",
+            "hint": "Complete the two-word place swimming pool.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-independent-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen. About how long does the walk take?",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "It is about a "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "-minute walk."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "ten",
+                    "10"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The speaker says it is about a ten-minute walk.",
+            "hint": "Listen for the length of the walk.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. Which building on the right is the museum?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The first."
+                },
+                {
+                  "id": "b",
+                  "text": "The second."
+                },
+                {
+                  "id": "c",
+                  "text": "The third."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The passage identifies the museum as the second building on the right.",
+            "hint": "Find the ordinal number before building.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-museum-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the museum details with the reading.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Opposite landmark"
+                },
+                {
+                  "id": "l2",
+                  "text": "Opening time"
+                },
+                {
+                  "id": "l3",
+                  "text": "Ticket price"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "$3"
+                },
+                {
+                  "id": "r2",
+                  "text": "10:00"
+                },
+                {
+                  "id": "r1",
+                  "text": "Post office"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The museum is opposite the post office, opens at ten and charges three dollars.",
+            "hint": "Use three different details from the passage.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Which is the most suitable way to begin asking a stranger for directions?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Excuse me, where is the station?"
+                },
+                {
+                  "id": "b",
+                  "text": "Give me your station."
+                },
+                {
+                  "id": "c",
+                  "text": "I am a station."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "Excuse me politely gets attention before a directions question.",
+            "hint": "Look for the polite opening and a clear place question.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the location phrases with their meanings.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "next to"
+                },
+                {
+                  "id": "l2",
+                  "text": "opposite"
+                },
+                {
+                  "id": "l3",
+                  "text": "between"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "In the middle of two things"
+                },
+                {
+                  "id": "r2",
+                  "text": "Across from"
+                },
+                {
+                  "id": "r1",
+                  "text": "Directly beside"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Next to, opposite and between describe distinct relative positions.",
+            "hint": "Imagine three buildings on a street.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "A map shows the clinic north of the square, the school east of it and the café west of it. Match each place with its direction from the square.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Clinic"
+                },
+                {
+                  "id": "l2",
+                  "text": "School"
+                },
+                {
+                  "id": "l3",
+                  "text": "Café"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "West"
+                },
+                {
+                  "id": "r2",
+                  "text": "East"
+                },
+                {
+                  "id": "r1",
+                  "text": "North"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The new map gives the clinic north, school east and café west.",
+            "hint": "Use the square as your starting reference point.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete this new route instruction.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Turn "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " after the bank to follow the arrow →."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "right"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The arrow points to the right, so the instruction is turn right.",
+            "hint": "Follow the direction of the arrow.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Nia walks past a bank, then a cinema, then a hotel. The library is between the cinema and the hotel. Which place does she pass immediately before the library?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The bank."
+                },
+                {
+                  "id": "b",
+                  "text": "The cinema."
+                },
+                {
+                  "id": "c",
+                  "text": "The hotel."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "The library comes after the cinema and before the hotel.",
+            "hint": "Place the library into the order given.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "The shop is in the middle of two landmarks. Complete its location.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The shop is "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " the bank and the hotel."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "between"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Between links a place to the two landmarks on either side.",
+            "hint": "The word must work with and two landmarks.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-museum-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new pedestrian signs with the action to take.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "STOP"
+                },
+                {
+                  "id": "l2",
+                  "text": "Pedestrian crossing"
+                },
+                {
+                  "id": "l3",
+                  "text": "No entry"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Do not enter this way"
+                },
+                {
+                  "id": "r2",
+                  "text": "Use this place to cross the road"
+                },
+                {
+                  "id": "r1",
+                  "text": "Do not continue past this point"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Each sign gives a specific instruction to a pedestrian.",
+            "hint": "Think about safe, permitted movement rather than a destination.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seedKey": "m02-seed-l-travel-trip",
+      "legacyAlias": null,
+      "legacyBaseline": null,
+      "unitSeedKey": "m02-catalog-travel-directions",
+      "objectiveCode": "plan-journey",
+      "objectiveName": "Hỏi giờ khởi hành, vé và thông tin chuyến đi",
+      "data": {
+        "title": "Planning a weekend trip",
+        "description": "Đọc giờ đi/đến, phân biệt vé một chiều/khứ hồi và nghe thông báo tại bến xe giả định.",
+        "instructions": [
+          {
+            "kind": "TEXT",
+            "text": "Đọc giờ đi/đến, phân biệt vé một chiều/khứ hồi và nghe thông báo tại bến xe giả định."
+          },
+          {
+            "kind": "EXAMPLE",
+            "text": "What time does the train leave?",
+            "translation": "Tàu khởi hành lúc mấy giờ?"
+          }
+        ],
+        "objectiveIds": [],
+        "questions": []
+      },
+      "questions": [
+        {
+          "seedKey": "m02-seed-q-travel-trip-guided-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-reading",
+          "practiceRole": "GUIDED",
+          "position": 0,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. How do Tuan and his cousin travel to Lake Town?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "By train."
+                },
+                {
+                  "id": "b",
+                  "text": "By bus."
+                },
+                {
+                  "id": "c",
+                  "text": "By plane."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "The first sentence says that they take a train.",
+            "hint": "Find the transport in the first sentence.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-guided-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the departure-time question with “leave” or “depart”.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "What time does the train "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "leave",
+                    "depart"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Both leave and depart are base verbs used after does in a departure-time question.",
+            "hint": "Use a verb meaning depart.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-guided-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "GUIDED",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the travel words with their meanings.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "departure"
+                },
+                {
+                  "id": "l2",
+                  "text": "arrival"
+                },
+                {
+                  "id": "l3",
+                  "text": "return ticket"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "A ticket for going and coming back"
+                },
+                {
+                  "id": "r2",
+                  "text": "The time a service reaches its destination"
+                },
+                {
+                  "id": "r1",
+                  "text": "The time a service leaves"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Departure is leaving, arrival is reaching the destination, and return covers both directions.",
+            "hint": "Distinguish leaving, reaching and ticket type.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-guided-04",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-audio",
+          "practiceRole": "GUIDED",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Listen. Which platform does the Hill City bus use?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Platform one."
+                },
+                {
+                  "id": "b",
+                  "text": "Platform two."
+                },
+                {
+                  "id": "c",
+                  "text": "Platform three."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "c"
+            },
+            "explanation": "The announcement states platform three.",
+            "hint": "Listen for the number after platform.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-guided-05",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-audio",
+          "practiceRole": "GUIDED",
+          "position": 4,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen and complete the departure time.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The bus leaves at "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": "."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "nine forty",
+                    "9:40",
+                    "09:40"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The announcement is for the nine forty bus.",
+            "hint": "Listen to the time before bus.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-independent-01",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-audio",
+          "practiceRole": "INDEPENDENT",
+          "position": 0,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Listen. How long does the bus journey take?",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "The journey takes "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " minutes."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "fifty",
+                    "50"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The final travel detail is a journey time of fifty minutes.",
+            "hint": "Listen after The journey takes.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-independent-02",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 1,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Read. What do Tuan and his cousin plan to do after lunch?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Visit the old market."
+                },
+                {
+                  "id": "b",
+                  "text": "Return home immediately."
+                },
+                {
+                  "id": "c",
+                  "text": "Visit the lake for the first time."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "The reading places the old market after lunch and the lake in the morning.",
+            "hint": "Distinguish the morning activity from the afternoon plan.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-independent-03",
+          "legacyAlias": null,
+          "materialKey": "m02-seed-m-travel-trip-reading",
+          "practiceRole": "INDEPENDENT",
+          "position": 2,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the train-trip details with the reading.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Outbound departure"
+                },
+                {
+                  "id": "l2",
+                  "text": "Outbound arrival"
+                },
+                {
+                  "id": "l3",
+                  "text": "Return departure"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "16:30"
+                },
+                {
+                  "id": "r2",
+                  "text": "09:10"
+                },
+                {
+                  "id": "r1",
+                  "text": "08:20"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The text gives eight twenty, nine ten and four thirty in the afternoon.",
+            "hint": "Match each time with the correct leg of the trip.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-independent-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 3,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "Which request asks for a ticket for a journey in only one direction?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "A single ticket, please."
+                },
+                {
+                  "id": "b",
+                  "text": "A return ticket, please."
+                },
+                {
+                  "id": "c",
+                  "text": "A table for two, please."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "explanation": "A single ticket covers one direction; a return ticket includes coming back.",
+            "hint": "Choose the ticket type that does not include a return.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-independent-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "INDEPENDENT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the station questions with the information requested.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Which platform?"
+                },
+                {
+                  "id": "l2",
+                  "text": "How much is a ticket?"
+                },
+                {
+                  "id": "l3",
+                  "text": "How long is the journey?"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "The travel duration"
+                },
+                {
+                  "id": "r2",
+                  "text": "The fare"
+                },
+                {
+                  "id": "r1",
+                  "text": "Where to board"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "These questions ask for boarding location, price and duration respectively.",
+            "hint": "Focus on platform, how much and how long.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-review_variant-01",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 0,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "A new timetable lists the coast bus at 07:15, the airport bus at 08:05 and the village bus at 09:50. Match each route with its departure.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "Coast"
+                },
+                {
+                  "id": "l2",
+                  "text": "Airport"
+                },
+                {
+                  "id": "l3",
+                  "text": "Village"
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "09:50"
+                },
+                {
+                  "id": "r2",
+                  "text": "08:05"
+                },
+                {
+                  "id": "r1",
+                  "text": "07:15"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "The departures belong to a new timetable and different destinations.",
+            "hint": "Read the route before selecting its time.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-review_variant-02",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 1,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the advice using the travel document named in the bus announcement.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "TEXT",
+                  "text": "Please keep your "
+                },
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " ready for inspection."
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "ticket"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "The announcement asks passengers to keep their ticket with them.",
+            "hint": "Use the travel document named in the announcement lesson.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-review_variant-03",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 2,
+          "data": {
+            "type": "SINGLE_CHOICE",
+            "prompt": "A ferry leaves at 14:10. Boarding closes 15 minutes earlier. What is the latest boarding time?",
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "13:45."
+                },
+                {
+                  "id": "b",
+                  "text": "13:55."
+                },
+                {
+                  "id": "c",
+                  "text": "14:25."
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "b"
+            },
+            "explanation": "Fifteen minutes before 14:10 is 13:55.",
+            "hint": "Subtract ten minutes, then five more.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "HARD",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-review_variant-04",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 3,
+          "data": {
+            "type": "FILL_BLANK",
+            "prompt": "Complete the question about the destination of a coach.",
+            "content": {
+              "parts": [
+                {
+                  "kind": "BLANK",
+                  "blankId": "b1"
+                },
+                {
+                  "kind": "TEXT",
+                  "text": " does this coach go?"
+                }
+              ]
+            },
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "where"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Where asks about a destination or place.",
+            "hint": "Choose the question word for a place.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "MEDIUM",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        },
+        {
+          "seedKey": "m02-seed-q-travel-trip-review_variant-05",
+          "legacyAlias": null,
+          "materialKey": null,
+          "practiceRole": "REVIEW_VARIANT",
+          "position": 4,
+          "data": {
+            "type": "MATCHING",
+            "prompt": "Match the new journey notes with the transport used.",
+            "content": {
+              "leftItems": [
+                {
+                  "id": "l1",
+                  "text": "We sail across the bay."
+                },
+                {
+                  "id": "l2",
+                  "text": "We fly above the clouds."
+                },
+                {
+                  "id": "l3",
+                  "text": "We follow the railway tracks."
+                }
+              ],
+              "rightItems": [
+                {
+                  "id": "r3",
+                  "text": "Train"
+                },
+                {
+                  "id": "r2",
+                  "text": "Plane"
+                },
+                {
+                  "id": "r1",
+                  "text": "Ferry"
+                }
+              ]
+            },
+            "answerKey": {
+              "pairs": [
+                {
+                  "leftId": "l1",
+                  "rightId": "r1"
+                },
+                {
+                  "leftId": "l2",
+                  "rightId": "r2"
+                },
+                {
+                  "leftId": "l3",
+                  "rightId": "r3"
+                }
+              ]
+            },
+            "explanation": "Sail suggests a ferry, fly a plane, and railway tracks a train.",
+            "hint": "Identify the transport from the movement or route.",
+            "topicId": 0,
+            "objectiveId": 0,
+            "difficulty": "EASY",
+            "materialVersionId": null,
+            "source": {
+              "label": "English Learning Project — câu hỏi tự biên soạn",
+              "url": null,
+              "license": "Dùng cho học tập trong dự án"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

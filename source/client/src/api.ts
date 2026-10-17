@@ -32,12 +32,13 @@ async function csrfToken(): Promise<Csrf> {
 }
 export async function api<T>(path: string, method = 'GET', body?: unknown, allowUnauthorized = false, retried = false): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const multipart = body instanceof FormData;
+  if (body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
   if (!['GET', 'HEAD'].includes(method)) {
     const token = await csrfToken();
     headers[token.headerName] = token.token;
   }
-  const response = await fetchTimed(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const response = await fetchTimed(path, { method, headers, body: body === undefined ? undefined : multipart ? body : JSON.stringify(body) });
   if (!response.ok) {
     const failure = await response.json().catch(() => ({})) as { code?: string; message?: string; fieldErrors?: Record<string, string> };
     if (response.status === 403 && failure.code === 'CSRF_INVALID' && !retried) {

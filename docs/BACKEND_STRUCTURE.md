@@ -1,4 +1,18 @@
-# Cấu trúc backend M01
+# Cấu trúc backend M01 và M02 hoàn chỉnh
+
+M02 bước 1 bổ sung AuthorCatalogController → CatalogService/impl → CatalogRepository/impl → JPA cho Topic/Objective/Unit, cùng RequestReceiptService dùng chung. Theo dõi phạm vi hiện tại ở [tiến độ M02](M02_PROGRESS.md). Mô tả M01 bên dưới vẫn áp dụng cho nền tài khoản.
+
+M02 bước 2 bổ sung AssetController → AssetService/impl → AssetRepository/impl và AuthorMaterialController → MaterialService/impl → MaterialRepository/impl. AssetStorage giữ file trong volume, dọn file khi transaction rollback; MediaInspector kiểm tra PNG/JPEG bằng ImageIO và MP3/WAV/OGG bằng ffprobe có giới hạn thời gian. MaterialData/MaterialRequests kiểm tra DTO theo từng loại, MaterialViews tạo response. Bản công bố bất biến; write khóa actor trước material root, dùng RequestReceiptService và revision/previewToken.
+
+AssetReadGrant là điểm mở rộng quyền đọc file. MaterialAssetReadGrant cấp cho tác giả theo tài liệu sở hữu/tài liệu đang công bố; ADMIN được đọc mọi asset. STUDENT chưa có grant cho đến khi M03 thêm AttemptAssetReadGrant. Các entity QuestionRootReference/QuestionVersionReference/LessonQuestionReference và LessonReference chỉ phục vụ kiểm tra tài liệu đang được nội dung khác tham chiếu; không phải API câu hỏi/bài học.
+
+Bước 3 thêm AuthorContentController/AuthorStructureController → AuthoringService/impl → ContentRepository/impl → Question/Lesson JPA repositories. AuthoringRequests parse nghiêm DTO một trong ba dạng; QuestionValidator kiểm tra điều kiện công bố. QuestionVersionEntity và LessonVersionEntity kế thừa AuthoredVersion; JSON dùng JsonNode đã kiểm tra schema, join mục tiêu/câu hỏi ánh xạ ElementCollection. Không serialize entity trực tiếp.
+
+AuthoringPublication thu closure theo Version ID, khóa Material → Question → Lesson tăng dần ID, refresh dữ liệu sau lock rồi tính lại token. Các mutation câu/bài dùng READ_COMMITTED để kiểm tra phụ thuộc sau khi chờ lock; retire Material cũng dùng READ_COMMITTED để thấy bài/câu vừa được publish trước đó. Validation, thay state/con trỏ và receipt cùng transaction, rollback không để lại phần phụ thuộc đã công bố riêng lẻ.
+
+LearnerCatalogController → LearnerCatalogService/impl chỉ trả danh mục/giới thiệu từ active published, không trả câu/keys. PublishedContentReader/impl là API nội bộ cho M03, trả snapshot theo Version ID kể cả lịch sử; DTO này có answerKey/transcript và tuyệt đối không dùng trực tiếp làm learner response. Nó chưa cấp Attempt hoặc quyền file theo Attempt.
+
+Bước 4 dùng `DemoCurriculum` đọc và kiểm tra `demo/curriculum-v1.json` cùng SHA-256 của media. `CurriculumDemoInitializer` chạy sau danh mục, gọi `CurriculumSeedService`: tạo mục tiêu còn thiếu, đưa media qua AssetService, tài liệu/câu/bài qua service biên soạn thật. Mỗi tài liệu là một checkpoint; toàn bộ câu, bài và receipt của một bài commit/rollback cùng transaction READ_COMMITTED. Khóa actor ngăn hai lượt seed đồng thời tạo trùng. SeedKey đã có thì bỏ qua, giữ sửa đổi/nháp/ngừng cấp. Hai initializer mẫu cũ được thay thế; seed mới chỉ nhận lại các root mẫu cũ còn nguyên, nâng bài bằng version mới và giữ lịch sử. Root mẫu cũ đã tùy chỉnh được giữ, bộ chuẩn được tạo riêng. Không sửa V3.
 
 Package vn.edu.ptit.english:
 - controller: AuthController, AdminUserController, ClassroomController, HealthController.

@@ -13,7 +13,7 @@ Tài liệu này được sao chép từ plan ở thư mục gốc LTM; mã ngu�
 - [Phân công, database, API và nghiệm thu](docs/M02_M03_HANDOFF.md).
 - [Quy tắc API](source/common/M02_M03_API.md), [OpenAPI 1.0.0](source/common/openapi-m02-m03.json), [ví dụ request/response](source/common/examples-m02-m03.json).
 - DDL dự kiến: [V3 của M02](docs/database/planned/V3__learning_content.sql), [V4 của M03](docs/database/planned/V4__learning_attempts.sql).
-- Đây là hợp đồng triển khai; endpoint/migration mới chưa có ở runtime. M02 giao nền V3/DTO/service học liệu trước, M03 triển khai V4/runner sau; M04 nhận kết quả để chọn bài ôn.
+- Đây là hợp đồng triển khai; V3, API M02 danh mục/file/tài liệu/câu hỏi/bài học/learner catalog và seed đầy đủ đã có ở runtime sau bốn bước M02. M03 chưa triển khai. M02 giao nền V3/DTO/service học liệu trước, M03 triển khai V4/runner sau; M04 nhận kết quả để chọn bài ôn.
 
 ## 1. Phạm vi và mục tiêu
 
@@ -83,7 +83,7 @@ Phần mở rộng: **M08. Hạng thử thách solo — để sau, chờ xác nh
 
 ### M01. Nền tảng, tài khoản và quyền — P0
 
-**Trạng thái 16/10/2026:** đã triển khai trong dự án mới. Xem [hướng dẫn chạy](README.md) và [kiểm tra M01](statics/results/module-1-validation.md): 22 test backend, 5 test giao diện và kiểm tra giữ dữ liệu qua recreate Docker. Các module sau chưa được triển khai.
+**Trạng thái 16/10/2026:** đã triển khai trong dự án mới. Xem [hướng dẫn chạy](README.md) và [kiểm tra M01](statics/results/module-1-validation.md): 22 test backend, 5 test giao diện và kiểm tra giữ dữ liệu qua recreate Docker. M02 đang được triển khai từng bước theo tiến độ bên dưới.
 
 - Tận dụng tài khoản, BCrypt, cookie session HttpOnly, CSRF, DTO và kiểm tra quyền đã có. Không mặc định các tính năng mới đã tồn tại.
 - Bổ sung quyền quản trị và biên soạn bằng quy trình cấp quyền của admin; người học không tự đổi vai trò.
@@ -95,13 +95,15 @@ Phần mở rộng: **M08. Hạng thử thách solo — để sau, chờ xác nh
 
 ### M02. Học liệu, câu hỏi và seed — P0, hai dạng mở rộng P1
 
+**Tiến độ 17/10/2026:** đã hoàn thành bước 1–4: Flyway V3, danh mục, kho file/tài liệu, ngân hàng câu ba dạng và bài học với nháp/xem trước/xuất bản/ngừng cấp, copy giữ origin, phiên bản bất biến, sắp xếp và receipt/revision. Learner catalog và PublishedContentReader đã có; seed 3 Unit/6 bài/90 câu (5/5/5 mỗi bài), 6 mục tiêu, 13 tài liệu và 7 file thật đã hoàn thành. Có manifest, nguồn và kiểm tra seed chạy lại/nâng dữ liệu cũ. Lượt làm/chấm bài thuộc M03. Xem [tiến độ M02](docs/M02_PROGRESS.md).
+
 - Quản lý Topic và LearningObjective: ví dụ “sinh hoạt hằng ngày”, mục tiêu là một từ/cụm hoặc cấu trúc cụ thể như “ngôi thứ ba hiện tại đơn”. Mỗi câu MVP gắn một mục tiêu chính để xác định nội dung cần ôn.
 - Tổ chức lộ trình → unit theo chủ đề/mục tiêu và chặng nội dung → bài học nhỏ → câu hỏi. Mỗi unit có thứ tự trong lộ trình; cùng một chủ đề có thể có unit ở chặng sau với yêu cầu cao hơn. Tham khảo chi tiết M02.1.
 - Soạn bài ngắn gồm từ/cấu trúc, giải thích, ví dụ, câu có hướng dẫn, câu tự làm và câu vận dụng mới. Nội dung và đáp án được duyệt trước công bố. Quy mô demo tại M02.2.
 - Ngân hàng câu hỏi có type, chủ đề, mục tiêu chính, độ khó nội bộ EASY/MEDIUM/HARD, yêu cầu, nội dung, đáp án, giải thích và nguồn. Người biên soạn gắn độ khó theo ngữ liệu, cấu trúc, bước suy luận và phương án gây nhầm; mức gợi ý/hỗ trợ lưu riêng.
 - Ba dạng P0: SINGLE_CHOICE, FILL_BLANK, MATCHING. Hai dạng P1: MULTIPLE_CHOICE, WORD_ORDER. Đọc/nghe là tài liệu đi kèm, không tạo bản sao kiểu câu hỏi cho mỗi kỹ năng.
 - Material lưu đoạn đọc hoặc tham chiếu audio/ảnh; transcript, đáp án và giải thích có chính sách mở riêng.
-- Audio/ảnh thật nằm trong kho file/volume asset_data; Asset metadata ở MySQL. M01 đã chuẩn bị volume, M02 cần bổ sung API upload/đọc file có phân quyền và kiểm tra loại/kích thước; giới hạn P0 chốt 5 MiB/file, PNG/JPEG và MP3/WAV/OGG.
+- Audio/ảnh thật nằm trong kho file/volume asset_data; Asset metadata ở MySQL. M02 bước 2 đã bổ sung API upload/đọc file có phân quyền và kiểm tra loại/kích thước; giới hạn P0 chốt 5 MiB/file, PNG/JPEG và MP3/WAV/OGG.
 - Bài/câu đã công bố có phiên bản bất biến. Sửa tạo phiên bản mới; bài đang làm giữ đúng phiên bản được cấp.
 - Có form biên soạn, xem trước, lưu nháp, xuất bản/ngừng cấp mới; seed có mã định danh để chạy lại không nhân bản.
 
@@ -155,7 +157,7 @@ Ví dụ một Unit “Sinh hoạt hằng ngày”: bài 1 tập trung từ/cụ
 
 **Cách hiểu thống nhất:** giáo viên/người biên soạn xây bài học bên trong Unit. “Biên soạn” là quá trình tạo nội dung hướng dẫn, thêm câu hỏi, kiểm tra và xuất bản bài. Tất cả người học dùng chung ngân hàng học liệu đã xuất bản; tiến độ, lịch sử làm bài và bộ câu ôn được chọn riêng cho từng người.
 
-M02 mới là đặc tả cần triển khai, chưa là chức năng đã có ở M01. Luồng giao diện chính:
+Phần dưới mô tả toàn bộ luồng M02. Danh mục, tài liệu và câu hỏi/bài học đã có ở bước 1–3; bộ seed đầy đủ đã hoàn thành ở bước 4. Luồng giao diện chính:
 
     Quản lý học liệu → chọn/tạo Unit → chọn/thêm bài học
                     → soạn hướng dẫn và câu hỏi → xem trước → xuất bản
@@ -200,7 +202,7 @@ Trong bài hoặc khi tạo câu hỏi, giáo viên có thể:
 
 Một đoạn đọc/audio có thể phục vụ nhiều câu; file được lưu một lần và các câu tham chiếu đúng phiên bản Material. Ví dụ một audio kể lịch sinh hoạt đi kèm ba câu chọn đáp án thì có một tài liệu và ba câu hỏi.
 
-Giáo viên thao tác bằng tên tài liệu trên giao diện; hệ thống tự lưu liên kết và phiên bản. File nằm trong kho backend/volume asset_data, metadata ở MySQL. M01 mới chuẩn bị volume; M02 cần triển khai upload, đọc file có phân quyền và kiểm tra loại/kích thước. Giới hạn P0 chốt 5 MiB/file; cấu trúc metadata/quyền đọc theo bàn giao M02–M03.
+Giáo viên thao tác bằng tên tài liệu trên giao diện; hệ thống tự lưu liên kết và phiên bản. File nằm trong kho backend/volume asset_data, metadata ở MySQL. M02 bước 2 đã triển khai upload, đọc file có phân quyền và kiểm tra loại/kích thước; bước 3 đã cho chọn phiên bản tài liệu vào câu hỏi/bài học. Giới hạn P0 chốt 5 MiB/file; cấu trúc metadata/quyền đọc theo bàn giao M02–M03.
 
 Transcript, đáp án và giải thích có quy tắc cấp riêng. Bản xem trước phải thể hiện đúng thời điểm người học được phép mở các phần này; chúng không tự đi kèm dữ liệu câu hỏi ban đầu khi chưa được phép.
 
@@ -448,7 +450,7 @@ Hợp đồng **1.0.0 ngày 16/10/2026** đã chốt trong [bàn giao](docs/M02_
 | M03/V4 | attempts, attempt_questions, attempt_answers, answer_trials, submissions, question_exposures, lesson_progress | /api/attempts/**; /api/me/learning-progress |
 | M04 trở đi — sẽ thiết kế riêng | ObjectiveProgress/ReviewSchedule, XP/Badge/Streak/League, thống kê | API ôn cá nhân/gamification/socket sự kiện hoàn thiện sau; chưa nằm trong V3/V4 |
 
-Bản SQL cụ thể ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql), **chưa áp dụng vào DB đang chạy**. Giữ V1/V2 đã triển khai và ddl-auto=validate. M02 merge trước để M03 có FK/DTO/service đọc nội dung.
+Bản SQL cụ thể ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **V3 đã áp dụng vào DB đang chạy; V4 vẫn là kế hoạch.** Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
 
 Dữ liệu định danh/lọc/quyền ở cột quan hệ; content/answer/source/instructions và snapshot linh hoạt dùng JSON có schemaVersion. Mỗi câu có một mục tiêu chính. LessonQuestion lưu Version ID + GUIDED/INDEPENDENT/REVIEW_VARIANT + thứ tự. MaterialVersion dùng chung file qua Asset, transcript không cấp trong snapshot làm bài.
 

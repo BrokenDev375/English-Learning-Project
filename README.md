@@ -1,6 +1,16 @@
 # English Learning
 
-Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. Các bài học, ôn tập, XP và Giải đấu tuần thuộc các module tiếp theo; giao diện không hiển thị thành tích giả.
+Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 đã hoàn thành bốn bước: danh mục, tài liệu đọc/nghe/ảnh, ngân hàng câu hỏi, biên soạn bài học có phiên bản và seed 6 bài/90 câu. Làm bài, ôn tập, XP và Giải đấu tuần thuộc các module tiếp theo.
+
+## M02 — biên soạn học liệu đã có thể dùng thử
+
+Đăng nhập tài khoản demo `teacher@english.local` / `Teacher@12345`, chọn **Quản lý học liệu**. Khu vực **Danh mục** có ba Unit mẫu và các tab tạo/sửa/tìm kiếm chủ đề, mục tiêu học, Unit. Chọn **Tài liệu** để xem 13 tài liệu đọc/nghe/ảnh hoặc tự tạo tài liệu: lưu nháp → xem trước → xuất bản → tạo bản chỉnh sửa. Có tải file tối đa 5 MiB, phát/tua audio và ngừng cấp tài liệu. ADMIN quản lý mọi tác giả; TEACHER sửa nội dung mình sở hữu và xem tài liệu đã công bố của người khác.
+
+Chọn **Câu hỏi** để soạn chọn một đáp án/điền chỗ trống/ghép cặp, gắn tài liệu và xuất bản. Chọn **Bài học** để thêm hướng dẫn/ví dụ, chọn mục tiêu, thêm câu theo ba nhóm và sắp xếp. Luồng lưu nháp → xem trước → xuất bản kiểm tra cả bài và phụ thuộc trong một transaction; sao chép câu giữ nguồn gốc, chỉnh sửa giữ phiên bản cũ. Có sẵn 6 bài, mỗi bài 15 câu (5 hướng dẫn, 5 tự làm, 5 vận dụng mới); tổng 90 câu, gồm 30 câu mỗi dạng. Bài đầu là **A day with Linh — Morning routine**.
+
+Menu **Khám phá bài học** cho học viên xem Unit, giới thiệu, hướng dẫn và mục tiêu của bài đã công bố; không trả khóa đáp án/ngân hàng. Luồng bắt đầu lượt làm/chấm bài thuộc M03. Xem [tiến độ hoàn thành M02](docs/M02_PROGRESS.md), [nguồn và manifest](statics/dataset/README.md), [nghiệm thu bước 4](statics/results/module-2-seed-validation.md).
+
+Để thử từng chức năng, dùng [checklist 98 ca kiểm thử M02](docs/M02_MANUAL_TEST_CASES.md), có tài khoản/dữ liệu mẫu, bước thực hiện và kết quả mong đợi.
 
 ## Công nghệ và cấu trúc
 
@@ -45,7 +55,7 @@ API lớp học từ nền tảng cũ vẫn được giữ; lớp học không b
 
 Compose project english-learning-project dùng hai volume riêng: mysql_data (MySQL) và asset_data (file). Không dùng volume IELTS hoặc IoT. docker compose down rồi up giữ volume; down -v/xóa volume/gỡ Docker có thể làm mất dữ liệu. Sao lưu MySQL và file trước khi xóa.
 
-Flyway V1 tạo nền tài khoản/lớp; V2 bổ sung ADMIN, trạng thái và phiên bản thu hồi quyền. Hibernate chỉ validate schema; không dùng ddl-auto=create/update.
+Flyway V1 tạo nền tài khoản/lớp; V2 bổ sung ADMIN, trạng thái và phiên bản thu hồi quyền; V3 tạo 13 bảng M02, đã dùng qua API danh mục, asset/material, question/lesson/version/join và receipt. Metadata/nội dung/phiên bản ở MySQL, ảnh/audio thật ở volume asset_data. Bước 2–4 dùng schema V3 đã có, không sửa migration đã chạy. Hibernate chỉ validate schema; không dùng ddl-auto=create/update.
 
 ## Phát triển và kiểm thử
 
@@ -54,7 +64,7 @@ cd source\server
 .\mvnw.cmd test
 ~~~
 
-Backend tests dùng Testcontainers MySQL 8.4 với DB dùng riêng cho test; không xóa DB phát triển. Java 17 trở lên. Nếu wrapper cần tải Maven/dependency, cần kết nối Internet.
+Backend tests dùng Testcontainers MySQL 8.4 với DB dùng riêng cho test; không xóa DB phát triển. Java 17 trở lên. Chạy backend/test trực tiếp cần `ffprobe` và `ffmpeg` trên PATH (có thể đặt `MEDIA_PROBE_EXECUTABLE` cho đường dẫn ffprobe); Dockerfile đã cài cả hai. Nếu wrapper cần tải Maven/dependency, cần kết nối Internet. Có thể dùng Docker test target theo [kết quả bước 2](statics/results/module-2-materials-validation.md).
 
 ~~~powershell
 cd source\client
@@ -64,9 +74,11 @@ npx playwright install chromium
 npm run test:e2e
 ~~~
 
-Kiểm thử giao diện cần app đang chạy. E2E tạo tài khoản có tiền tố e2e; thông tin admin đọc từ .env hoặc biến môi trường E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD. Có thể chạy frontend bằng npm run dev, backend bằng .\mvnw.cmd spring-boot:run; mở MySQL cho IDE qua docker compose -f compose.yml -f compose.dev.yml up -d mysql rồi cấp DB_URL/DB_USERNAME/DB_PASSWORD.
+`npm run test:e2e` tự mở môi trường Docker riêng **english-learning-e2e**, frontend mặc định cổng **5174**, backend **8081**, database/file volume riêng; đợi seed hoàn tất rồi chạy Playwright và dừng môi trường test khi xong. Cần Docker Desktop và Chromium/`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Dữ liệu test không ghi vào DB demo ở cổng 5173. Test biên soạn ngừng cấp các bài/câu đã công bố khi kết thúc; lịch sử còn trong DB test để chẩn đoán. Có thể đổi cổng bằng `E2E_APP_PORT`/`E2E_API_PORT`.
 
-Xem statics/results/module-1-validation.md để biết những kiểm tra thực tế đã chạy. Chưa có đo tải hoặc kết luận hiệu quả học tập.
+Chỉ khi chủ động đặt `E2E_BASE_URL`, runner mới dùng app đã chạy ở URL đó và không khởi động Docker riêng; các test có ghi dữ liệu nên chỉ trỏ vào môi trường dành cho kiểm thử. E2E tạo tài khoản có tiền tố e2e; thông tin admin đọc từ .env hoặc biến môi trường E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD theo từng fixture. Có thể chạy frontend phát triển bằng npm run dev, backend bằng .\mvnw.cmd spring-boot:run; mở MySQL cho IDE qua docker compose -f compose.yml -f compose.dev.yml up -d mysql rồi cấp DB_URL/DB_USERNAME/DB_PASSWORD.
+
+Xem [kiểm tra M01](statics/results/module-1-validation.md), [danh mục M02](statics/results/module-2-catalog-validation.md), [tài liệu M02](statics/results/module-2-materials-validation.md), [biên soạn câu/bài M02](statics/results/module-2-authoring-validation.md) và [seed M02 hoàn chỉnh](statics/results/module-2-seed-validation.md) để biết những kiểm tra thực tế đã chạy. Chưa có đo tải hoặc kết luận hiệu quả học tập.
 
 ## Mạng, giới hạn và contribution
 

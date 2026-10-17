@@ -1,6 +1,6 @@
 # Quy tắc API M02–M03
 
-Hợp đồng 1.0.0 — 16/10/2026. Endpoint trong tài liệu này **chưa được triển khai ở runtime M01**.
+Hợp đồng 1.0.0 — 16/10/2026. Cập nhật 17/10: đã triển khai API M02 danh mục tác giả, asset/material, questions/lessons, copy câu, chi tiết Unit/thứ tự bài và learner catalog. PublishedContentReader đã có cho M03. Bộ seed 6 bài/90 câu đã hoàn thành, kèm 13 tài liệu và 7 file thật. API attempt/progress M03 chưa triển khai. Xem [tiến độ M02](../../docs/M02_PROGRESS.md).
 
 Đọc cùng [bàn giao](../../docs/M02_M03_HANDOFF.md), [OpenAPI](openapi-m02-m03.json), [ví dụ](examples-m02-m03.json), [API M01](API.md). OpenAPI định nghĩa DTO chính xác; tài liệu này định nghĩa giao dịch, quyền và luồng.
 
