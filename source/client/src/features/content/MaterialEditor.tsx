@@ -5,6 +5,7 @@ import type { User } from '../../types';
 import type { Asset, MaterialContent, MaterialKind, MaterialPreview, MaterialRoot, MaterialVersion } from './materials';
 import { materialKinds, materialStatuses } from './materials';
 import MaterialPresentation from './MaterialPresentation';
+import AudioUpdatePanel from './AudioUpdatePanel';
 
 interface Fields { kind: MaterialKind; title: string; readingText: string; transcript: string; altText: string; caption: string; start: string; end: string; assetId: number | null; source: string; url: string; license: string }
 interface Pending { path: string; method: string; body?: unknown; complete: (value: unknown) => void; label: string }
@@ -33,7 +34,8 @@ export default function MaterialEditor({ initial, user, onClose, onChanged, onRo
   const pending = useRef<Pending | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const own = !root || root.ownerId === user.id || user.role === 'ADMIN';
-  const locked = busy || uncertain;
+  const [audioUpdating, setAudioUpdating] = useState(false);
+  const locked = busy || uncertain || audioUpdating;
   const editing = own && mode === 'draft' && (!root || !!root.draft);
   function change<K extends keyof Fields>(key: K, value: Fields[K]) { setForm(current => ({ ...current, [key]: value })); setDirty(true); setPreview(null); }
   function received(value: unknown, message: string) {
@@ -141,6 +143,8 @@ export default function MaterialEditor({ initial, user, onClose, onChanged, onRo
       {own && <div className="material-actions"><button className="button primary" disabled={locked} onClick={startDraft}>{root.draft ? 'Mở bản nháp' : 'Tạo bản chỉnh sửa'}</button>
         {root.status !== 'RETIRED' && <button className="button secondary" disabled={locked} onClick={() => { void run({ path: '/api/author/materials/' + root.id + '/retire', method: 'POST',
           body: { requestId: requestId(), baseRevision: root.rootRevision }, label: 'ngừng cấp mới', complete: value => received(value, 'Đã ngừng cấp tài liệu cho nội dung mới.') }); }}>Ngừng cấp mới</button>}</div>}
+      {root.status === 'PUBLISHED' && root.published.kind === 'AUDIO' &&
+        <AudioUpdatePanel key={root.published.id} materialId={root.id} disabled={busy || uncertain} onBlockingChange={setAudioUpdating} />}
     </> : <p className="muted">Tài liệu chưa có phiên bản để hiển thị.</p>}
     {preview && editing && <div className="material-preview"><span className="eyebrow">XEM TRƯỚC CHO NGƯỜI HỌC</span>
       <MaterialPresentation material={preview.data} />

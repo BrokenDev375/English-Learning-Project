@@ -176,4 +176,107 @@ class AuthoringApiTest {
         var c=new Client().login(author);var student=new Client().login(learner);var cat=catalog(c);var qs=questions(c,cat);var first=createLesson(c,lessonData(c,cat,qs));assertThat(ok(student.send("GET","/api/units",null),200).path("totalElements").asLong()).isZero();var firstPublished=publishContent(c,"lessons",first.path("id").asLong());var second=createLesson(c,lessonData(c,cat,List.of()));var detail=ok(c.send("GET","/api/author/units/"+cat[2],null),200);long revision=detail.path("unit").path("revision").asLong();assertThat(c.send("PUT","/api/author/units/"+cat[2]+"/lesson-order",Map.of("requestId",key(),"baseRevision",revision,"lessonIds",List.of(first.path("id").asLong()))).statusCode()).isEqualTo(400);var order=Map.of("requestId",key(),"baseRevision",revision,"lessonIds",List.of(second.path("id").asLong(),first.path("id").asLong()));ok(c.send("PUT","/api/author/units/"+cat[2]+"/lesson-order",order),200);assertThat(c.send("PUT","/api/author/units/"+cat[2]+"/lesson-order",Map.of("requestId",key(),"baseRevision",revision,"lessonIds",List.of(first.path("id").asLong(),second.path("id").asLong()))).statusCode()).isEqualTo(409);
         assertThat(ok(student.send("GET","/api/topics",null),200).path("totalElements").asLong()).isEqualTo(1);assertThat(ok(student.send("GET","/api/objectives?topicId="+cat[0],null),200).path("totalElements").asLong()).isEqualTo(1);assertThat(ok(student.send("GET","/api/units/"+cat[2],null),200).path("lessons").size()).isEqualTo(1);var intro=student.send("GET","/api/lessons/"+first.path("id").asLong(),null);ok(intro,200);assertThat(intro.body()).doesNotContain("answerKey","correctOptionId","transcript","explanation","materialVersionId");
     }
+
+    @Test
+    void adminCreatedLessonBelongsToUnitOwnerAndRemainsEditableByThem() throws Exception {
+        var teacher = new Client().login(author);
+        var administrator = new Client().login(admin);
+        var stranger = new Client().login(other);
+        var cat = catalog(teacher);
+        var data = lessonData(administrator, cat, List.of());
+
+        var created = createLesson(administrator, data);
+
+        assertThat(created.path("ownerId").asLong()).isEqualTo(author.id());
+        long lessonId = created.path("id").asLong();
+        assertThat(ok(teacher.send("GET", "/api/author/units/" + cat[2], null), 200)
+            .path("unit").path("ownerId").asLong()).isEqualTo(author.id());
+        var ownLesson = ok(teacher.send("GET", "/api/author/lessons/" + lessonId, null), 200);
+        assertThat(ownLesson.path("draftVersionId").asLong()).isEqualTo(created.path("draftVersionId").asLong());
+        assertThat(stranger.send("GET", "/api/author/lessons/" + lessonId, null).statusCode()).isEqualTo(404);
+
+        data.put("title", "Updated by the Unit owner");
+        var updated = ok(teacher.send("PUT", "/api/author/lessons/" + lessonId + "/draft", edit(ownLesson, data)), 200);
+        assertThat(updated.path("ownerId").asLong()).isEqualTo(author.id());
+        assertThat(updated.path("draft").path("title").asText()).isEqualTo("Updated by the Unit owner");
+        assertThat(ok(administrator.send("GET", "/api/author/lessons/" + lessonId, null), 200)
+            .path("ownerId").asLong()).isEqualTo(author.id());
+
+    }
+
+    @Test
+    void publishedMaterialFilesRemainReadableAfterReplacementWithoutExposingDrafts() throws Exception {
+        var teacher = new Client().login(author);
+        var borrower = new Client().login(other);
+        var student = new Client().login(learner);
+        var cat = catalog(borrower);
+        var png = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", png);
+        long firstAsset = ok(teacher.upload(key(), "first.png", "image/png", png.toByteArray()), 201).path("id").asLong();
+        long secondAsset = ok(teacher.upload(key(), "second.png", "image/png", png.toByteArray()), 201).path("id").asLong();
+        var originalData = reading("Shared illustrated reading");
+        originalData.put("assetId", firstAsset);
+        originalData.put("altText", "A simple demo image");
+        var original = publish(teacher, create(teacher, originalData));
+        long materialId = original.path("id").asLong();
+        long oldVersion = original.path("publishedVersionId").asLong();
+        var questionData = single(cat[0], cat[1], "A question using the shared reading");
+        questionData.put("materialVersionId", oldVersion);
+        var question = q(borrower, questionData);
+        var publishedQuestion = publishContent(borrower, "questions", question.path("id").asLong());
+
+        var draft = ok(teacher.send("POST", "/api/author/materials/" + materialId + "/draft",
+            Map.of("requestId", key(), "baseRevision", original.path("rootRevision").asLong())), 200);
+        var newerData = reading("Revised illustrated reading");
+        newerData.put("assetId", secondAsset);
+        newerData.put("altText", "A replacement demo image");
+        var saved = ok(teacher.send("PUT", "/api/author/materials/" + materialId + "/draft", update(draft, newerData)), 200);
+
+        assertThat(borrower.file(firstAsset, null).statusCode()).isEqualTo(200);
+        assertThat(borrower.file(secondAsset, null).statusCode()).isEqualTo(404);
+        assertThat(borrower.send("GET", "/api/author/materials/" + materialId + "/versions/"
+            + saved.path("draftVersionId").asLong(), null).statusCode()).isEqualTo(404);
+        publish(teacher, saved);
+
+        assertThat(ok(borrower.send("GET", "/api/author/materials/" + materialId + "/versions/" + oldVersion, null), 200)
+            .path("assetId").asLong()).isEqualTo(firstAsset);
+        assertThat(borrower.file(firstAsset, null).statusCode()).isEqualTo(200);
+        assertThat(borrower.file(secondAsset, null).statusCode()).isEqualTo(200);
+        assertThat(student.file(firstAsset, null).statusCode()).isEqualTo(404);
+
+        var editableQuestion = ok(borrower.send("POST", "/api/author/questions/" + question.path("id").asLong() + "/draft",
+            Map.of("requestId", key(), "baseRevision", publishedQuestion.path("rootRevision").asLong())), 200);
+        assertThat(preview(borrower, "questions", question.path("id").asLong()).path("errors").isEmpty()).isTrue();
+        publishContent(borrower, "questions", editableQuestion.path("id").asLong());
+    }
+
+    @Test
+    void retiredMaterialKeepsFilesPrivateFromOtherAuthorsIncludingHistoricalVersions() throws Exception {
+        var teacher = new Client().login(author);
+        var borrower = new Client().login(other);
+        var png = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", png);
+        long firstAsset = ok(teacher.upload(key(), "old.png", "image/png", png.toByteArray()), 201).path("id").asLong();
+        long secondAsset = ok(teacher.upload(key(), "new.png", "image/png", png.toByteArray()), 201).path("id").asLong();
+        var originalData = reading("Illustrated reading");
+        originalData.put("assetId", firstAsset);
+        originalData.put("altText", "The old image");
+        var original = publish(teacher, create(teacher, originalData));
+        long materialId = original.path("id").asLong();
+        var draft = ok(teacher.send("POST", "/api/author/materials/" + materialId + "/draft",
+            Map.of("requestId", key(), "baseRevision", original.path("rootRevision").asLong())), 200);
+        var newerData = reading("Updated illustrated reading");
+        newerData.put("assetId", secondAsset);
+        newerData.put("altText", "The new image");
+        var saved = ok(teacher.send("PUT", "/api/author/materials/" + materialId + "/draft", update(draft, newerData)), 200);
+        var published = publish(teacher, saved);
+
+        ok(teacher.send("POST", "/api/author/materials/" + materialId + "/retire",
+            Map.of("requestId", key(), "baseRevision", published.path("rootRevision").asLong())), 200);
+
+        assertThat(borrower.file(firstAsset, null).statusCode()).isEqualTo(404);
+        assertThat(borrower.file(secondAsset, null).statusCode()).isEqualTo(404);
+        assertThat(teacher.file(firstAsset, null).statusCode()).isEqualTo(200);
+        assertThat(teacher.file(secondAsset, null).statusCode()).isEqualTo(200);
+    }
 }

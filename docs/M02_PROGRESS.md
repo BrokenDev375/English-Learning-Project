@@ -84,6 +84,14 @@ Cập nhật 18/10: đã ngừng cấp 11 bài fixture từng sót trong 6 Unit 
 
 ## Phần tiếp theo
 
+### Cập nhật 19/10 — quyền và đổi audio đồng loạt
+
+- Lesson tạo trong Unit luôn thuộc chủ Unit, kể cả khi ADMIN tạo giúp. Chủ Unit tiếp tục sửa/sắp xếp được bài.
+- Quyền đọc file tài liệu dùng chung bao gồm các phiên bản PUBLISHED cũ trên root còn active published; không mở quyền cho nháp riêng hoặc root đã ngừng cấp.
+- Tài liệu AUDIO đã công bố có nút **Cập nhật audio cho câu hỏi/bài học**: liệt kê nội dung, chọn câu/bài, xác nhận đáp án/transcript rồi tạo/xuất bản phiên bản mới nguyên tử. Giữ nguyên bản cũ, quyền sở hữu, Unit và origin; chặn nội dung đang có nháp hoặc không đủ quyền sửa.
+- API bổ sung GET/POST `/api/author/materials/{id}/audio-update`, có previewToken/revision và receipt chống tạo trùng khi mất ACK. Không thay migration. M03 tiếp tục dùng snapshot version đã cấp.
+- Đã chạy **30/30 test backend liên quan**, **2/2 test Playwright** và build backend/frontend. Chi tiết, giới hạn và lệnh tái hiện: [báo cáo cập nhật audio](../statics/results/module-2-audio-update-validation.md).
+
 M02 hoàn thành phạm vi biên soạn và cung cấp học liệu. M03 sẽ triển khai bắt đầu lượt làm, trả câu an toàn, lưu câu trả lời, chấm bài và tiến độ. Hiện học viên xem được Unit/giới thiệu/hướng dẫn; preview của giáo viên không sinh điểm hoặc lịch sử làm bài.
 
 Kết quả chạy kiểm tra được ghi riêng tại [bước 1](../statics/results/module-2-catalog-validation.md), [bước 2](../statics/results/module-2-materials-validation.md), [bước 3](../statics/results/module-2-authoring-validation.md) và [bước 4](../statics/results/module-2-seed-validation.md).

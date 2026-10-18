@@ -244,6 +244,8 @@ Các file dễ đụng: `source/client/src/api.ts`, router/App, security/config,
 
 ## 7. Điều kiện nghiệm thu bắt buộc
 
+Bổ sung M02 ngày 19/10: [mục 9 đặc tả API](../source/common/M02_M03_API.md) có GET/POST cập nhật audio đồng loạt. Thao tác tạo các phiên bản Question/Lesson mới; không đổi lịch sử. M03 vẫn đọc đúng LessonVersion/QuestionVersion/MaterialVersion đã pin khi tạo Attempt. Lesson do ADMIN tạo trong Unit thuộc giảng viên vẫn giữ chủ sở hữu là chủ Unit. Xem [kết quả kiểm tra](../statics/results/module-2-audio-update-validation.md).
+
 ### M02
 
 - Migration V1→V2→V3 chạy trên MySQL 8.4 trống; JPA validate. Không ảnh hưởng dữ liệu M01.

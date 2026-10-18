@@ -194,3 +194,26 @@ M02 cấp server-side PublishedContentReader; M03 không gọi HTTP nội bộ v
 DDL tại [planned](../../docs/database/planned/) là nguồn cột/FK/index; file áp dụng thực tế sau này ở db/migration. V3 → V4 theo thứ tự. MySQL JSON bảo đảm cú pháp JSON, còn cấu trúc từng type do validator Java kiểm tra; xem [MySQL JSON](https://dev.mysql.com/doc/refman/8.4/en/json.html) và [CHECK](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html). Có thể dùng [Spring Data JPA @Lock](https://docs.spring.io/spring-data/jpa/reference/jpa/locking.html) cho khóa pessimistic theo quy trình trên.
 
 Checklist code/test và phân chia ticket nằm trong bàn giao. Static JSON/DDL validation không thay thế test quyền, concurrent submit, mất ACK hoặc frontend.
+
+## 9. M02 — cập nhật audio đồng loạt (19/10/2026)
+
+Hai endpoint bổ sung, giữ nguyên các API và cấu trúc version M02/M03 đã chốt:
+
+| API | Kết quả |
+| --- | --- |
+| GET /api/author/materials/{id}/audio-update | Phiên bản AUDIO công bố mới nhất, previewToken, câu/bài liên quan và lý do không thể chọn |
+| POST /api/author/materials/{id}/audio-update | Tạo/xuất bản các QuestionVersion và LessonVersion mới trong một transaction |
+
+POST nhận requestId, targetVersionId, previewToken, questionIds, lessonIds, contentConfirmed=true. Mỗi danh sách tối đa 100 ID duy nhất; cần chọn ít nhất một câu hoặc bài. Trả materialId, targetVersionId, questions:[{id,versionId}], lessons:[{id,versionId}]. Request phải có CSRF; chỉ TEACHER/ADMIN dùng API. Cùng requestId/payload replay kết quả cũ, không nhân bản phiên bản; key khác payload trả 409.
+
+Luồng giảng viên: sửa/thay file AUDIO và xuất bản → bấm **Cập nhật audio cho câu hỏi/bài học** → xem danh sách, chọn nội dung → xác nhận transcript/đáp án vẫn đúng → áp dụng. Hệ thống chỉ thay liên kết phiên bản audio, không tự viết lại câu hỏi, transcript hoặc đáp án. Nếu thay đổi nội dung nghe làm câu/đáp án không còn đúng, cần chỉnh nội dung đó thủ công trước khi chọn cập nhật.
+
+- Danh sách dựa trên các câu đang công bố và các bài đang công bố còn trỏ đến phiên bản AUDIO cũ của cùng một Material. Material phải active published, loại AUDIO; bản nháp Material chưa công bố không phải đích cập nhật. Không chuyển câu dùng READING/IMAGE cũ thành câu nghe.
+- Giảng viên chỉ cập nhật câu/bài của mình; ADMIN được thao tác mọi nội dung như quyền biên soạn hiện hành. Tài liệu dùng chung được phép đọc vẫn có thể dùng để cập nhật phần nội dung của mình. Chi tiết nội dung của tác giả khác không trả ra, chỉ trả số lượng. Không đổi ownerId, Unit, originKey, đáp án, nhóm hoặc thứ tự câu.
+- Câu/bài đang có bản nháp bị chặn để tránh ghi đè phần đang soạn. Hoàn tất hoặc bỏ nháp rồi tải lại danh sách. Nếu bài đang dùng một phiên bản câu có nội dung khác bản công bố hiện tại (ngoài materialVersionId), phải sửa bài thủ công.
+- Mỗi bài trả requiredQuestionIds. Chọn bài cần chọn kèm các câu đó. Nếu câu đã công bố với audio mới và nội dung còn lại giống hệt phiên bản bài đang dùng, có thể chỉ cập nhật bài để tái sử dụng câu đã cập nhật, kể cả câu công bố của tác giả khác.
+- previewToken bao quát đích audio và revision/tham chiếu của nội dung liên quan. Thay đổi sau khi xem trả 409 PREVIEW_STALE; tải lại và chọn lại. Khóa theo thứ tự Material → Question → Lesson, ID tăng dần, kiểm tra lại token sau khóa; lỗi bất kỳ hoàn tác toàn bộ và không ghi receipt thành công.
+- Bản công bố cũ và file cũ giữ nguyên. M03 tiếp tục pin LessonVersion/QuestionVersion/MaterialVersion đã cấp cho Attempt; các lượt đã tạo không chuyển audio giữa chừng. Không cần thay migration/database.
+- Sau mất mạng/mất ACK, giao diện giữ nguyên requestId và payload để **Thử lại cập nhật audio**. Chỉ báo thành công sau ACK. Tải lại cả trang sẽ mất thao tác đang giữ trong bộ nhớ; cần lấy lại trạng thái máy chủ trước khi thao tác mới.
+
+Sửa quyền liên quan: Lesson mới thuộc chủ Unit kể cả khi ADMIN tạo giúp; quyền đọc asset của tài liệu công bố dùng chung bao gồm các phiên bản PUBLISHED cũ trên root còn active published. Không cấp quyền đọc nháp riêng hoặc root đã ngừng cấp.

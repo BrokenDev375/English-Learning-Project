@@ -27,6 +27,22 @@ public class ContentRepositoryImpl implements ContentRepository {
     public void delete(QuestionVersionEntity v){qv.delete(v);qv.flush();}public void delete(LessonVersionEntity v){lv.delete(v);lv.flush();}
     public void refresh(Object v){em.refresh(v);}
     public List<LessonEntity> lessons(long unit){return lessons.findByUnitIdOrderBySortOrderAscIdAsc(unit);}
+    public List<QuestionEntity> questionsUsingMaterial(long materialId){
+        return em.createQuery("""
+            select distinct q from QuestionEntity q, MaterialVersionEntity m
+            where q.published.materialVersionId=m.id and m.materialId=:material and m.kind='AUDIO' and q.retiredAt is null
+            order by q.id
+            """,QuestionEntity.class).setParameter("material",materialId).getResultList();
+    }
+    public List<LessonEntity> lessonsUsingMaterial(long materialId,long targetVersionId){
+        return em.createQuery("""
+            select distinct l from LessonEntity l, LessonVersionEntity v join v.questions s,
+                QuestionVersionEntity q, MaterialVersionEntity m
+            where l.published.id=v.id and s.questionVersionId=q.id and q.materialVersionId=m.id
+                and m.materialId=:material and m.kind='AUDIO' and m.id<>:target and l.retiredAt is null
+            order by l.id
+            """,LessonEntity.class).setParameter("material",materialId).setParameter("target",targetVersionId).getResultList();
+    }
     public boolean questionReferenced(long version){return qv.countReferences(version)>0;}
     public boolean questionInUse(long root){return qv.countPublishedUsage(root)>0;}
     static Predicate like(CriteriaBuilder cb,Expression<String> column,String q){String escaped=q.toLowerCase(Locale.ROOT).replace("!","!!").replace("%","!%").replace("_","!_");return cb.like(cb.lower(column),"%"+escaped+"%",'!');}

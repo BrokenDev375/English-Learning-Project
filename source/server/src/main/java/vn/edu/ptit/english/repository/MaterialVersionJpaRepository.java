@@ -7,7 +7,12 @@ import vn.edu.ptit.english.entity.MaterialVersionEntity;
 
 public interface MaterialVersionJpaRepository extends JpaRepository<MaterialVersionEntity,Long> {
     Optional<MaterialVersionEntity> findByIdAndMaterialId(long id,long materialId);
-    @Query("select count(v) from MaterialVersionEntity v,MaterialEntity m where v.materialId=m.id and v.assetId=:asset and (m.ownerId=:actor or (m.published.id=v.id and m.retiredAt is null))")
+    @Query("""
+        select count(v) from MaterialVersionEntity v, MaterialEntity m
+        where v.materialId = m.id and v.assetId = :asset
+          and (m.ownerId = :actor
+               or (v.state = 'PUBLISHED' and m.published is not null and m.retiredAt is null))
+        """)
     long countReadableAsset(@Param("asset") long assetId,@Param("actor") long actorId);
     @Query("select count(q) from QuestionVersionReferenceEntity q where q.materialVersionId=:version")
     long countReferences(@Param("version") long versionId);

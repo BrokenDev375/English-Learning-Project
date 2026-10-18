@@ -1,0 +1,9 @@
+.audio-update-panel { margin-top: 24px; padding-top: 20px; border-top: 1px solid #dce3eb; }
+.audio-update-panel h3 { margin: 0 0 8px; }
+.audio-update-options { display: grid; gap: 16px; margin-top: 16px; }
+.audio-update-options fieldset { min-width: 0; padding: 12px; border: 1px solid #dce3eb; border-radius: 12px; }
+.audio-update-options legend { padding: 0 6px; font-weight: 700; }
+.audio-update-row { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; }
+.audio-update-row input[type="checkbox"] { flex: 0 0 auto; width: 18px; height: 18px; min-height: 18px; padding: 0; margin: 2px 0 0; accent-color: var(--green); }
+.audio-update-row span { min-width: 0; overflow-wrap: anywhere; }
+.audio-update-row small { display: block; margin-top: 4px; color: #64748b; }

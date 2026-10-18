@@ -17,6 +17,8 @@ public interface ContentRepository {
     Page<QuestionEntity> questions(Filter filter,long actor,boolean admin);
     Page<LessonEntity> lessons(Filter filter,long actor,boolean admin);
     List<LessonEntity> lessons(long unit);
+    List<QuestionEntity> questionsUsingMaterial(long materialId);
+    List<LessonEntity> lessonsUsingMaterial(long materialId,long targetVersionId);
     boolean questionReferenced(long version); boolean questionInUse(long root);
     Page<TopicEntity> publicTopics(String q,int page,int size);
     Page<ObjectiveEntity> publicObjectives(String q,Long topic,int page,int size);
