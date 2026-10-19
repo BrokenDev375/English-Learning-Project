@@ -1,0 +1,734 @@
+{
+  "contractVersion": "1.0.0",
+  "valid": [
+    {
+      "name": "learnStart",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000012",
+        "mode": "LEARN",
+        "lessonId": 201
+      }
+    },
+    {
+      "name": "practiceStart",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000013",
+        "mode": "PRACTICE",
+        "topicId": 1,
+        "difficulty": "EASY",
+        "count": 10
+      }
+    },
+    {
+      "name": "reviewReserved",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000014",
+        "mode": "REVIEW",
+        "reviewKind": "DUE",
+        "topicId": null,
+        "count": 10
+      }
+    },
+    {
+      "name": "saveDraftFullSnapshot",
+      "schema": "#/components/schemas/AttemptMutation",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000015",
+        "baseRevision": 0,
+        "answers": [
+          {
+            "attemptQuestionId": 1001,
+            "response": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            }
+          },
+          {
+            "attemptQuestionId": 1002,
+            "response": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            }
+          }
+        ],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        }
+      }
+    },
+    {
+      "name": "checkGuidedFirstWrong",
+      "schema": "#/components/schemas/Check",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "baseRevision": 1,
+        "response": {
+          "type": "SINGLE_CHOICE",
+          "optionId": "opt-go"
+        }
+      }
+    },
+    {
+      "name": "checkFeedback",
+      "schema": "#/components/schemas/Feedback",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "attemptId": 901,
+        "revision": 2,
+        "attemptQuestionId": 1001,
+        "trialId": 2001,
+        "trialNo": 1,
+        "kind": "FIRST",
+        "outcome": "INCORRECT",
+        "responseComplete": true,
+        "supportUsed": false,
+        "answerKey": {
+          "correctOptionId": "opt-goes"
+        },
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn."
+      }
+    },
+    {
+      "name": "submitIncludesFinalAnswers",
+      "schema": "#/components/schemas/AttemptMutation",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000017",
+        "baseRevision": 2,
+        "answers": [
+          {
+            "attemptQuestionId": 1001,
+            "response": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            }
+          },
+          {
+            "attemptQuestionId": 1002,
+            "response": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            }
+          }
+        ],
+        "playerState": {
+          "currentAttemptQuestionId": 1002,
+          "audioPositions": []
+        }
+      }
+    },
+    {
+      "name": "attemptSnapshotNoKeys",
+      "schema": "#/components/schemas/AttemptSnapshot",
+      "body": {
+        "attemptId": 901,
+        "mode": "LEARN",
+        "state": "IN_PROGRESS",
+        "lessonVersionId": 601,
+        "revision": 0,
+        "createdAt": "2026-10-16T03:59:00Z",
+        "updatedAt": "2026-10-16T03:59:00Z",
+        "submittedAt": null,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "GUIDED",
+            "position": 0,
+            "wasSeenBefore": false,
+            "hintAvailable": true,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "SINGLE_CHOICE",
+              "prompt": "Chọn dạng đúng: She ___ to school every day.",
+              "content": {
+                "options": [
+                  {
+                    "id": "opt-go",
+                    "text": "go"
+                  },
+                  {
+                    "id": "opt-goes",
+                    "text": "goes"
+                  },
+                  {
+                    "id": "opt-going",
+                    "text": "going"
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "INDEPENDENT",
+            "position": 1,
+            "wasSeenBefore": false,
+            "hintAvailable": false,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "FILL_BLANK",
+              "prompt": "Điền dạng đúng của go.",
+              "content": {
+                "parts": [
+                  {
+                    "kind": "TEXT",
+                    "text": "She "
+                  },
+                  {
+                    "kind": "BLANK",
+                    "blankId": "b1"
+                  },
+                  {
+                    "kind": "TEXT",
+                    "text": " to school every day."
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          }
+        ],
+        "materials": [],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        },
+        "submissionId": null,
+        "lesson": {
+          "lesson": {
+            "id": 401,
+            "unitId": 301,
+            "lessonVersionId": 601,
+            "title": "Daily routines — present simple",
+            "description": "Present simple in daily routines.",
+            "sortOrder": 0,
+            "objectiveIds": [
+              11
+            ],
+            "questionCounts": {
+              "guided": 1,
+              "independent": 1,
+              "reviewVariant": 1
+            }
+          },
+          "instructions": [
+            {
+              "kind": "TEXT",
+              "text": "Với he/she/it, động từ hiện tại đơn thường thêm s/es."
+            }
+          ],
+          "objectives": [
+            {
+              "id": 11,
+              "ownerId": 7,
+              "topicId": 1,
+              "code": "DAILY_PRESENT_SIMPLE",
+              "name": "Hiện tại đơn — ngôi thứ ba",
+              "description": "Dùng dạng động từ phù hợp.",
+              "revision": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "immutableResult",
+      "schema": "#/components/schemas/Result",
+      "body": {
+        "factsSchemaVersion": 1,
+        "submissionId": 3001,
+        "attemptId": 901,
+        "mode": "LEARN",
+        "lessonVersionId": 601,
+        "submittedAt": "2026-10-16T04:02:00Z",
+        "submittedRevision": 3,
+        "totalQuestions": 2,
+        "answeredCount": 2,
+        "unansweredCount": 0,
+        "correctCount": 2,
+        "scorePercent": 100,
+        "independentFreshAnsweredCount": 1,
+        "independentFreshCorrectCount": 1,
+        "lessonCompleted": true,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "practiceRole": "GUIDED",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-go"
+            },
+            "firstOutcome": "INCORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "correctOptionId": "opt-goes"
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "practiceRole": "INDEPENDENT",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "firstOutcome": "CORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "goes"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          }
+        ],
+        "materialFeedback": []
+      }
+    },
+    {
+      "name": "correctionAfterSubmit",
+      "schema": "#/components/schemas/Check",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000018",
+        "baseRevision": 3,
+        "response": {
+          "type": "FILL_BLANK",
+          "values": [
+            {
+              "blankId": "b1",
+              "value": "go"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "practiceCreate",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000090",
+        "mode": "PRACTICE",
+        "topicId": 1,
+        "difficulty": "EASY",
+        "count": 10
+      }
+    },
+    {
+      "name": "reviewCreate",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000090",
+        "mode": "REVIEW",
+        "reviewKind": "DUE",
+        "topicId": null,
+        "count": 5
+      }
+    },
+    {
+      "name": "hintCommand",
+      "schema": "#/components/schemas/Hint",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000090",
+        "baseRevision": 0
+      }
+    },
+    {
+      "name": "checkCommand",
+      "schema": "#/components/schemas/Check",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000090",
+        "baseRevision": 0,
+        "response": {
+          "type": "SINGLE_CHOICE",
+          "optionId": "opt-a"
+        }
+      }
+    },
+    {
+      "name": "draftAck",
+      "schema": "#/components/schemas/DraftAck",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000015",
+        "attemptId": 901,
+        "revision": 1,
+        "state": "IN_PROGRESS",
+        "savedAt": "2026-10-16T04:00:00Z",
+        "answeredCount": 2
+      }
+    },
+    {
+      "name": "completedProgress",
+      "schema": "#/components/schemas/LessonProgress",
+      "body": {
+        "lessonId": 1,
+        "state": "COMPLETED",
+        "lastAttemptId": 10,
+        "completedAt": "2026-10-19T06:00:00Z",
+        "lastCompletedVersionId": 1,
+        "currentPublishedVersionId": 2,
+        "updateAvailable": true,
+        "lastScorePercent": 80
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "createRejectsUserId",
+      "schema": "#/components/schemas/AttemptCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000012",
+        "mode": "LEARN",
+        "lessonId": 201,
+        "userId": 99
+      },
+      "reason": "Missing required or forbidden field / const according to OpenAPI"
+    },
+    {
+      "name": "mutationRequiresRevision",
+      "schema": "#/components/schemas/AttemptMutation",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000015",
+        "answers": [
+          {
+            "attemptQuestionId": 1001,
+            "response": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            }
+          },
+          {
+            "attemptQuestionId": 1002,
+            "response": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            }
+          }
+        ],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        }
+      },
+      "reason": "Missing required or forbidden field / const according to OpenAPI"
+    },
+    {
+      "name": "snapshotRejectsAnswerKey",
+      "schema": "#/components/schemas/AttemptSnapshot",
+      "body": {
+        "attemptId": 901,
+        "mode": "LEARN",
+        "state": "IN_PROGRESS",
+        "lessonVersionId": 601,
+        "revision": 0,
+        "createdAt": "2026-10-16T03:59:00Z",
+        "updatedAt": "2026-10-16T03:59:00Z",
+        "submittedAt": null,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "GUIDED",
+            "position": 0,
+            "wasSeenBefore": false,
+            "hintAvailable": true,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "SINGLE_CHOICE",
+              "prompt": "Chọn dạng đúng: She ___ to school every day.",
+              "content": {
+                "options": [
+                  {
+                    "id": "opt-go",
+                    "text": "go"
+                  },
+                  {
+                    "id": "opt-goes",
+                    "text": "goes"
+                  },
+                  {
+                    "id": "opt-going",
+                    "text": "going"
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "difficulty": "EASY",
+            "practiceRole": "INDEPENDENT",
+            "position": 1,
+            "wasSeenBefore": false,
+            "hintAvailable": false,
+            "hintOpened": false,
+            "feedbackOpened": false,
+            "question": {
+              "type": "FILL_BLANK",
+              "prompt": "Điền dạng đúng của go.",
+              "content": {
+                "parts": [
+                  {
+                    "kind": "TEXT",
+                    "text": "She "
+                  },
+                  {
+                    "kind": "BLANK",
+                    "blankId": "b1"
+                  },
+                  {
+                    "kind": "TEXT",
+                    "text": " to school every day."
+                  }
+                ]
+              }
+            },
+            "materialVersionId": null,
+            "response": null
+          }
+        ],
+        "materials": [],
+        "playerState": {
+          "currentAttemptQuestionId": 1001,
+          "audioPositions": []
+        },
+        "submissionId": null,
+        "lesson": {
+          "lesson": {
+            "id": 401,
+            "unitId": 301,
+            "lessonVersionId": 601,
+            "title": "Daily routines — present simple",
+            "description": "Present simple in daily routines.",
+            "sortOrder": 0,
+            "objectiveIds": [
+              11
+            ],
+            "questionCounts": {
+              "guided": 1,
+              "independent": 1,
+              "reviewVariant": 1
+            }
+          },
+          "instructions": [
+            {
+              "kind": "TEXT",
+              "text": "Với he/she/it, động từ hiện tại đơn thường thêm s/es."
+            }
+          ],
+          "objectives": [
+            {
+              "id": 11,
+              "ownerId": 7,
+              "topicId": 1,
+              "code": "DAILY_PRESENT_SIMPLE",
+              "name": "Hiện tại đơn — ngôi thứ ba",
+              "description": "Dùng dạng động từ phù hợp.",
+              "revision": 0
+            }
+          ]
+        },
+        "answerKey": {}
+      },
+      "reason": "Missing required or forbidden field / const according to OpenAPI"
+    },
+    {
+      "name": "feedbackRejectsTranscript",
+      "schema": "#/components/schemas/Feedback",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000016",
+        "attemptId": 901,
+        "revision": 2,
+        "attemptQuestionId": 1001,
+        "trialId": 2001,
+        "trialNo": 1,
+        "kind": "FIRST",
+        "outcome": "INCORRECT",
+        "responseComplete": true,
+        "supportUsed": false,
+        "answerKey": {
+          "correctOptionId": "opt-goes"
+        },
+        "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+        "transcript": "hidden"
+      },
+      "reason": "Missing required or forbidden field / const according to OpenAPI"
+    },
+    {
+      "name": "resultRequiresVersionOne",
+      "schema": "#/components/schemas/Result",
+      "body": {
+        "factsSchemaVersion": 2,
+        "submissionId": 3001,
+        "attemptId": 901,
+        "mode": "LEARN",
+        "lessonVersionId": 601,
+        "submittedAt": "2026-10-16T04:02:00Z",
+        "submittedRevision": 3,
+        "totalQuestions": 2,
+        "answeredCount": 2,
+        "unansweredCount": 0,
+        "correctCount": 2,
+        "scorePercent": 100,
+        "independentFreshAnsweredCount": 1,
+        "independentFreshCorrectCount": 1,
+        "lessonCompleted": true,
+        "items": [
+          {
+            "attemptQuestionId": 1001,
+            "questionVersionId": 501,
+            "originKey": "00000000-0000-4000-8000-000000000501",
+            "objectiveId": 11,
+            "practiceRole": "GUIDED",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-go"
+            },
+            "firstOutcome": "INCORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "SINGLE_CHOICE",
+              "optionId": "opt-goes"
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "correctOptionId": "opt-goes"
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          },
+          {
+            "attemptQuestionId": 1002,
+            "questionVersionId": 502,
+            "originKey": "00000000-0000-4000-8000-000000000502",
+            "objectiveId": 11,
+            "practiceRole": "INDEPENDENT",
+            "wasSeenBefore": false,
+            "firstResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "firstOutcome": "CORRECT",
+            "firstResponseComplete": true,
+            "firstSupportUsed": false,
+            "finalResponse": {
+              "type": "FILL_BLANK",
+              "values": [
+                {
+                  "blankId": "b1",
+                  "value": "goes"
+                }
+              ]
+            },
+            "finalOutcome": "CORRECT",
+            "finalResponseComplete": true,
+            "answerKey": {
+              "blanks": [
+                {
+                  "blankId": "b1",
+                  "acceptedAnswers": [
+                    "goes"
+                  ]
+                }
+              ],
+              "caseSensitive": false,
+              "normalizeWhitespace": true
+            },
+            "explanation": "Chủ ngữ she dùng động từ thêm s/es trong hiện tại đơn.",
+            "materialVersionId": null
+          }
+        ],
+        "materialFeedback": []
+      },
+      "reason": "Missing required or forbidden field / const according to OpenAPI"
+    }
+  ]
+}
