@@ -1,6 +1,6 @@
 # Bàn giao M02 và M03 — API và database
 
-Chốt ngày 16/10/2026, hợp đồng `1.0.0`. Đây là đặc tả đầy đủ để triển khai. Cập nhật 17/10: M02 đã hoàn thành V3, danh mục tác giả, file/tài liệu, ngân hàng câu hỏi, bài học, learner catalog, PublishedContentReader và seed 6 bài/90 câu kèm manifest/nguồn. M03/V4 chưa triển khai. Theo dõi phần đã chạy tại [tiến độ M02](M02_PROGRESS.md).
+Chốt ngày 16/10/2026, hợp đồng `1.0.0`. Đây là đặc tả nghiệp vụ và tích hợp. Cập nhật 19/10: M02 đã có V3, học liệu phiên bản và seed 6 bài/90 câu; M03 đã có V4, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện. Trạng thái và bằng chứng xem [tiến độ M02](M02_PROGRESS.md), [tiến độ M03](M03_PROGRESS.md), [nghiệm thu M03](../statics/results/module-3-validation.md). Đọc các mục phân công bên dưới như hợp đồng, không phải danh sách công việc còn thiếu.
 
 ## 1. Giao việc ngay cho hai người
 

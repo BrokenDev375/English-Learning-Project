@@ -2,7 +2,7 @@
 
 Ngày lập: 19/10/2026. Nhánh triển khai: `feature/m03-learning-attempts`.
 
-Trạng thái ban đầu: M01/M02 đã có trong mã nguồn; V4, API lượt làm và giao diện làm bài M03 chưa triển khai. Cập nhật tiến độ tại [M03_PROGRESS](M03_PROGRESS.md); chỉ đánh dấu checkbox khi đã có kết quả kiểm tra tương ứng.
+Trạng thái khi lập kế hoạch: M01/M02 đã có; V4/API/giao diện M03 chưa triển khai. Trạng thái hiện tại và bằng chứng tại [M03_PROGRESS](M03_PROGRESS.md), [nghiệm thu toàn module](../statics/results/module-3-validation.md); chỉ đánh dấu checkbox khi đã có kết quả kiểm tra tương ứng.
 
 ## 1. Mục tiêu và nguồn đặc tả
 
@@ -218,13 +218,14 @@ Commit đề xuất: `feat(m03): add shared attempt runner`; `feat(m03): integra
 
 Phụ thuộc: bước 1–5 hoàn tất.
 
-- [ ] Chạy ma trận mục 7, sửa lỗi và kiểm tra hồi quy M01/M02 sau các thay đổi dùng chung.
-- [ ] Kiểm tra dữ liệu bền vững qua recreate/restart trong môi trường test riêng: session có thể mất, đăng nhập lại vẫn tải được nháp và kết quả đúng.
-- [ ] Kiểm tra seed chạy lại không reset tiến độ hoặc nhân bản bài/câu của người học.
-- [ ] Thêm `docs/M03_MANUAL_TEST_CASES.md` với dữ liệu, bước thao tác và kết quả mong đợi.
-- [ ] Thêm `statics/results/module-3-validation.md` ghi môi trường, ngày chạy, lệnh, số pass/fail/skip, giới hạn và bằng chứng thật; không ghi PASS cho bước chưa chạy.
-- [ ] Cập nhật README, DATABASE_DESIGN, BACKEND_STRUCTURE và trạng thái M03 trong tài liệu liên quan theo chức năng thực sự đã xong.
-- [ ] PR vào main: mô tả luồng trước/sau, migration V4, thay đổi dùng chung, kiểm thử và giới hạn REVIEW/offline. Kiểm tra diff không có .env, mật khẩu, dữ liệu test hoặc artifact build.
+- [x] Chạy ma trận mục 7, sửa lỗi và kiểm tra hồi quy M01/M02 sau các thay đổi dùng chung; đối chiếu [biên bản và giới hạn](../statics/results/module-3-validation.md).
+- [x] Kiểm tra dữ liệu bền vững qua recreate/restart trong môi trường test riêng: session có thể mất, đăng nhập lại vẫn tải được nháp và kết quả đúng.
+- [x] Kiểm tra seed chạy lại không reset tiến độ hoặc nhân bản bài/câu của người học.
+- [x] Thêm [M03_MANUAL_TEST_CASES](M03_MANUAL_TEST_CASES.md) với dữ liệu, bước thao tác và kết quả mong đợi.
+- [x] Thêm [biên bản nghiệm thu](../statics/results/module-3-validation.md) ghi môi trường, ngày chạy, lệnh, số pass/fail/skip, giới hạn và bằng chứng thật; không ghi PASS cho bước chưa chạy.
+- [x] Cập nhật README, DATABASE_DESIGN, BACKEND_STRUCTURE và trạng thái M03 trong tài liệu liên quan theo chức năng thực sự đã xong.
+- [x] Chuẩn bị nội dung PR vào main để sao chép từ cuộc trao đổi: luồng trước/sau, migration V4, thay đổi dùng chung, kiểm thử và giới hạn REVIEW/offline; không lưu file mô tả PR riêng.
+- [ ] Người dùng tạo PR trên web sau khi commit/push; theo yêu cầu, không tự mở PR trong bước này.
 
 Commit đề xuất: `test(m03): cover concurrency recovery and version history`; `docs(m03): record implementation and validation`.
 
@@ -307,12 +308,12 @@ Không dùng `docker compose down -v` trên môi trường demo để làm sạc
 
 ## 10. Điều kiện hoàn thành M03
 
-- [ ] 7 bảng V4 và 10 operation API mục 6 đã triển khai đúng hợp đồng.
-- [ ] LEARN/PRACTICE chạy đầy đủ; REVIEW có điểm tích hợp và fallback đúng phạm vi.
-- [ ] Snapshot/keys/media, FIRST/final/CORRECTION và progress tuân các quy tắc đã chốt.
-- [ ] Chống gửi trùng, revision, concurrent submit, rollback và phiên bản lịch sử có kiểm thử thật.
-- [ ] Giao diện học/luyện, lưu/tiếp tục, kết quả/chữa và tiến độ cơ bản dùng được trên desktop/mobile.
-- [ ] Backend/frontend/E2E và hồi quy liên quan đạt; mọi mục chưa kiểm tra được ghi rõ, không tính là đã đạt.
-- [ ] Có checklist, kết quả kiểm thử thực tế và tài liệu chạy/demo cập nhật để review PR.
+- [x] 7 bảng V4 và 10 operation API mục 6 đã triển khai đúng hợp đồng.
+- [x] LEARN/PRACTICE chạy đầy đủ; REVIEW có điểm tích hợp và fallback đúng phạm vi.
+- [x] Snapshot/keys/media, FIRST/final/CORRECTION và progress tuân các quy tắc đã chốt.
+- [x] Chống gửi trùng, revision, concurrent submit, rollback và phiên bản lịch sử có kiểm thử thật.
+- [x] Giao diện học/luyện, lưu/tiếp tục, kết quả/chữa và tiến độ cơ bản dùng được trên desktop/mobile.
+- [x] Backend/frontend/E2E và hồi quy liên quan đạt; mọi mục chưa kiểm tra được ghi rõ, không tính là đã đạt.
+- [x] Có checklist, kết quả kiểm thử thực tế và tài liệu chạy/demo cập nhật để review PR.
 
 M03 bàn giao kết quả nghiệp vụ bền vững theo Submission ID cho module sau. Thực nghiệm tải hệ thống và đánh giá hiệu quả học tập cần kế hoạch đo riêng; kiểm thử chức năng ở đây không thay thế các thực nghiệm đó.

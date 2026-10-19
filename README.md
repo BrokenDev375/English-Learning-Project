@@ -1,6 +1,6 @@
 # English Learning
 
-M03 bước 0–5 đã có API và giao diện học/luyện tập: tạo/tiếp tục lượt, khôi phục nháp, hint/check, nộp/chấm, kết quả, chữa và tiến độ. Xem [hướng dẫn giao diện](docs/M03_UI_SMOKE.md), [tiến độ M03](docs/M03_PROGRESS.md) và [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md).
+M03 đã có API và giao diện học/luyện tập: tạo/tiếp tục lượt, khôi phục nháp, hint/check, nộp/chấm, kết quả, chữa và tiến độ. Xem [hướng dẫn giao diện](docs/M03_UI_SMOKE.md), [tiến độ M03](docs/M03_PROGRESS.md), [ma trận nghiệm thu](docs/M03_MANUAL_TEST_CASES.md) và [kết quả toàn module](statics/results/module-3-validation.md).
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 có biên soạn học liệu phiên bản và seed 6 bài/90 câu; M03 đã nối luồng làm bài thực tế. Ôn theo lịch, XP và Giải đấu tuần thuộc các module tiếp theo.
 
@@ -63,7 +63,7 @@ API lớp học từ nền tảng cũ vẫn được giữ; lớp học không b
 
 Compose project english-learning-project dùng hai volume riêng: mysql_data (MySQL) và asset_data (file). Không dùng volume IELTS hoặc IoT. docker compose down rồi up giữ volume; down -v/xóa volume/gỡ Docker có thể làm mất dữ liệu. Sao lưu MySQL và file trước khi xóa.
 
-Flyway V1 tạo nền tài khoản/lớp; V2 bổ sung ADMIN, trạng thái và phiên bản thu hồi quyền; V3 tạo 13 bảng M02, đã dùng qua API danh mục, asset/material, question/lesson/version/join và receipt. Metadata/nội dung/phiên bản ở MySQL, ảnh/audio thật ở volume asset_data. Bước 2–4 dùng schema V3 đã có, không sửa migration đã chạy. Hibernate chỉ validate schema; không dùng ddl-auto=create/update.
+Flyway V1 tạo nền tài khoản/lớp; V2 bổ sung ADMIN, trạng thái và phiên bản thu hồi quyền; V3 tạo 13 bảng M02 học liệu/receipt; V4 thêm 7 bảng M03 lượt làm/đáp án/trial/Submission/exposure/progress. Metadata/nội dung/phiên bản và dữ liệu học đã commit ở MySQL, ảnh/audio thật ở volume asset_data. Backend tự áp dụng migration còn thiếu, không sửa migration đã chạy. Hibernate chỉ validate schema; không dùng ddl-auto=create/update. Session trong RAM có thể mất sau restart; đăng nhập lại để tải nháp/kết quả từ DB.
 
 ## Phát triển và kiểm thử
 
@@ -83,6 +83,8 @@ npm run test:e2e
 ~~~
 
 `npm run test:e2e` tự mở môi trường Docker riêng **english-learning-e2e**, frontend mặc định cổng **5174**, backend **8081**, database/file volume riêng; đợi seed hoàn tất rồi chạy Playwright và dừng môi trường test khi xong. Cần Docker Desktop và Chromium/`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Dữ liệu test không ghi vào DB demo ở cổng 5173. Test biên soạn ngừng cấp các bài/câu đã công bố khi kết thúc; lịch sử còn trong DB test để chẩn đoán. Có thể đổi cổng bằng `E2E_APP_PORT`/`E2E_API_PORT`.
+
+Kiểm tra nháp/kết quả/tiến độ, seed và replay qua restart/recreate bằng `node scripts/verify-m03-persistence.mjs` từ `source/client`. Script tự build/chạy project **english-learning-m03-acceptance**, cổng **5175/8082**, volume riêng; so sánh dữ liệu trước/sau, kiểm tra audio rồi dừng container, giữ volume. Cần `.env` hợp lệ ở root. Xem [quy trình nghiệm thu M03](docs/M03_MANUAL_TEST_CASES.md); không cần dừng hoặc xóa dữ liệu demo.
 
 Chỉ khi chủ động đặt `E2E_BASE_URL`, runner mới dùng app đã chạy ở URL đó và không khởi động Docker riêng; các test có ghi dữ liệu nên chỉ trỏ vào môi trường dành cho kiểm thử. E2E tạo tài khoản có tiền tố e2e; thông tin admin đọc từ .env hoặc biến môi trường E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD theo từng fixture. Có thể chạy frontend phát triển bằng npm run dev, backend bằng .\mvnw.cmd spring-boot:run; mở MySQL cho IDE qua docker compose -f compose.yml -f compose.dev.yml up -d mysql rồi cấp DB_URL/DB_USERNAME/DB_PASSWORD.
 

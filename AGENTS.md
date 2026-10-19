@@ -41,15 +41,15 @@ Có ba vai trò:
 | M01 — Tài khoản và quản trị | Đã có đăng ký/đăng nhập, session/CSRF, quản trị, kiểm tra quyền hiện hành, nền WebSocket và thu hồi kết nối |
 | M02 — Học liệu | Đã có danh mục, file/đọc/nghe/ảnh, biên soạn/xuất bản/phiên bản, cập nhật audio hàng loạt và learner catalog |
 | M03 — Học/luyện tập | Đã triển khai bước 0–5: dữ liệu/bộ chấm, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện |
-| M03 bước 6 | Chưa hoàn tất ma trận nghiệm thu toàn module, bằng chứng restart/recreate/seed giữ tiến độ và hồ sơ bàn giao/PR |
+| M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao; chưa commit bước 6, người dùng tạo PR trên web sau |
 | M04/M05/M06/M07 | Lần lượt: lịch ôn, XP/giải đấu tuần, offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
 Seed M02 có **3 Unit, 6 Lesson, 90 Question, 13 Material**. Mỗi bài biên soạn có 5 GUIDED, 5 INDEPENDENT và 5 REVIEW_VARIANT; lượt LEARN hiện cấp 10 câu GUIDED + INDEPENDENT theo selector.
 
-Mốc Git: `bd913be` — bước 0; `d37ba0b` — bước 1; `759ccb3` — bước 2–3; `2f09404` — bước 4. Bước 5 hiện chưa commit theo lần kiểm tra gần nhất; luôn kiểm tra lại Git trước khi kết luận.
+Mốc Git: `bd913be` — bước 0; `d37ba0b` — bước 1; `759ccb3` — bước 2–3; `2f09404` — bước 4; `97a881d` — bước 5. Luôn kiểm tra lại Git trước khi kết luận phần nào đã commit.
 
-Bằng chứng kiểm thử gần nhất: backend bước 4 **136/136**, build frontend bước 5 đạt, browser E2E **46/46** gồm **13 ca M03**. Đây là kết quả của các mốc đã ghi nhận, không phải kết quả tự động áp dụng cho mọi thay đổi sau này.
+Bằng chứng bước 6 trên source `97a881d`: backend **136/136**, build frontend đạt, toàn bộ browser E2E **47/47** gồm **14 ca M03**, script bền vững đạt cả restart và recreate/seed/replay/media. Xem [biên bản toàn module](statics/results/module-3-validation.md). Đây là kết quả của mốc đã ghi nhận, không tự áp dụng cho thay đổi sau này.
 
 ## 3. Cấu trúc thư mục
 
@@ -274,6 +274,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 | Trường/kiểu payload chính xác | Đúng schema/path trong [OpenAPI](source/common/openapi-m02-m03.json), [ví dụ](source/common/examples-m02-m03.json), [fixture](source/server/src/test/resources/contracts/m03-fixtures.json) |
 | Giao diện học/phục hồi | [Hướng dẫn UI](docs/M03_UI_SMOKE.md), session.ts và test M03 |
 | Thử API M03 | [Hướng dẫn API M03](docs/M03_API_SMOKE.md) |
+| Nghiệm thu/bàn giao M03 | [Ma trận và ca thao tác](docs/M03_MANUAL_TEST_CASES.md), [kết quả toàn module](statics/results/module-3-validation.md) |
 | M02/tác giả/seed | [Tiến độ M02](docs/M02_PROGRESS.md), service/test tương ứng; [nguồn học liệu](statics/dataset/README.md) |
 | ORM/schema | Migration runtime liên quan, [thiết kế DB](DATABASE_DESIGN.md), [kiến trúc ORM](docs/ORM_ARCHITECTURE.md) |
 | Kiến trúc chi tiết | [Cấu trúc backend](docs/BACKEND_STRUCTURE.md), sau đó đối chiếu lớp hiện tại |
@@ -282,7 +283,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 
 OpenAPI quy định cấu trúc request/response; API rules/handoff quy định hành vi/transaction; progress và validation ghi phạm vi thực sự đã làm. Ví dụ JSON là các mẫu độc lập, không mặc định là một dataset liên kết hoàn chỉnh.
 
-Một số đoạn trong BACKEND_STRUCTURE.md hoặc API.md còn mô tả mốc cũ. Không dùng câu “chưa triển khai” cũ để phủ nhận code hiện tại; đối chiếu tiến độ, Git và implementation. Nếu hợp đồng và code mâu thuẫn, ghi rõ điểm lệch, xử lý theo yêu cầu thay vì âm thầm đổi nghiệp vụ cho thuận tiện.
+Một số đoạn trong API.md còn mô tả mốc cũ. Không dùng câu “chưa triển khai” cũ để phủ nhận code hiện tại; đối chiếu tiến độ, Git và implementation. Nếu hợp đồng và code mâu thuẫn, ghi rõ điểm lệch, xử lý theo yêu cầu thay vì âm thầm đổi nghiệp vụ cho thuận tiện.
 
 `docs/archive/` chứa thiết kế IELTS lịch sử; không mặc định là yêu cầu hiện hành. Dùng `rg`/`rg --files` tìm đúng symbol/section; không in toàn bộ OpenAPI, toàn bộ tài liệu hoặc mọi test chỉ để tìm một endpoint.
 
@@ -334,6 +335,8 @@ Có thể dùng Chrome cài sẵn qua PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, xem [
 
 Runner mặc định build/chạy project **english-learning-e2e** ở **5174/8081**, volume riêng, đợi seed rồi test và dừng container. E2E có ghi dữ liệu; không trỏ E2E_BASE_URL vào demo 5173. Chỉ dùng biến này khi đã chủ động chọn một môi trường test riêng.
 
+Nghiệm thu bền vững: từ `source/client`, chạy `node scripts/verify-m03-persistence.mjs`. Script tự build project **english-learning-m03-acceptance** ở **5175/8082**, tạo user test mới, kiểm tra nháp/kết quả/tiến độ/receipt/media qua restart server và force recreate cả ba container, seed chạy lại; dừng container khi xong và giữ volume riêng. Không chấp nhận URL demo. JSON/log trong `.test-state/m03-step6-*` bị ignore; xem [biên bản](statics/results/module-3-validation.md) trước khi diễn giải số hàng hoặc kết quả.
+
 ### Chọn phạm vi kiểm tra
 
 - Sửa tài liệu: kiểm tra diff, liên kết và tính đúng của mô tả; không cần chạy lại cả ứng dụng.
@@ -342,7 +345,7 @@ Runner mặc định build/chạy project **english-learning-e2e** ở **5174/80
 - Thử lỗi mạng/concurrency/rollback cần bằng chứng thật phù hợp. Ghi rõ fixture HTTP, mock metadata, bỏ response sau commit và timeout thật khác nhau thế nào; không gọi đó là benchmark mạng.
 - Test đã qua thì không chạy lại không cần thiết nếu không có thay đổi hoặc vấn đề mới.
 
-Báo cáo lịch sử: [bước 0](statics/results/module-3-step0-validation.md), [bước 1](statics/results/module-3-step1-validation.md), [bước 2–3](statics/results/module-3-step23-validation.md), [bước 4](statics/results/module-3-step4-validation.md), [bước 5](statics/results/module-3-step5-validation.md). Không ghi PASS cho kiểm tra chưa chạy.
+Báo cáo hiện tại: [nghiệm thu M03](statics/results/module-3-validation.md). Lịch sử: [bước 0](statics/results/module-3-step0-validation.md), [bước 1](statics/results/module-3-step1-validation.md), [bước 2–3](statics/results/module-3-step23-validation.md), [bước 4](statics/results/module-3-step4-validation.md), [bước 5](statics/results/module-3-step5-validation.md). Không ghi PASS cho kiểm tra chưa chạy.
 
 ## 11. Chẩn đoán nhanh
 
