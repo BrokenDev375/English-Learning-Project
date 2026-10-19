@@ -1,8 +1,14 @@
 # English Learning
 
-M03 bước 0–3 đã có nền receipt/V4/model/grader và API tạo/tiếp tục lượt, danh sách, snapshot, media, lưu/khôi phục nháp. Nộp/chấm và giao diện runner thuộc bước sau; xem [tiến độ M03](docs/M03_PROGRESS.md), [thử API](docs/M03_STEP23_API_SMOKE.md) và [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md).
+M03 bước 0–5 đã có API và giao diện học/luyện tập: tạo/tiếp tục lượt, khôi phục nháp, hint/check, nộp/chấm, kết quả, chữa và tiến độ. Xem [hướng dẫn giao diện](docs/M03_UI_SMOKE.md), [tiến độ M03](docs/M03_PROGRESS.md) và [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md).
 
-Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 đã hoàn thành bốn bước: danh mục, tài liệu đọc/nghe/ảnh, ngân hàng câu hỏi, biên soạn bài học có phiên bản và seed 6 bài/90 câu. Làm bài, ôn tập, XP và Giải đấu tuần thuộc các module tiếp theo.
+Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 có biên soạn học liệu phiên bản và seed 6 bài/90 câu; M03 đã nối luồng làm bài thực tế. Ôn theo lịch, XP và Giải đấu tuần thuộc các module tiếp theo.
+
+## M03 — học và luyện tập
+
+Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. Bấm **Lưu nháp lên máy chủ** để xác nhận lưu; đây là lưu chủ động, không autosave. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
+
+Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, giao diện giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu sau đối chiếu. Bản nhập chưa lưu chỉ ở bộ nhớ phiên trang, chưa có outbox offline bền vững. REVIEW theo lịch chờ M04. Xem [cách thử và phục hồi lỗi](docs/M03_UI_SMOKE.md).
 
 ## M02 — biên soạn học liệu đã có thể dùng thử
 
@@ -10,7 +16,7 @@ M03 bước 0–3 đã có nền receipt/V4/model/grader và API tạo/tiếp t�
 
 Chọn **Câu hỏi** để soạn chọn một đáp án/điền chỗ trống/ghép cặp, gắn tài liệu và xuất bản. Chọn **Bài học** để thêm hướng dẫn/ví dụ, chọn mục tiêu, thêm câu theo ba nhóm và sắp xếp. Luồng lưu nháp → xem trước → xuất bản kiểm tra cả bài và phụ thuộc trong một transaction; sao chép câu giữ nguồn gốc, chỉnh sửa giữ phiên bản cũ. Có sẵn 6 bài, mỗi bài 15 câu (5 hướng dẫn, 5 tự làm, 5 vận dụng mới); tổng 90 câu, gồm 30 câu mỗi dạng. Bài đầu là **A day with Linh — Morning routine**.
 
-Menu **Khám phá bài học** cho học viên xem Unit, giới thiệu, hướng dẫn và mục tiêu của bài đã công bố; không trả khóa đáp án/ngân hàng. Luồng bắt đầu lượt làm/chấm bài thuộc M03. Xem [tiến độ hoàn thành M02](docs/M02_PROGRESS.md), [nguồn và manifest](statics/dataset/README.md), [nghiệm thu bước 4](statics/results/module-2-seed-validation.md).
+Menu **Khám phá bài học** dùng danh mục công bố M02 và nối vào lượt học M03 cho STUDENT. Giới thiệu/snapshot trước nộp không trả khóa đáp án/ngân hàng hoặc transcript. Xem [tiến độ hoàn thành M02](docs/M02_PROGRESS.md), [nguồn và manifest](statics/dataset/README.md), [nghiệm thu seed](statics/results/module-2-seed-validation.md).
 
 Để thử từng chức năng, dùng [checklist 98 ca kiểm thử M02](docs/M02_MANUAL_TEST_CASES.md), có tài khoản/dữ liệu mẫu, bước thực hiện và kết quả mong đợi.
 

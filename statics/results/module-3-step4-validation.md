@@ -53,4 +53,4 @@ Nếu chưa có image, build `docker build --target test -t english-learning-m03
 
 ## Giới hạn
 
-Giao diện runner và browser E2E M03 thuộc bước 5–6, chưa triển khai hoặc chạy ở bước này. Chưa có REVIEW provider thật M04, XP M05 hoặc đồng bộ offline bền vững M06. Hướng dẫn [thử API bước 4](../../docs/M03_STEP4_API_SMOKE.md) đã được kiểm tra cú pháp; luồng nghiệp vụ được kiểm tra bằng HTTP integration tests trong môi trường riêng. Không build/restart demo hay thay dữ liệu demo để nghiệm thu.
+Giao diện runner và browser E2E M03 thuộc bước 5–6, chưa triển khai hoặc chạy ở bước này. Chưa có REVIEW provider thật M04, XP M05 hoặc đồng bộ offline bền vững M06. Hướng dẫn [thử API bước 4](../../docs/M03_API_SMOKE.md#feedback-submit) đã được kiểm tra cú pháp; luồng nghiệp vụ được kiểm tra bằng HTTP integration tests trong môi trường riêng. Không build/restart demo hay thay dữ liệu demo để nghiệm thu.

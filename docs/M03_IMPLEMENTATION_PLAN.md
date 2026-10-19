@@ -196,19 +196,19 @@ Commit đề xuất: `feat(m03): add guided feedback`; `feat(m03): submit and co
 
 Phụ thuộc: bước 2 cho skeleton; hoàn tất tích hợp sau bước 4.
 
-- [ ] Tạo `src/features/learning/` chứa types, adapter API, runner và result; tái sử dụng thành phần M02 phù hợp sau khi kiểm tra không kéo keys vào UI trước nộp.
-- [ ] Chỉ STUDENT có nút bắt đầu/tiếp tục. TEACHER/ADMIN giữ luồng khám phá/xem trước, không tạo lượt thật.
-- [ ] Nối từ LearningCatalog vào LEARN; thêm form PRACTICE theo Topic/difficulty/count và danh sách lượt dở/đã nộp.
-- [ ] Một runner dùng chung cho các mode, ba renderer dùng ID ổn định, điều hướng câu và hiển thị số câu đã trả lời. Tiến độ trả lời khác trạng thái hoàn thành bài.
-- [ ] Hiển thị đoạn đọc/ảnh/audio dùng chung; player tôn trọng start/end, khôi phục vị trí giây tuyệt đối và clamp theo duration/segment.
-- [ ] Save adapter giữ state hiện tại, debounce nếu dùng autosave và tuần tự hóa save/hint/check/submit/retry theo revision mới nhất.
-- [ ] Tách trạng thái đang sửa, đang lưu, đã lưu server, chưa đồng bộ và đã nộp; chỉ báo đã lưu sau ACK. Không hiển thị đã lưu tại máy khi chưa có cơ chế lưu bền vững.
-- [ ] Khi timeout giữ nguyên thao tác/payload/requestId để retry. Khóa các mutation tiếp theo khi kết quả thao tác cũ chưa rõ; retry cùng key rồi GET đối soát trước khi ghi tiếp. Không tạo key mới để nộp lại vì mất ACK.
-- [ ] ACK/replay cũ không ghi đè đáp án local mới. 409 giữ dữ liệu nhập để đối chiếu với snapshot server; không tự tăng baseRevision rồi ghi đè. 401 dừng gửi và yêu cầu đăng nhập lại; 503 giữ state và báo chưa lưu.
-- [ ] Submit gửi full snapshot cuối sau khi xử lý mutation đang chờ; cảnh báo câu bỏ trống nhưng vẫn cho nộp sớm.
-- [ ] Trang kết quả hiển thị điểm, FIRST/final, giải thích/transcript, trạng thái hoàn thành và tương tác chữa. GET lại kết quả sau chữa giữ điểm nộp ban đầu.
-- [ ] Nối progress vào danh sách bài; F5/back/forward/deep link tải đúng Attempt, không gọi create để thay bộ câu. Dọn state khi đổi user/Attempt, không lẫn đáp án giữa tài khoản.
-- [ ] Kiểm tra desktop/mobile, bàn phím, label và trạng thái tải/lỗi, audio seek và câu có nội dung dài.
+- [x] Tạo `src/features/learning/` chứa types, adapter API, runner và result; tái sử dụng thành phần M02 phù hợp sau khi kiểm tra không kéo keys vào UI trước nộp.
+- [x] Chỉ STUDENT có nút bắt đầu/tiếp tục. TEACHER/ADMIN giữ luồng khám phá/xem trước, không tạo lượt thật.
+- [x] Nối từ LearningCatalog vào LEARN; thêm form PRACTICE theo Topic/difficulty/count và danh sách lượt dở/đã nộp.
+- [x] Một runner dùng chung cho các mode, ba renderer dùng ID ổn định, điều hướng câu và hiển thị số câu đã trả lời. Tiến độ trả lời khác trạng thái hoàn thành bài.
+- [x] Hiển thị đoạn đọc/ảnh/audio dùng chung; player tôn trọng start/end, khôi phục vị trí giây tuyệt đối và clamp theo duration/segment.
+- [x] Save adapter giữ state hiện tại, debounce nếu dùng autosave và tuần tự hóa save/hint/check/submit/retry theo revision mới nhất.
+- [x] Tách trạng thái đang sửa, đang lưu, đã lưu server, chưa đồng bộ và đã nộp; chỉ báo đã lưu sau ACK. Không hiển thị đã lưu tại máy khi chưa có cơ chế lưu bền vững.
+- [x] Khi timeout giữ nguyên thao tác/payload/requestId để retry. Khóa các mutation tiếp theo khi kết quả thao tác cũ chưa rõ; retry cùng key rồi GET đối soát trước khi ghi tiếp. Không tạo key mới để nộp lại vì mất ACK.
+- [x] ACK/replay cũ không ghi đè đáp án local mới. 409 giữ dữ liệu nhập để đối chiếu với snapshot server; không tự tăng baseRevision rồi ghi đè. 401 dừng gửi và yêu cầu đăng nhập lại; 503 giữ state và báo chưa lưu.
+- [x] Submit gửi full snapshot cuối sau khi xử lý mutation đang chờ; cảnh báo câu bỏ trống nhưng vẫn cho nộp sớm.
+- [x] Trang kết quả hiển thị điểm, FIRST/final, giải thích/transcript, trạng thái hoàn thành và tương tác chữa. GET lại kết quả sau chữa giữ điểm nộp ban đầu.
+- [x] Nối progress vào danh sách bài; F5/back/forward/deep link tải đúng Attempt, không gọi create để thay bộ câu. Dọn state khi đổi user/Attempt, không lẫn đáp án giữa tài khoản.
+- [x] Kiểm tra desktop/mobile, bàn phím, label và trạng thái tải/lỗi, audio seek và câu có nội dung dài.
 
 Cổng nghiệm thu: học viên chạy được toàn bộ luồng với dữ liệu seed; lỗi mạng/xung đột không hiện thành công giả hoặc mất state trong màn đang mở.
 

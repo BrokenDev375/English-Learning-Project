@@ -53,4 +53,4 @@ SQL ERROR ở ca CHECK cố ý không phải lỗi bị bỏ qua: assertion ki�
 
 ## Giới hạn
 
-Chưa có hint/check/submit/result/retry/progress API hoặc runner UI. Chưa chạy Playwright cho M03; GET qua phiên đăng nhập khác kiểm tra khôi phục từ DB, không tuyên bố đã có luồng F5 trên giao diện. Chưa chạy server restart/E2E offline hoặc benchmark. Chưa rebuild/restart demo để áp dụng code mới; xem [hướng dẫn thử API](../../docs/M03_STEP23_API_SMOKE.md).
+Chưa có hint/check/submit/result/retry/progress API hoặc runner UI. Chưa chạy Playwright cho M03; GET qua phiên đăng nhập khác kiểm tra khôi phục từ DB, không tuyên bố đã có luồng F5 trên giao diện. Chưa chạy server restart/E2E offline hoặc benchmark. Chưa rebuild/restart demo để áp dụng code mới; xem [hướng dẫn thử API](../../docs/M03_API_SMOKE.md#draft).
