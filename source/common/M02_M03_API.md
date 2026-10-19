@@ -4,6 +4,8 @@ Hợp đồng 1.0.0 — 16/10/2026. Cập nhật 17/10: đã triển khai API M0
 
 Đọc cùng [bàn giao](../../docs/M02_M03_HANDOFF.md), [OpenAPI](openapi-m02-m03.json), [ví dụ](examples-m02-m03.json), [API M01](API.md). OpenAPI định nghĩa DTO chính xác; tài liệu này định nghĩa giao dịch, quyền và luồng.
 
+Cập nhật M03 ngày 19/10: đã có POST/GET attempts, GET snapshot, PUT draft và grant media theo Attempt; hint/check/submit/result/retry/progress API chưa triển khai. Xem [tiến độ](../../docs/M03_PROGRESS.md), [thử API](../../docs/M03_STEP23_API_SMOKE.md). Trạng thái “M03 chưa triển khai” trong mốc 17/10 ở trên là ghi nhận lịch sử, không phải trạng thái code hiện tại.
+
 ## 1. Quy ước HTTP
 
 - Cùng origin, cookie JSESSIONID và CSRF của M01. Mọi POST/PUT/DELETE gửi header token nhận từ `GET /api/auth/csrf`. Không bổ sung JWT hoặc nhận userId/ownerId do client khai.

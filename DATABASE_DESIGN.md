@@ -1,6 +1,6 @@
 # Database — English Learning (M01 và M02 hoàn chỉnh)
 
-Cập nhật M03 bước 1 (19/10/2026): mã nguồn đã bổ sung Flyway V4, mapping 7 bảng và repository cho lượt làm. Đã kiểm tra migration/ORM trên MySQL riêng; DB demo không được nâng trong lượt triển khai này. Backend build mới sẽ tự áp dụng V4 khi khởi động. Chưa có API tạo/lưu/nộp bài hoặc tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md).
+Cập nhật M03 bước 1–3 (19/10/2026): đã có V4/model/repository và API tạo/tiếp tục, snapshot, danh sách, media, lưu nháp. Attempts/questions/answers/exposures và STARTED progress được ghi khi tạo; draft không ghi trial/submission. Nộp/chấm và API đọc tiến độ thuộc bước 4. Kiểm thử dùng MySQL riêng, không nâng DB demo; backend build mới sẽ tự áp dụng V4 khi khởi động. Xem [tiến độ M03](docs/M03_PROGRESS.md).
 
 Nguồn schema chính: source/server/src/main/resources/db/migration/. Runtime đã có Flyway V1, V2 và V3; Hibernate validate khi khởi động. M02 bước 2–4 dùng tiếp V3, không thêm hoặc sửa migration.
 

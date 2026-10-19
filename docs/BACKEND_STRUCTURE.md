@@ -1,6 +1,6 @@
 # Cấu trúc backend M01 và M02 hoàn chỉnh
 
-M03 bước 1 bổ sung nền V4 và 7 entity học tập, `AttemptRepository`/implementation và JPA repositories, DTO `AttemptData/AttemptRequests/AttemptViews`, `AnswerValidator` và `AnswerGrader`/implementation. Chưa có controller/service nghiệp vụ Attempt hoặc progress. Theo dõi [tiến độ M03](M03_PROGRESS.md), [nghiệm thu nền](../statics/results/module-3-step1-validation.md). V4 chỉ được áp dụng ở test trong lượt triển khai này; backend build mới sẽ tự migrate database được cấu hình khi khởi động.
+M03 bước 1 bổ sung V4/model/repository/DTO/grader. Bước 2–3 nối `AttemptController` → `AttemptService/impl` → selector và repository để tạo/tiếp tục/danh sách; `AttemptDraftController` → `AttemptDraftService/impl` → validator/repository để lưu nháp. `AttemptSnapshotReader` ánh xạ phiên bản đã pin sang DTO an toàn; `AttemptAssetReadGrant` cấp quyền file theo owner Attempt. Chưa có hint/check/submit/result/retry hoặc progress API. Theo dõi [tiến độ M03](M03_PROGRESS.md), [nghiệm thu bước 2–3](../statics/results/module-3-step23-validation.md). Không nâng DB demo trong lượt triển khai; backend build mới sẽ tự migrate khi khởi động.
 
 M02 bước 1 bổ sung AuthorCatalogController → CatalogService/impl → CatalogRepository/impl → JPA cho Topic/Objective/Unit, cùng RequestReceiptService dùng chung. Theo dõi phạm vi hiện tại ở [tiến độ M02](M02_PROGRESS.md). Mô tả M01 bên dưới vẫn áp dụng cho nền tài khoản.
 

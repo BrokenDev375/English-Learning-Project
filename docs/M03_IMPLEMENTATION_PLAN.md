@@ -146,15 +146,15 @@ Commit đề xuất: `feat(m03): add attempt schema and persistence`; `feat(m03)
 
 Phụ thuộc: bước 1.
 
-- [ ] Thêm `AttemptService`, selector và controller cho POST/GET `/api/attempts`, GET `/api/attempts/{id}`.
-- [ ] Chuẩn hóa selection. Cùng user/cùng lựa chọn IN_PROGRESS trả lượt cũ; LEARN so Lesson root, PRACTICE/REVIEW so toàn bộ tham số chọn.
-- [ ] Xử lý resume trước khi bốc nội dung mới; lượt đang làm giữ bản cũ dù bài mới được publish/retire. Học lại sau SUBMITTED tạo lượt mới nếu nội dung còn đủ điều kiện cấp.
-- [ ] LEARN cấp đúng nhóm/thứ tự. PRACTICE lọc đúng difficulty/Topic, loại trùng origin kể cả câu copy/version, cấp ít hơn count khi thiếu; không có câu trả `NO_QUESTIONS_AVAILABLE`.
-- [ ] Lưu permutation một lần, tạo đáp án null, ghi dấu seen trước khi tăng exposure và lưu mọi dữ liệu nguyên tử.
-- [ ] Thêm `ReviewSelectionProvider` và fallback REVIEW_NOT_READY; provider giả chỉ ở test. Validate Version ID/role/Topic/state và loại trùng trước khi pin kết quả provider.
-- [ ] Dựng snapshot riêng, danh sách material duy nhất theo Version ID; không lộ answerKey/explanation/transcript/storageKey/hint chưa xin.
-- [ ] Thêm `AttemptAssetReadGrant`; học viên đọc đúng asset của lượt mình, kể cả sau nộp/retire/cập nhật audio, tài khoản khác nhận 404.
-- [ ] Phân trang/lọc danh sách lượt của chính mình theo OpenAPI; thêm kiểm tra role, no-store và lỗi đúng nền M01.
+- [x] Thêm `AttemptService`, selector và controller cho POST/GET `/api/attempts`, GET `/api/attempts/{id}`.
+- [x] Chuẩn hóa selection. Cùng user/cùng lựa chọn IN_PROGRESS trả lượt cũ; LEARN so Lesson root, PRACTICE/REVIEW so toàn bộ tham số chọn.
+- [x] Xử lý resume trước khi bốc nội dung mới; lượt đang làm giữ bản cũ dù bài mới được publish/retire. Học lại sau SUBMITTED tạo lượt mới nếu nội dung còn đủ điều kiện cấp.
+- [x] LEARN cấp đúng nhóm/thứ tự. PRACTICE lọc đúng difficulty/Topic, loại trùng origin kể cả câu copy/version, cấp ít hơn count khi thiếu; không có câu trả `NO_QUESTIONS_AVAILABLE`.
+- [x] Lưu permutation một lần, tạo đáp án null, ghi dấu seen trước khi tăng exposure và lưu mọi dữ liệu nguyên tử.
+- [x] Thêm `ReviewSelectionProvider` và fallback REVIEW_NOT_READY; provider giả chỉ ở test. Validate Version ID/role/Topic/state và loại trùng trước khi pin kết quả provider.
+- [x] Dựng snapshot riêng, danh sách material duy nhất theo Version ID; không lộ answerKey/explanation/transcript/storageKey/hint chưa xin.
+- [x] Thêm `AttemptAssetReadGrant`; học viên đọc đúng asset của lượt mình, kể cả sau nộp/retire/cập nhật audio, tài khoản khác nhận 404.
+- [x] Phân trang/lọc danh sách lượt của chính mình theo OpenAPI; thêm kiểm tra role, no-store và lỗi đúng nền M01.
 
 Cổng nghiệm thu: hai request tạo đồng thời chỉ tạo một lượt cùng lựa chọn; GET/F5/retry không đổi bộ câu hoặc tăng exposures; media Range chạy với quyền học viên.
 
@@ -164,11 +164,11 @@ Commit đề xuất: `feat(m03): create and resume learning attempts`; `feat(m03
 
 Phụ thuộc: bước 2.
 
-- [ ] PUT `/api/attempts/{id}/draft` nhận full snapshot: mỗi AttemptQuestion đúng một entry, dùng response null để bỏ đáp án.
-- [ ] Từ chối entry thiếu/trùng/lạ, sai dạng; kiểm tra current item và audio material thuộc lượt, audioPositions không trùng, seconds đúng giới hạn hợp đồng.
-- [ ] Lưu đáp án/playerState, cập nhật revision và ACK theo schema; không chấm hoặc tạo trial.
-- [ ] Bảo đảm key retry cũ vẫn replay trước kiểm tra revision; key mới dùng revision cũ bị 409, không ghi đè.
-- [ ] Test load lại partial/null và vị trí nghe; hai tab ghi đồng thời; DB lỗi rollback cả nháp/revision/receipt; khóa tài khoản đồng thời chặn ghi theo AccountGuard.
+- [x] PUT `/api/attempts/{id}/draft` nhận full snapshot: mỗi AttemptQuestion đúng một entry, dùng response null để bỏ đáp án.
+- [x] Từ chối entry thiếu/trùng/lạ, sai dạng; kiểm tra current item và audio material thuộc lượt, audioPositions không trùng, seconds đúng giới hạn hợp đồng.
+- [x] Lưu đáp án/playerState, cập nhật revision và ACK theo schema; không chấm hoặc tạo trial.
+- [x] Bảo đảm key retry cũ vẫn replay trước kiểm tra revision; key mới dùng revision cũ bị 409, không ghi đè.
+- [x] Test load lại partial/null và vị trí nghe; hai tab ghi đồng thời; DB lỗi rollback cả nháp/revision/receipt; khóa tài khoản đồng thời chặn ghi theo AccountGuard.
 
 Cổng nghiệm thu: GET khôi phục đúng nháp; retry không tạo hiệu ứng lần hai; xung đột không làm mất dữ liệu đã commit.
 

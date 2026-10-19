@@ -15,6 +15,8 @@ public interface AttemptRepository {
     List<AttemptAnswerEntity> answers(Collection<Long> itemIds);
     List<AnswerTrialEntity> trials(long itemId);
     Optional<SubmissionEntity> submission(long attemptId);
+    Optional<Long> lessonSlot(long lessonVersionId,long questionVersionId);
+    boolean assetReadable(long userId,long assetId);
     List<QuestionExposureEntity> exposures(long userId,Collection<String> origins);
     Optional<QuestionExposureEntity> exposure(QuestionExposureKey id,boolean lock);
     Optional<LessonProgressEntity> progress(LessonProgressKey id,boolean lock);

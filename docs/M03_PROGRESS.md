@@ -1,6 +1,6 @@
 # Tiến độ M03
 
-Cập nhật 19/10/2026. Theo [kế hoạch triển khai](M03_IMPLEMENTATION_PLAN.md), M03 hiện có nền dữ liệu/DTO/bộ chấm; chưa có API hoặc giao diện làm bài.
+Cập nhật 19/10/2026. Theo [kế hoạch triển khai](M03_IMPLEMENTATION_PLAN.md), M03 đã có nền dữ liệu/DTO/bộ chấm và API tạo/tiếp tục lượt, snapshot, danh sách, media, lưu/khôi phục nháp. Chưa có API nộp/chấm hoặc giao diện runner.
 
 ## Bước 0 — đã hoàn thành
 
@@ -25,10 +25,22 @@ Lưu ý cho các bước tiếp theo:
 4. `LessonProgressEntity` chỉ lưu STARTED/COMPLETED. Khi đọc, service tổng hợp NOT_STARTED cho bài chưa có hàng. Model giữ COMPLETED khi nhận kết quả học lại chưa hoàn thành.
 5. Những kiểm tra hiện có chưa chứng minh được các luồng create/resume/submit HTTP, cấp quyền media theo Attempt hoặc phục hồi lỗi mạng. Những phần đó thuộc bước 2–6.
 
-Toàn bộ backend đạt 100/100 test, không failure/error/skipped. Kết quả thực tế và lệnh tái hiện tại [nghiệm thu bước 1](../statics/results/module-3-step1-validation.md). Thay đổi bước 1 chưa stage/commit để người triển khai tự commit.
+Tại mốc bước 1, toàn bộ backend đạt 100/100 test, không failure/error/skipped. Kết quả và lệnh tái hiện tại [nghiệm thu bước 1](../statics/results/module-3-step1-validation.md). Người triển khai đã commit bước 1 tại `d37ba0b`.
+
+## Bước 2–3 — đã hoàn thành API lượt làm và nháp
+
+- `AttemptController` → `AttemptService/impl`: tạo LEARN/PRACTICE/REVIEW, tiếp tục cùng lựa chọn và danh sách theo owner/mode/state/phân trang. REVIEW chưa có M04 trả REVIEW_NOT_READY; provider chỉ được giả lập trong test.
+- `AttemptSelector`: LEARN lấy GUIDED rồi INDEPENDENT theo biên soạn; PRACTICE loại trùng origin, ưu tiên chưa/ít/lâu gặp, thiếu câu không lặp. Actor lock trước Lesson root theo ID tăng dần; đọc lại sau khi chờ publication/retirement.
+- Cấp lượt pin Version ID/slot/origin/permutation và dấu seen trước khi tăng exposure. Tạo null answers, STARTED progress cho LEARN và receipt nguyên tử. Resume không chọn lại hoặc tăng exposure.
+- `AttemptSnapshotReader`: đọc bản đã pin, ánh xạ DTO an toàn và khôi phục đáp án/playerState. Không trả keys/giải thích/transcript/hint hoặc storageKey, kể cả snapshot SUBMITTED.
+- `AttemptAssetReadGrant`: STUDENT đọc đúng file của lượt mình, cả lịch sử/retire/sau nộp; giữ HTTP Range hiện có. Thêm repository truy vấn slot và grant, không thêm schema.
+- `AttemptDraftController` → `AttemptDraftService/impl`: GET snapshot và PUT full draft; kiểm tra membership, response theo QuestionVersion, current item/audio positions; lưu/revision/ACK/receipt cùng transaction. Không gọi grader hoặc tạo trial khi lưu.
+- Replay trước revision/state; key khác với revision cũ báo xung đột. Actor lock ngăn request ghi tiếp khi tài khoản bị khóa. Snapshot GET read-only dùng REPEATABLE_READ để không trộn các phần của hai lần lưu khác nhau.
+
+Nhóm tập trung đạt 35/35 test; toàn bộ backend bản cuối đạt 119/119, không failure/error/skipped, gồm 19 test HTTP bước 2–3. Xem [nghiệm thu bước 2–3](../statics/results/module-3-step23-validation.md). [Hướng dẫn thử API](M03_STEP23_API_SMOKE.md) có luồng đăng nhập, tạo lượt, lưu và GET khôi phục. Các thay đổi bước 2–3 chưa commit.
 
 ## Phần chưa triển khai
 
-Selector LEARN/PRACTICE, REVIEW provider, snapshot API, AttemptAssetReadGrant, lưu nháp HTTP, hint/check/submit/result/retry, API tiến độ, runner UI và E2E nghiệp vụ. Chưa có XP, lịch ôn hoặc đồng bộ offline bền vững.
+Hint/check/submit/result/retry, API đọc tiến độ, runner UI và E2E nghiệp vụ; REVIEW provider thật của M04. Chưa có XP, lịch ôn hoặc đồng bộ offline bền vững. SUBMITTED trong test bước 2–3 được thiết lập qua fixture, không phải kết quả chạy API submit.
 
 V4 mới được kiểm thử trong container riêng; không nâng DB demo trong lượt triển khai này. Khi build/chạy backend từ mã nguồn mới, Flyway sẽ tự áp dụng V4 lên database được cấu hình. Không xóa volume để nâng schema.

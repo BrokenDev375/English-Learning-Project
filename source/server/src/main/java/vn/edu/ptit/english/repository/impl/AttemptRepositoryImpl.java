@@ -20,11 +20,13 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     private final QuestionExposureJpaRepository exposures;
     private final LessonProgressJpaRepository progress;
     private final EntityManager em;
+    private final LessonQuestionJpaRepository slots;
     public AttemptRepositoryImpl(AttemptJpaRepository attempts,AttemptQuestionJpaRepository items,AttemptAnswerJpaRepository answers,
         AnswerTrialJpaRepository trials,SubmissionJpaRepository submissions,QuestionExposureJpaRepository exposures,
-        LessonProgressJpaRepository progress,EntityManager em) {
+        LessonProgressJpaRepository progress,EntityManager em,LessonQuestionJpaRepository slots) {
         this.attempts=attempts; this.items=items; this.answers=answers; this.trials=trials; this.submissions=submissions;
         this.exposures=exposures; this.progress=progress; this.em=em;
+        this.slots=slots;
     }
     public Optional<AttemptEntity> attempt(long id,long userId,boolean lock) {
         var result=lock?attempts.lockOwned(id,userId):attempts.findByIdAndUserId(id,userId);
@@ -45,6 +47,8 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     public List<AttemptAnswerEntity> answers(Collection<Long> ids){return ids.isEmpty()?List.of():answers.findAllById(ids);}
     public List<AnswerTrialEntity> trials(long item){return trials.findByAttemptQuestionIdOrderByTrialNoAsc(item);}
     public Optional<SubmissionEntity> submission(long attemptId){return submissions.findByAttemptId(attemptId);}
+    public Optional<Long> lessonSlot(long lessonVersionId,long questionVersionId){return slots.slot(lessonVersionId,questionVersionId);}
+    public boolean assetReadable(long userId,long assetId){return attempts.assetReadable(userId,assetId);}
     public List<QuestionExposureEntity> exposures(long userId,Collection<String> origins){return origins.isEmpty()?List.of():exposures.findByIdUserIdAndIdOriginKeyIn(userId,origins);}
     public Optional<QuestionExposureEntity> exposure(QuestionExposureKey id,boolean lock){return find(QuestionExposureEntity.class,id,lock);}
     public Optional<LessonProgressEntity> progress(LessonProgressKey id,boolean lock){return find(LessonProgressEntity.class,id,lock);}
