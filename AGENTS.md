@@ -21,8 +21,9 @@ Checkpoint verified **19/10/2026**:
 - M01: accounts, roles, administration, sessions and basic WebSocket connection/revocation implemented.
 - M02: content authoring/versioning/publication, assets and learner catalog implemented. Seed: 3 Units, 6 lessons, 90 questions, 13 materials. Bulk audio updates preserve version history.
 - M03 steps 0–1 implemented: transactional receipt status, V4, entities/repositories, strict DTOs and three question graders. Commits: `bd913be` (step 0), `d37ba0b` (step 1).
-- M03 steps 2–3 now implement create/resume/list, pinned snapshots/media grants and full draft save/restore with revision/receipt checks; the full backend passed 119 tests on 19/10. These changes are not committed yet. See [step 2–3 validation](statics/results/module-3-step23-validation.md) and [API smoke guide](docs/M03_STEP23_API_SMOKE.md).
-- M03 steps 4–6 pending: feedback/submission/progress APIs, UI and E2E integration. Next work normally starts at step 4; follow the user's actual request.
+- M03 steps 2–3: create/resume/list, pinned snapshots/media grants and full draft save/restore with revision/receipt checks; commit `759ccb3`. Historical backend run: 119 tests. See [step 2–3 validation](statics/results/module-3-step23-validation.md).
+- M03 step 4: hint/check, atomic submit/result, correction and learning progress APIs implemented, not committed. Backend passed 136/136 tests on 19/10. See [step 4 validation](statics/results/module-3-step4-validation.md) and [API smoke guide](docs/M03_STEP4_API_SMOKE.md).
+- M03 steps 5–6 pending: learning runner UI and E2E integration. Next work normally starts at step 5; follow the user's actual request.
 - M04 review scheduling, M05 XP/weekly leagues, M06 complete offline/recovery, M07 advanced statistics are future modules. M08 solo challenges is deferred. `docs/archive/` contains historical IELTS designs, not current requirements.
 
 This checkpoint is a navigation aid. If code/Git has advanced, inspect the affected implementation and update progress; do not assume uncommitted/committed status persists across sessions.
@@ -55,7 +56,9 @@ OpenAPI defines exact fields/types/required-null/enum; API rules and handoff def
 - M03 uses `AttemptRequests`, `AttemptViews`, `AttemptData`, `AnswerValidator`, `AnswerGrader`, `AttemptRepository`. Three P0 types: SINGLE_CHOICE/FILL_BLANK/MATCHING. Answer by stable IDs, not display indices. Fill grading follows NFC/ASCII-whitespace flags/Locale.ROOT; no fuzzy matching.
 - `AttemptEntity` has explicit business revision, not JPA `@Version`; advance once per real mutation under lock. Draft save creates no trial. FIRST is immutable; final answers and CORRECTION remain distinct. One Submission per Attempt.
 - Create Submission via `AttemptRepository` in an existing transaction: internal Result uses submissionId=0; repository inserts, binds the generated ID and flushes. Never return the temporary Result or bypass this path with direct JPA save.
+- `AttemptCompletionService` handles hint/check/submit/retry/result. Submit validates full input through `AttemptDraftValidator`, pins grading and persists FIRST/final/result/progress/receipt atomically. Feedback omits transcripts; GET result returns saved facts. Retry only appends CORRECTION and advances revision. Result submittedAt uses explicit JSON STRING format so MySQL JSON does not round fractional epoch seconds.
 - Persist only STARTED/COMPLETED progress; synthesize NOT_STARTED on reads. An incomplete replay must not downgrade COMPLETED. Review provider is unavailable until M04; return REVIEW_NOT_READY rather than inventing random review. Full IndexedDB/outbox recovery belongs to M06.
+- `LearningProgressService` pages active published lessons plus the actor's historical rows; drafts stay private. Retired lessons with history have no currentPublishedVersionId. Compare current publication with last completed version (or last attempt if never completed) for updateAvailable.
 
 ## Verification and local data
 

@@ -21,6 +21,7 @@ public interface AttemptRepository {
     Optional<QuestionExposureEntity> exposure(QuestionExposureKey id,boolean lock);
     Optional<LessonProgressEntity> progress(LessonProgressKey id,boolean lock);
     Page<LessonProgressEntity> progress(long userId,Long unitId,int page,int size);
+    Page<LessonEntity> progressLessons(long userId,Long unitId,int page,int size);
     AttemptEntity save(AttemptEntity value);
     AttemptQuestionEntity save(AttemptQuestionEntity value);
     AttemptAnswerEntity save(AttemptAnswerEntity value);

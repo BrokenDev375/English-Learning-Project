@@ -1,6 +1,6 @@
 # Tiến độ M03
 
-Cập nhật 19/10/2026. Theo [kế hoạch triển khai](M03_IMPLEMENTATION_PLAN.md), M03 đã có nền dữ liệu/DTO/bộ chấm và API tạo/tiếp tục lượt, snapshot, danh sách, media, lưu/khôi phục nháp. Chưa có API nộp/chấm hoặc giao diện runner.
+Cập nhật 19/10/2026. Theo [kế hoạch triển khai](M03_IMPLEMENTATION_PLAN.md), M03 đã có API tạo/tiếp tục lượt, snapshot/media, nháp, hint/check, nộp/chấm, chữa và tiến độ. Giao diện runner thuộc bước 5.
 
 ## Bước 0 — đã hoàn thành
 
@@ -37,10 +37,21 @@ Tại mốc bước 1, toàn bộ backend đạt 100/100 test, không failure/er
 - `AttemptDraftController` → `AttemptDraftService/impl`: GET snapshot và PUT full draft; kiểm tra membership, response theo QuestionVersion, current item/audio positions; lưu/revision/ACK/receipt cùng transaction. Không gọi grader hoặc tạo trial khi lưu.
 - Replay trước revision/state; key khác với revision cũ báo xung đột. Actor lock ngăn request ghi tiếp khi tài khoản bị khóa. Snapshot GET read-only dùng REPEATABLE_READ để không trộn các phần của hai lần lưu khác nhau.
 
-Nhóm tập trung đạt 35/35 test; toàn bộ backend bản cuối đạt 119/119, không failure/error/skipped, gồm 19 test HTTP bước 2–3. Xem [nghiệm thu bước 2–3](../statics/results/module-3-step23-validation.md). [Hướng dẫn thử API](M03_STEP23_API_SMOKE.md) có luồng đăng nhập, tạo lượt, lưu và GET khôi phục. Các thay đổi bước 2–3 chưa commit.
+Nhóm tập trung đạt 35/35 test; toàn bộ backend bản cuối đạt 119/119, không failure/error/skipped, gồm 19 test HTTP bước 2–3. Xem [nghiệm thu bước 2–3](../statics/results/module-3-step23-validation.md). [Hướng dẫn thử API](M03_STEP23_API_SMOKE.md) có luồng đăng nhập, tạo lượt, lưu và GET khôi phục. Bước 2–3 đã commit tại `759ccb3`.
+
+## Bước 4 — API feedback, nộp/chấm, chữa và tiến độ
+
+- `AttemptCompletionController` → `AttemptCompletionService/impl`: hint/check chỉ cho GUIDED đang làm; hint mở lại không tăng revision. Check yêu cầu response đầy đủ, lưu đáp án, thêm FIRST/GUIDED_RETRY, ghi dấu hỗ trợ trước khi mở feedback và không trả transcript.
+- Submit nhận full answers/playerState, dùng validator chung với draft; chấm theo phiên bản đã pin. Cùng một transaction lưu final, FIRST còn thiếu kể cả UNANSWERED, Submission/result schema 1 với ID thật, state/revision/progress và receipt. Nộp sớm được phép; điểm dựa trên số câu thực cấp, làm tròn HALF_UP 2 chữ số.
+- GET result đọc bản đã lưu, không chấm lại. CORRECTION sau nộp chỉ thêm trial và tăng revision; không thay final, FIRST, điểm hoặc tiến độ. Thời điểm trong Result lưu dạng chuỗi ISO để tránh mất nanosecond khi MySQL lưu số JSON.
+- LEARN hoàn thành khi mọi response đầy đủ và mọi GUIDED đã CHECK, không đòi đúng hết. FIRST của INDEPENDENT/REVIEW_VARIANT chưa từng gặp, không dùng hỗ trợ và đã nhập đáp án được đếm riêng; partial vẫn là đã trả lời.
+- `LearningProgressController` → `LearningProgressService/impl`: tổng hợp NOT_STARTED bằng truy vấn có phân trang trên bài đang công bố và lịch sử của chính học viên. Không lộ bài nháp; giữ lịch sử bài nghỉ, currentPublishedVersionId=null. updateAvailable so với bản hoàn thành gần nhất, hoặc bản lượt gần nhất nếu chưa hoàn thành. Học lại/nộp dở không hạ COMPLETED.
+- Không thêm migration, XP, lịch ôn hoặc runner UI. Xem [hướng dẫn thử bước 4](M03_STEP4_API_SMOKE.md) và [kết quả kiểm tra](../statics/results/module-3-step4-validation.md). Các thay đổi bước 4 chưa commit.
+
+Nhóm tập trung đạt **54/54**; toàn bộ backend đạt **136/136**, không failure/error/skipped. Có 17 ca HTTP mới cho bước 4 trong tổng 36 AttemptApiTest, bao gồm concurrent submit/save/check, replay sau bỏ body phản hồi và rollback khi lỗi progress/receipt sau insert Submission. Không chạy browser E2E M03 trong bước này.
 
 ## Phần chưa triển khai
 
-Hint/check/submit/result/retry, API đọc tiến độ, runner UI và E2E nghiệp vụ; REVIEW provider thật của M04. Chưa có XP, lịch ôn hoặc đồng bộ offline bền vững. SUBMITTED trong test bước 2–3 được thiết lập qua fixture, không phải kết quả chạy API submit.
+Runner UI và E2E nghiệp vụ ở bước 5–6; REVIEW provider thật của M04. Chưa có XP, lịch ôn hoặc đồng bộ offline bền vững. Test bước 4 nộp qua API thật; fixture SUBMITTED cũ chỉ phục vụ các ca riêng của bước 2–3.
 
 V4 mới được kiểm thử trong container riêng; không nâng DB demo trong lượt triển khai này. Khi build/chạy backend từ mã nguồn mới, Flyway sẽ tự áp dụng V4 lên database được cấu hình. Không xóa volume để nâng schema.

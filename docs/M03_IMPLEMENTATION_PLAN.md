@@ -178,15 +178,15 @@ Commit đề xuất: `feat(m03): save attempt drafts with revision checks`.
 
 Phụ thuộc: bước 3.
 
-- [ ] Hint/check chỉ cho GUIDED khi IN_PROGRESS; hint đã mở trả lại mà không tăng revision thêm. Check/retry yêu cầu đáp án đầy đủ.
-- [ ] Check lưu đáp án, tạo FIRST hoặc GUIDED_RETRY đúng thứ tự và dấu hỗ trợ; feedback không có transcript.
-- [ ] Submit nhận đáp án cuối/playerState, validate trước ghi và không lệ thuộc autosave đã chạy hay chưa.
-- [ ] Trong cùng transaction: lưu final answers, thêm FIRST còn thiếu kể cả UNANSWERED, chấm, lưu result_json và Submission, chuyển SUBMITTED, cập nhật progress/revision, ghi receipt.
-- [ ] Lưu `factsSchemaVersion=1`, Submission ID và các số đếm khớp result_json để M04/M05/M07 đọc bù sau này.
-- [ ] GET result trước nộp trả RESULT_NOT_READY; sau nộp trả kết quả đã lưu, không tính lại theo nội dung mới hoặc trial chữa mới.
-- [ ] Retry sau nộp ghi CORRECTION, giữ kết quả nộp bất biến; trạng thái không cho phép trả mã lỗi theo hợp đồng.
-- [ ] GET `/api/me/learning-progress` tổng hợp NOT_STARTED, giữ COMPLETED khi học lại dở, báo updateAvailable khi có bản bài mới và trả đúng tài khoản/Unit/phân trang.
-- [ ] Test concurrent submit cùng key/khác key, submit cạnh tranh save/check, lỗi sau insert Submission và cập nhật progress để chứng minh rollback toàn bộ.
+- [x] Hint/check chỉ cho GUIDED khi IN_PROGRESS; hint đã mở trả lại mà không tăng revision thêm. Check/retry yêu cầu đáp án đầy đủ.
+- [x] Check lưu đáp án, tạo FIRST hoặc GUIDED_RETRY đúng thứ tự và dấu hỗ trợ; feedback không có transcript.
+- [x] Submit nhận đáp án cuối/playerState, validate trước ghi và không lệ thuộc autosave đã chạy hay chưa.
+- [x] Trong cùng transaction: lưu final answers, thêm FIRST còn thiếu kể cả UNANSWERED, chấm, lưu result_json và Submission, chuyển SUBMITTED, cập nhật progress/revision, ghi receipt.
+- [x] Lưu `factsSchemaVersion=1`, Submission ID và các số đếm khớp result_json để M04/M05/M07 đọc bù sau này.
+- [x] GET result trước nộp trả RESULT_NOT_READY; sau nộp trả kết quả đã lưu, không tính lại theo nội dung mới hoặc trial chữa mới.
+- [x] Retry sau nộp ghi CORRECTION, giữ kết quả nộp bất biến; trạng thái không cho phép trả mã lỗi theo hợp đồng.
+- [x] GET `/api/me/learning-progress` tổng hợp NOT_STARTED, giữ COMPLETED khi học lại dở, báo updateAvailable khi có bản bài mới và trả đúng tài khoản/Unit/phân trang.
+- [x] Test concurrent submit cùng key/khác key, submit cạnh tranh save/check, lỗi sau insert Submission và cập nhật progress để chứng minh rollback toàn bộ.
 
 Cổng nghiệm thu: mỗi lượt đúng một Submission; kết quả đầu/final/chữa phân biệt được; submit đủ/thiếu câu cho ra lessonCompleted đúng luật.
 

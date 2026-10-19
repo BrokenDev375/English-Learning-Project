@@ -134,6 +134,193 @@ class AttemptApiTest {
     void response(ObjectNode m,int index,String value){((ObjectNode)m.path("answers").get(index)).set("response",node(value));}
     void noTrials(JsonNode snapshot) {tx.executeWithoutResult(s->{for(var item:snapshot.path("items"))assertThat(attempts.trials(item.path("attemptQuestionId").asLong())).isEmpty();});}
 
+    String itemPath(JsonNode s,int index){return path(s)+"/items/"+s.path("items").get(index).path("attemptQuestionId").asLong();}
+    JsonNode refresh(Client c,JsonNode s)throws Exception{return ok(c.call("GET",path(s),null),200);}
+    ObjectNode command(JsonNode s){return json.createObjectNode().put("requestId",key()).put("baseRevision",s.path("revision").asLong());}
+    JsonNode correctAnswer(JsonNode item) {
+        return switch(item.path("question").path("type").asText()) {
+            case "SINGLE_CHOICE" -> node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"b\"}");
+            case "FILL_BLANK" -> node("{\"type\":\"FILL_BLANK\",\"values\":[{\"blankId\":\"x\",\"value\":\"hello\"},{\"blankId\":\"y\",\"value\":\"world\"}]}");
+            default -> node("{\"type\":\"MATCHING\",\"pairs\":[{\"leftId\":\"l1\",\"rightId\":\"r1\"},{\"leftId\":\"l2\",\"rightId\":\"r2\"}]}");
+        };
+    }
+    ObjectNode fullAnswers(JsonNode s) {
+        var m=mutation(s);
+        for(int i=0;i<s.path("items").size();i++)((ObjectNode)m.path("answers").get(i)).set("response",correctAnswer(s.path("items").get(i)));
+        return m;
+    }
+    JsonNode checkedGuided(Client c,JsonNode snapshot)throws Exception {
+        var s=snapshot;
+        for(int i=0;i<s.path("items").size();i++)if(s.path("items").get(i).path("practiceRole").asText().equals("GUIDED")) {
+            var input=command(s); input.set("response",correctAnswer(s.path("items").get(i)));
+            ok(c.call("POST",itemPath(s,i)+"/check",input),200); s=refresh(c,s);
+        }
+        return s;
+    }
+    String progressPath(){return "/api/me/learning-progress?unitId="+tx.execute(t->em.find(LessonEntity.class,lesson).getUnitId());}
+    JsonNode progress(Client c)throws Exception{return ok(c.call("GET",progressPath(),null),200).path("items").get(0);}
+
+    @Test void guidedHintReplayAndFirstSupportAreRecordedWithoutTranscript()throws Exception {
+        var c=new Client().login(student);var s=start(c);var hint=command(s);
+        var h=ok(c.call("POST",itemPath(s,0)+"/hint",hint),200);assertThat(h.path("revision").asLong()).isEqualTo(1);
+        var replay=c.call("POST",itemPath(s,0)+"/hint",hint);assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");assertThat(ok(replay,200)).isEqualTo(h);
+        s=refresh(c,s);assertThat(ok(c.call("POST",itemPath(s,0)+"/hint",command(s)),200).path("revision").asLong()).isEqualTo(1);
+        error(c.call("POST",itemPath(s,0)+"/hint",command(startRevision(s,0))),409,"REVISION_CONFLICT");
+        var input=command(s);input.set("response",correctAnswer(s.path("items").get(0)));
+        var f=ok(c.call("POST",itemPath(s,0)+"/check",input),200);
+        assertThat(f.path("kind").asText()).isEqualTo("FIRST");assertThat(f.path("supportUsed").asBoolean()).isTrue();
+        assertThat(f.path("outcome").asText()).isEqualTo("CORRECT");assertThat(f.toString()).contains("answerKey","SECRET_EXPLANATION").doesNotContain("transcript","SECRET_TRANSCRIPT");
+        assertThat(refresh(c,s).path("items").get(0).path("response")).isEqualTo(input.path("response"));
+    }
+    JsonNode startRevision(JsonNode s,long revision){var copy=s.deepCopy();((ObjectNode)copy).put("revision",revision);return copy;}
+
+    @Test void checkKeepsUnassistedFirstWhileLaterFeedbackIsSupported()throws Exception {
+        var c=new Client().login(student);var s=start(c);var input=command(s);input.set("response",node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"a\"}"));
+        var first=ok(c.call("POST",itemPath(s,0)+"/check",input),200);assertThat(first.path("supportUsed").asBoolean()).isFalse();assertThat(first.path("outcome").asText()).isEqualTo("INCORRECT");
+        s=refresh(c,s);var second=command(s);second.set("response",correctAnswer(s.path("items").get(0)));
+        var retry=ok(c.call("POST",itemPath(s,0)+"/check",second),200);assertThat(retry.path("kind").asText()).isEqualTo("GUIDED_RETRY");assertThat(retry.path("trialNo").asInt()).isEqualTo(2);assertThat(retry.path("supportUsed").asBoolean()).isTrue();
+        s=refresh(c,s);var result=ok(c.call("POST",path(s)+"/submit",fullAnswers(s)),200);var fact=result.path("items").get(0);
+        assertThat(fact.path("firstOutcome").asText()).isEqualTo("INCORRECT");assertThat(fact.path("firstSupportUsed").asBoolean()).isFalse();assertThat(fact.path("finalOutcome").asText()).isEqualTo("CORRECT");
+        assertThat(ok(c.call("POST",itemPath(s,0)+"/check",input),200)).isEqualTo(first);
+    }
+    @Test void feedbackRejectsIndependentForeignAndIncompleteAnswersWithoutMutation()throws Exception {
+        var c=new Client().login(student);var s=start(c);var own=new Client().login(other);var foreign=start(own);
+        var input=command(s);input.set("response",correctAnswer(s.path("items").get(5)));
+        error(c.call("POST",itemPath(s,5)+"/check",input),409,"FEEDBACK_NOT_AVAILABLE");
+        error(c.call("POST",itemPath(s,5)+"/hint",command(s)),409,"FEEDBACK_NOT_AVAILABLE");
+        error(own.call("POST",itemPath(s,0)+"/hint",command(s)),404,"NOT_FOUND");
+        error(c.call("POST",path(s)+"/items/"+foreign.path("items").get(0).path("attemptQuestionId").asLong()+"/hint",command(s)),404,"NOT_FOUND");
+        input=command(s);input.set("response",node("{\"type\":\"FILL_BLANK\",\"values\":[{\"blankId\":\"x\",\"value\":\"hello\"}]}"));
+        error(c.call("POST",itemPath(s,1)+"/check",input),400,"INVALID_ANSWER");
+        error(c.call("POST",itemPath(s,1)+"/retry",input),409,"RESULT_NOT_READY");
+        assertThat(refresh(c,s)).isEqualTo(s);noTrials(s);
+    }
+    @Test void missingHintHasNoEffect()throws Exception {
+        tx.executeWithoutResult(t->{var old=em.find(QuestionVersionEntity.class,questionVersions.get(0));var d=old.data();
+            var q=em.find(QuestionEntity.class,old.getQuestionId());var v=new QuestionVersionEntity(q.getId(),2,new Question(d.type(),d.topicId(),d.objectiveId(),d.difficulty(),d.prompt(),d.content(),d.answerKey(),d.explanation(),null,d.materialVersionId(),d.source()));
+            em.persist(v);em.flush();q.startDraft(v);q.publish();var root=em.find(LessonEntity.class,lesson);var ld=em.find(LessonVersionEntity.class,lessonVersion).data();
+            var slots=ld.questions().stream().map(slot->slot.questionVersionId()==old.getId()?new Slot(v.getId(),slot.practiceRole(),slot.position()):slot).toList();
+            var lv=new LessonVersionEntity(lesson,2,new Lesson(ld.title(),ld.description(),ld.instructions(),ld.objectiveIds(),slots));em.persist(lv);em.flush();root.startDraft(lv);root.publish();});
+        var c=new Client().login(student);var s=start(c);error(c.call("POST",itemPath(s,0)+"/hint",command(s)),404,"HINT_NOT_AVAILABLE");assertThat(refresh(c,s)).isEqualTo(s);
+    }
+    @Test void earlySubmitAcceptsPartialAndBlankFinalAnswersAndPersistsFacts()throws Exception {
+        var c=new Client().login(student);var s=start(c);error(c.call("GET",path(s)+"/result",null),409,"RESULT_NOT_READY");
+        var m=mutation(s);response(m,0,"{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"b\"}");response(m,1,"{\"type\":\"FILL_BLANK\",\"values\":[{\"blankId\":\"x\",\"value\":\"hello\"}]}");
+        ((ObjectNode)m.path("playerState")).put("currentAttemptQuestionId",s.path("items").get(1).path("attemptQuestionId").asLong());
+        var result=ok(c.call("POST",path(s)+"/submit",m),200);
+        assertThat(result.path("submissionId").asLong()).isPositive();assertThat(result.path("factsSchemaVersion").asInt()).isEqualTo(1);assertThat(result.path("submittedRevision").asLong()).isEqualTo(1);
+        assertThat(result.path("answeredCount").asInt()).isEqualTo(2);assertThat(result.path("unansweredCount").asInt()).isEqualTo(8);assertThat(result.path("correctCount").asInt()).isEqualTo(1);assertThat(result.path("scorePercent").decimalValue()).isEqualByComparingTo("10.00");
+        assertThat(result.path("lessonCompleted").asBoolean()).isFalse();assertThat(result.path("items").get(1).path("finalResponseComplete").asBoolean()).isFalse();assertThat(result.path("items").get(2).path("firstOutcome").asText()).isEqualTo("UNANSWERED");
+        assertThat(result.path("materialFeedback")).hasSize(1);assertThat(result.toString()).contains("SECRET_TRANSCRIPT");assertThat(progress(c).path("state").asText()).isEqualTo("STARTED");
+        var restored=refresh(c,s);assertThat(restored.path("state").asText()).isEqualTo("SUBMITTED");JSONAssert.assertEquals(m.path("playerState").toString(),restored.path("playerState").toString(),true);assertThat(restored.toString()).doesNotContain("answerKey","SECRET_");
+        JSONAssert.assertEquals(result.toString(),ok(c.call("GET",path(s)+"/result",null),200).toString(),true);
+        tx.executeWithoutResult(t->{var stored=attempts.submission(s.path("attemptId").asLong()).orElseThrow();assertThat(stored.getResult().submissionId()).isEqualTo(stored.getId());assertThat(stored.getScorePercent()).isEqualByComparingTo("10.00");
+            for(var item:s.path("items")){var history=attempts.trials(item.path("attemptQuestionId").asLong());assertThat(history).hasSize(1);assertThat(history.get(0).getSource()).isEqualTo(TrialSource.SUBMIT);}});
+    }
+    @Test void completeAnswersRequireGuidedChecksButDoNotRequireCorrectness()throws Exception {
+        var c=new Client().login(student);var first=start(c);var unchecked=ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);assertThat(unchecked.path("lessonCompleted").asBoolean()).isFalse();
+        var s=checkedGuided(c,start(c));var m=fullAnswers(s);response(m,0,"{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"a\"}");
+        var result=ok(c.call("POST",path(s)+"/submit",m),200);assertThat(result.path("lessonCompleted").asBoolean()).isTrue();assertThat(result.path("correctCount").asInt()).isEqualTo(9);
+        assertThat(result.path("independentFreshAnsweredCount").asInt()).isZero();assertThat(progress(c).path("state").asText()).isEqualTo("COMPLETED");
+        var completed=progress(c);s=start(c);assertThat(progress(c).path("state").asText()).isEqualTo("COMPLETED");ok(c.call("POST",path(s)+"/submit",mutation(s)),200);
+        var repeat=progress(c);assertThat(repeat.path("state").asText()).isEqualTo("COMPLETED");assertThat(repeat.path("completedAt")).isEqualTo(completed.path("completedAt"));assertThat(repeat.path("lastCompletedVersionId")).isEqualTo(completed.path("lastCompletedVersionId"));assertThat(repeat.path("lastScorePercent").asDouble()).isZero();
+    }
+    @Test void correctionsAndReplaysNeverChangeSubmissionFinalAnswersOrProgress()throws Exception {
+        var c=new Client().login(student);var s=start(c);var result=ok(c.call("POST",path(s)+"/submit",mutation(s)),200);var beforeProgress=progress(c);s=refresh(c,s);
+        var input=command(s);input.set("response",correctAnswer(s.path("items").get(5)));
+        var feedback=ok(c.call("POST",itemPath(s,5)+"/retry",input),200);assertThat(feedback.path("kind").asText()).isEqualTo("CORRECTION");assertThat(feedback.path("trialNo").asInt()).isEqualTo(2);assertThat(feedback.path("supportUsed").asBoolean()).isTrue();
+        assertThat(feedback.toString()).doesNotContain("transcript");var replay=c.call("POST",itemPath(s,5)+"/retry",input);assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");assertThat(ok(replay,200)).isEqualTo(feedback);
+        JSONAssert.assertEquals(result.toString(),ok(c.call("GET",path(s)+"/result",null),200).toString(),true);assertThat(progress(c)).isEqualTo(beforeProgress);assertThat(refresh(c,s).path("items").get(5).path("response").isNull()).isTrue();
+        var fresh=refresh(c,s);var incomplete=command(fresh);incomplete.set("response",node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":null}"));error(c.call("POST",itemPath(s,0)+"/retry",incomplete),400,"INVALID_ANSWER");
+        error(c.call("POST",itemPath(s,0)+"/hint",command(fresh)),409,"ATTEMPT_FINISHED");error(c.call("PUT",path(s)+"/draft",mutation(fresh)),409,"ATTEMPT_FINISHED");
+    }
+    @Test void freshCountsExcludeGuidedSeenAndEmptyButIncludePartialIndependent()throws Exception {
+        var c=new Client().login(student);var s=start(c);var m=fullAnswers(s);response(m,5,"{\"type\":\"MATCHING\",\"pairs\":[{\"leftId\":\"l1\",\"rightId\":\"r1\"}]}");((ObjectNode)m.path("answers").get(6)).putNull("response");
+        var result=ok(c.call("POST",path(s)+"/submit",m),200);assertThat(result.path("independentFreshAnsweredCount").asInt()).isEqualTo(4);assertThat(result.path("independentFreshCorrectCount").asInt()).isEqualTo(3);
+        var repeat=start(c);result=ok(c.call("POST",path(repeat)+"/submit",fullAnswers(repeat)),200);assertThat(result.path("independentFreshAnsweredCount").asInt()).isZero();
+    }
+    @Test void practiceAndReviewUseActualDenominatorAndNeverCompleteLessons()throws Exception {
+        var c=new Client().login(student);var s=ok(c.call("POST","/api/attempts",practice(3)),201);var m=fullAnswers(s);((ObjectNode)m.path("answers").get(0)).putNull("response");
+        var result=ok(c.call("POST",path(s)+"/submit",m),200);assertThat(result.path("scorePercent").decimalValue()).isEqualByComparingTo("66.67");assertThat(result.path("lessonCompleted").asBoolean()).isFalse();assertThat(progress(c).path("state").asText()).isEqualTo("NOT_STARTED");
+        when(review.select(student.id(),"DUE",topic,2)).thenReturn(List.of(questionVersions.get(10),questionVersions.get(11)));
+        s=ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","REVIEW","reviewKind","DUE","topicId",topic,"count",2)),201);
+        error(c.call("POST",itemPath(s,0)+"/hint",command(s)),409,"FEEDBACK_NOT_AVAILABLE");
+        result=ok(c.call("POST",path(s)+"/submit",fullAnswers(s)),200);assertThat(result.path("independentFreshCorrectCount").asInt()).isEqualTo(2);assertThat(result.path("lessonCompleted").asBoolean()).isFalse();
+    }
+    @Test void simultaneousSubmitsWithSameKeyReplayOneSubmission()throws Exception {
+        var a=new Client().login(student);var b=new Client().login(student);var s=start(a);var m=fullAnswers(s);
+        var responses=concurrent(()->a.call("POST",path(s)+"/submit",m),()->b.call("POST",path(s)+"/submit",m));assertThat(ok(responses.get(0),200)).isEqualTo(ok(responses.get(1),200));assertThat(refresh(a,s).path("revision").asLong()).isEqualTo(1);
+        tx.executeWithoutResult(t->assertThat(em.createQuery("select count(s) from SubmissionEntity s where s.attemptId=:id",Long.class).setParameter("id",s.path("attemptId").asLong()).getSingleResult()).isEqualTo(1));
+    }
+    @Test void simultaneousDifferentSubmitsAndDraftOrCheckHaveOneWinner()throws Exception {
+        for(String operation:List.of("submit","draft","check")) {
+            var a=new Client().login(student);var b=new Client().login(student);var s=start(a);var m=fullAnswers(s);var other=fullAnswers(s);var check=command(s);check.set("response",correctAnswer(s.path("items").get(0)));
+            var responses=concurrent(()->a.call("POST",path(s)+"/submit",m),()->b.call(operation.equals("draft")?"PUT":"POST",operation.equals("check")?itemPath(s,0)+"/check":path(s)+"/"+operation,operation.equals("check")?check:other));
+            assertThat(responses.stream().map(HttpResponse::statusCode)).containsExactlyInAnyOrder(200,409);
+            var rejected=responses.stream().filter(r->r.statusCode()==409).findFirst().orElseThrow();assertThat(body(rejected).path("code").asText()).isIn("ATTEMPT_FINISHED","REVISION_CONFLICT");
+            var current=refresh(a,s);if(current.path("state").asText().equals("IN_PROGRESS"))ok(a.call("POST",path(s)+"/submit",fullAnswers(current)),200);
+            tx.executeWithoutResult(t->assertThat(em.createQuery("select count(s) from SubmissionEntity s where s.attemptId=:id",Long.class).setParameter("id",s.path("attemptId").asLong()).getSingleResult()).isEqualTo(1));
+        }
+    }
+    @Test void discardedSubmitBodyCanBeReplayedAfterFurtherCorrection()throws Exception {
+        var c=new Client().login(student);var s=start(c);var m=fullAnswers(s);var response=c.http.send(c.request("POST",path(s)+"/submit",m),HttpResponse.BodyHandlers.ofInputStream());assertThat(response.statusCode()).isEqualTo(200);response.body().close();
+        var result=ok(c.call("GET",path(s)+"/result",null),200);var current=refresh(c,s);var retry=command(current);retry.set("response",correctAnswer(current.path("items").get(0)));ok(c.call("POST",itemPath(s,0)+"/retry",retry),200);
+        var replay=c.call("POST",path(s)+"/submit",m);assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");assertThat(ok(replay,200)).isEqualTo(result);
+        m.put("baseRevision",999);error(c.call("POST",path(s)+"/submit",m),409,"REQUEST_ID_REUSED");
+    }
+    @Test void submitRollsBackSubmissionTrialsProgressAndReceiptWhenLateWritesFail()throws Exception {
+        for(String stage:List.of("progress","receipt")) {
+            var c=new Client().login(student);var s=start(c);var m=fullAnswers(s);String requestId=m.path("requestId").asText();
+            String table=stage.equals("progress")?"lesson_progress":"request_receipts";
+            String condition=stage.equals("progress")?"(user_id <> "+student.id()+" OR last_score_percent IS NULL)":"(request_id <> '"+requestId+"')";
+            tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE "+table+" ADD CONSTRAINT m03_reject_submit CHECK "+condition).executeUpdate());
+            try{error(c.call("POST",path(s)+"/submit",m),503,"DATABASE_UNAVAILABLE");}finally{tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE "+table+" DROP CHECK m03_reject_submit").executeUpdate());}
+            assertThat(refresh(c,s)).isEqualTo(s);noTrials(s);assertThat(progress(c).path("lastScorePercent").isNull()).isTrue();assertThat(receipts.findByActorIdAndRequestId(student.id(),requestId)).isEmpty();
+            tx.executeWithoutResult(t->assertThat(attempts.submission(s.path("attemptId").asLong())).isEmpty());
+            ok(c.call("POST",path(s)+"/submit",m),200);
+            // A new actor avoids the previous completed row affecting the next failure fixture.
+            student=other;other=tx.execute(t->users.create(key()+"@test.local",passwords.encode("TestPass@123"),"Other",Role.STUDENT));
+        }
+    }
+    @Test void progressPagesIncludeNotStartedAndOwnHistoryButExcludeDraftsAndOthers()throws Exception {
+        var c=new Client().login(student);var o=new Client().login(other);assertThat(progress(c).path("state").asText()).isEqualTo("NOT_STARTED");var s=start(c);assertThat(progress(c).path("state").asText()).isEqualTo("STARTED");assertThat(progress(o).path("state").asText()).isEqualTo("NOT_STARTED");
+        long[] versions=tx.execute(t->{var root=em.find(LessonEntity.class,lesson);var old=em.find(LessonVersionEntity.class,lessonVersion).data();var v=new LessonVersionEntity(lesson,2,old);em.persist(v);em.flush();root.startDraft(v);root.publish();
+            var draft=new LessonEntity(teacher.id(),root.getUnitId(),1);em.persist(draft);em.flush();return new long[]{v.getId(),root.getUnitId()};});
+        assertThat(progress(c).path("updateAvailable").asBoolean()).isTrue();assertThat(progress(o).path("updateAvailable").asBoolean()).isFalse();assertThat(progress(c).path("currentPublishedVersionId").asLong()).isEqualTo(versions[0]);
+        var page=ok(c.call("GET",progressPath()+"&size=1",null),200);assertThat(page.path("totalElements").asInt()).isEqualTo(1);assertThat(ok(c.call("GET",progressPath()+"&size=1&page=1",null),200).path("items")).isEmpty();
+        assertThat(ok(c.call("GET","/api/me/learning-progress?unitId=9007199254740991",null),200).path("items")).isEmpty();
+        ok(c.call("GET",progressPath()+"&size=51",null),400);ok(c.call("GET",progressPath()+"&page=-1",null),400);
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());assertThat(progress(c).path("currentPublishedVersionId").isNull()).isTrue();assertThat(progress(c).path("updateAvailable").asBoolean()).isFalse();assertThat(ok(o.call("GET",progressPath(),null),200).path("items")).isEmpty();
+        ok(c.call("POST",path(s)+"/submit",fullAnswers(s)),200);assertThat(ok(c.call("GET",path(s)+"/result",null),200).path("lessonVersionId").asLong()).isEqualTo(lessonVersion);
+    }
+    @Test void feedbackSubmissionAndProgressEnforceRolesOwnershipAndCsrf()throws Exception {
+        var c=new Client().login(student);var s=start(c);var o=new Client().login(other);
+        error(o.call("POST",path(s)+"/submit",mutation(s)),404,"NOT_FOUND");error(o.call("GET",path(s)+"/result",null),404,"NOT_FOUND");
+        for(var user:List.of(teacher,admin)){var privileged=new Client().login(user);ok(privileged.call("GET",progressPath(),null),403);ok(privileged.call("POST",itemPath(s,0)+"/hint",command(s)),403);ok(privileged.call("POST",path(s)+"/submit",mutation(s)),403);ok(privileged.call("GET",path(s)+"/result",null),403);}
+        c.csrf=null;error(c.call("POST",path(s)+"/submit",mutation(s)),403,"CSRF_INVALID");ok(new Client().call("GET",progressPath(),null),401);assertThat(refresh(c,s)).isEqualTo(s);
+    }
+    @Test void invalidFinalSnapshotCannotPartiallySubmit()throws Exception {
+        var c=new Client().login(student);var s=start(c);var m=fullAnswers(s);((ArrayNode)m.path("answers")).remove(9);
+        error(c.call("POST",path(s)+"/submit",m),400,"VALIDATION_FAILED");
+        m=fullAnswers(s);response(m,9,"{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"unknown\"}");error(c.call("POST",path(s)+"/submit",m),400,"INVALID_ANSWER");
+        m=fullAnswers(s);((ObjectNode)m.path("playerState")).put("currentAttemptQuestionId",9007199254740991L);error(c.call("POST",path(s)+"/submit",m),400,"VALIDATION_FAILED");
+        assertThat(refresh(c,s)).isEqualTo(s);noTrials(s);assertThat(progress(c).path("lastScorePercent").isNull()).isTrue();
+        tx.executeWithoutResult(t->assertThat(attempts.submission(s.path("attemptId").asLong())).isEmpty());
+    }
+    @Test void publishingNewKeysPreservesPinnedGradingSavedResultAndCompletedProgress()throws Exception {
+        var c=new Client().login(student);var s=checkedGuided(c,start(c));
+        long newer=tx.execute(t->{
+            var old=em.find(QuestionVersionEntity.class,questionVersions.get(0));var d=old.data();var root=em.find(QuestionEntity.class,old.getQuestionId());
+            var qv=new QuestionVersionEntity(root.getId(),2,new Question(d.type(),d.topicId(),d.objectiveId(),d.difficulty(),"New prompt",d.content(),node("{\"correctOptionId\":\"a\"}"),"NEW_EXPLANATION",d.hint(),d.materialVersionId(),d.source()));
+            em.persist(qv);em.flush();root.startDraft(qv);root.publish();var lessonRoot=em.find(LessonEntity.class,lesson);var ld=em.find(LessonVersionEntity.class,lessonVersion).data();
+            var slots=ld.questions().stream().map(slot->slot.questionVersionId()==old.getId()?new Slot(qv.getId(),slot.practiceRole(),slot.position()):slot).toList();
+            var lv=new LessonVersionEntity(lesson,2,new Lesson(ld.title(),ld.description(),ld.instructions(),ld.objectiveIds(),slots));em.persist(lv);em.flush();lessonRoot.startDraft(lv);lessonRoot.publish();return lv.getId();
+        });
+        var result=ok(c.call("POST",path(s)+"/submit",fullAnswers(s)),200);assertThat(result.path("correctCount").asInt()).isEqualTo(10);assertThat(result.path("lessonCompleted").asBoolean()).isTrue();assertThat(result.toString()).doesNotContain("NEW_EXPLANATION");
+        var p=progress(c);assertThat(p.path("state").asText()).isEqualTo("COMPLETED");assertThat(p.path("lastCompletedVersionId").asLong()).isEqualTo(lessonVersion);assertThat(p.path("currentPublishedVersionId").asLong()).isEqualTo(newer);assertThat(p.path("updateAvailable").asBoolean()).isTrue();
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());assertThat(ok(c.call("GET",path(s)+"/result",null),200)).isEqualTo(result);
+    }
+
     @Test void learnPinsTenOrderedItemsAndSafeSnapshot()throws Exception {
         var c=new Client().login(student);var s=start(c);
         assertThat(s.path("items")).hasSize(10); assertThat(s.path("materials")).hasSize(1);

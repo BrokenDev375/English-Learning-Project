@@ -1,6 +1,7 @@
 package vn.edu.ptit.english.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -42,7 +43,7 @@ public final class AttemptViews {
     }
     public record MaterialFeedback(long materialVersionId,String transcript) {}
     public record Result(int factsSchemaVersion,long submissionId,long attemptId,Mode mode,Long lessonVersionId,
-        Instant submittedAt,long submittedRevision,int totalQuestions,int answeredCount,int unansweredCount,int correctCount,
+        @JsonFormat(shape=JsonFormat.Shape.STRING) Instant submittedAt,long submittedRevision,int totalQuestions,int answeredCount,int unansweredCount,int correctCount,
         BigDecimal scorePercent,int independentFreshAnsweredCount,int independentFreshCorrectCount,boolean lessonCompleted,
         List<ResultItem> items,List<MaterialFeedback> materialFeedback) {
         public Result { items=List.copyOf(items); materialFeedback=List.copyOf(materialFeedback); }

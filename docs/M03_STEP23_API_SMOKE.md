@@ -1,6 +1,6 @@
 # Thử API M03 bước 2–3
 
-Phạm vi hiện có: tạo/tiếp tục lượt LEARN/PRACTICE, danh sách lượt, snapshot, quyền media và lưu/khôi phục nháp. REVIEW trả REVIEW_NOT_READY khi chưa nối M04. Hint/check/submit/result/retry và giao diện runner chưa có.
+Phạm vi hướng dẫn này: tạo/tiếp tục lượt LEARN/PRACTICE, danh sách lượt, snapshot, quyền media và lưu/khôi phục nháp. REVIEW trả REVIEW_NOT_READY khi chưa nối M04. Hint/check/submit/result/retry và tiến độ đã có ở [hướng dẫn bước 4](M03_STEP4_API_SMOKE.md); giao diện runner thuộc bước 5.
 
 Backend đang chạy từ image cũ sẽ chưa có API mới. Từ thư mục gốc, mở Docker Desktop rồi chạy `start.cmd` để build/chạy mã hiện tại. Flyway sẽ áp dụng V4 nếu database chưa có; không xóa volume.
 

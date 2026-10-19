@@ -21,12 +21,14 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     private final LessonProgressJpaRepository progress;
     private final EntityManager em;
     private final LessonQuestionJpaRepository slots;
+    private final LessonJpaRepository lessons;
     public AttemptRepositoryImpl(AttemptJpaRepository attempts,AttemptQuestionJpaRepository items,AttemptAnswerJpaRepository answers,
         AnswerTrialJpaRepository trials,SubmissionJpaRepository submissions,QuestionExposureJpaRepository exposures,
-        LessonProgressJpaRepository progress,EntityManager em,LessonQuestionJpaRepository slots) {
+        LessonProgressJpaRepository progress,EntityManager em,LessonQuestionJpaRepository slots,LessonJpaRepository lessons) {
         this.attempts=attempts; this.items=items; this.answers=answers; this.trials=trials; this.submissions=submissions;
         this.exposures=exposures; this.progress=progress; this.em=em;
         this.slots=slots;
+        this.lessons=lessons;
     }
     public Optional<AttemptEntity> attempt(long id,long userId,boolean lock) {
         var result=lock?attempts.lockOwned(id,userId):attempts.findByIdAndUserId(id,userId);
@@ -58,6 +60,7 @@ public class AttemptRepositoryImpl implements AttemptRepository {
         return Optional.ofNullable(value);
     }
     public Page<LessonProgressEntity> progress(long userId,Long unitId,int page,int size){return progress.pageOwned(userId,unitId,PageRequest.of(page,size));}
+    public Page<LessonEntity> progressLessons(long userId,Long unitId,int page,int size){return lessons.progressLessons(userId,unitId,PageRequest.of(page,size));}
     public AttemptEntity save(AttemptEntity v){return attempts.saveAndFlush(v);}
     public AttemptQuestionEntity save(AttemptQuestionEntity v){return items.saveAndFlush(v);}
     public AttemptAnswerEntity save(AttemptAnswerEntity v){return answers.saveAndFlush(v);}
