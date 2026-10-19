@@ -48,6 +48,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/login", "/api/auth/register", "/error").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/author/**").hasAnyRole("TEACHER", "ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/assets").hasAnyRole("TEACHER","ADMIN")
                 .anyRequest().authenticated())
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, ex) ->

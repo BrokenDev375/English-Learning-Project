@@ -3,7 +3,7 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
     "title": "English Learning — M02/M03 contract",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "ĐẶC TẢ TRIỂN KHAI. Endpoint mới chưa có ở runtime M01. M02_M03_HANDOFF.md và M02_M03_API.md chốt hành vi; schema cho draft cho phép thiếu nội dung, publish kiểm tra đầy đủ."
   },
   "servers": [
@@ -7237,6 +7237,233 @@
           }
         ]
       }
+    },
+    "/api/author/materials/{id}/audio-update": {
+      "get": {
+        "operationId": "m02AudioUpdatePreview",
+        "summary": "Liệt kê nội dung có thể chuyển sang audio đã xuất bản mới nhất.",
+        "tags": [
+          "M02 Author"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioUpdatePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "description": "TEACHER/ADMIN. Tài liệu phải đang xuất bản và có loại AUDIO. Chỉ hiện chi tiết câu/bài được phép sửa; nội dung của tác giả khác chỉ có số đếm."
+      },
+      "post": {
+        "operationId": "m02AudioUpdateApply",
+        "summary": "Tạo và xuất bản phiên bản mới cho các câu/bài đã chọn để dùng audio mới.",
+        "tags": [
+          "M02 Author"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioUpdateApplied"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioUpdateRequest"
+              }
+            }
+          }
+        },
+        "description": "Một transaction và một receipt. Tối đa 100 câu + 100 bài; phải chọn đủ requiredQuestionIds cho từng bài. contentConfirmed=true xác nhận đã kiểm tra đáp án/transcript. Không ghi đè nháp hoặc sửa nội dung của người khác. PREVIEW_STALE nếu có thay đổi sau GET. Replay requestId/payload trả kết quả cũ kể cả preview đã hết hiệu lực sau lần áp dụng thành công."
+      }
     }
   },
   "components": {
@@ -12370,6 +12597,254 @@
         },
         "required": [
           "unit",
+          "lessons"
+        ]
+      },
+      "AudioUpdateQuestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null nếu có thể chọn; lý do giữ nguyên nội dung nếu bị chặn."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "versionId",
+          "reason"
+        ]
+      },
+      "AudioUpdateLesson": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string"
+          },
+          "versionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null nếu có thể chọn; lý do giữ nguyên nội dung nếu bị chặn."
+          },
+          "requiredQuestionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "versionId",
+          "reason",
+          "requiredQuestionIds"
+        ]
+      },
+      "AudioUpdatePreview": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "materialId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "targetVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "targetVersionNo": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "previewToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AudioUpdateQuestion"
+            }
+          },
+          "lessons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AudioUpdateLesson"
+            }
+          },
+          "foreignQuestionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "foreignLessonCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "materialId",
+          "targetVersionId",
+          "targetVersionNo",
+          "previewToken",
+          "questions",
+          "lessons",
+          "foreignQuestionCount",
+          "foreignLessonCount"
+        ]
+      },
+      "AudioUpdateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "targetVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "previewToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "questionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxItems": 100,
+            "uniqueItems": true
+          },
+          "lessonIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxItems": 100,
+            "uniqueItems": true
+          },
+          "contentConfirmed": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "requestId",
+          "targetVersionId",
+          "previewToken",
+          "questionIds",
+          "lessonIds",
+          "contentConfirmed"
+        ],
+        "anyOf": [
+          {
+            "properties": {
+              "questionIds": {
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "properties": {
+              "lessonIds": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      },
+      "AudioUpdatedVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "versionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "versionId"
+        ]
+      },
+      "AudioUpdateApplied": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "materialId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "targetVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AudioUpdatedVersion"
+            }
+          },
+          "lessons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AudioUpdatedVersion"
+            }
+          }
+        },
+        "required": [
+          "materialId",
+          "targetVersionId",
+          "questions",
           "lessons"
         ]
       }

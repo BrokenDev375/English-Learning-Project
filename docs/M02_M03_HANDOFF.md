@@ -1,6 +1,6 @@
 # Bàn giao M02 và M03 — API và database
 
-Chốt ngày 16/10/2026, hợp đồng `1.0.0`. Đây là **đặc tả để triển khai**, chưa phải chức năng đã chạy. Hiện dự án mới có M01; chưa cài V3/V4 vào database.
+Chốt ngày 16/10/2026, hợp đồng `1.0.0`. Đây là đặc tả đầy đủ để triển khai. Cập nhật 17/10: M02 đã hoàn thành V3, danh mục tác giả, file/tài liệu, ngân hàng câu hỏi, bài học, learner catalog, PublishedContentReader và seed 6 bài/90 câu kèm manifest/nguồn. M03/V4 chưa triển khai. Theo dõi phần đã chạy tại [tiến độ M02](M02_PROGRESS.md).
 
 ## 1. Giao việc ngay cho hai người
 
@@ -94,7 +94,7 @@ Copy câu giữ nguyên `originKey`. Chỉnh bản nháp, sửa phiên bản, đ
 
 ### 3.4. Upload và quyền đọc file
 
-- M02 bổ sung API mới; M01 chỉ có volume `asset_data`.
+- M02 bước 2 đã bổ sung API upload/đọc file; M01 chỉ chuẩn bị volume `asset_data`.
 - File bytes lưu trong volume backend; database lưu metadata. Chấp nhận PNG/JPEG và MP3/WAV/OGG, tối đa **5 MiB = 5.242.880 bytes/file**.
 - Kiểm tra nội dung/MIME thực và kích thước phía server; không tin tên file, extension hoặc Content-Type client gửi. Storage key UUID do server sinh, không nhận đường dẫn từ client.
 - File đã READY không ghi đè; upload mới tạo Asset mới. Viết file tạm rồi atomic move; rollback DB thì dọn file vừa tạo, không ảnh hưởng file dùng chung.
@@ -240,9 +240,11 @@ Các interface nội bộ cần giao trước:
 
 M02 merge V3 trước, M03 merge V4 sau. Khi triển khai mới chuyển DDL từ `docs/database/planned/` vào `source/server/src/main/resources/db/migration/`. Không thay V1/V2, không sửa migration đã chạy, không cho Hibernate tự create/update schema. Giữ `ddl-auto=validate`.
 
-Các file dễ đụng: `source/client/src/api.ts`, router/App, security/config, seed/bootstrap, cấu hình upload. M02 phụ trách thêm FormData vào api.ts (hiện helper chỉ JSON.stringify); giữ CSRF/cookie. M03/M06 dùng adapter này, không sửa cùng file trên hai PR không trao đổi.
+Các file dễ đụng: `source/client/src/api.ts`, router/App, security/config, seed/bootstrap, cấu hình upload. M02 bước 2 đã thêm FormData vào api.ts, giữ CSRF/cookie và để trình duyệt đặt multipart boundary. M03/M06 dùng adapter này, không sửa cùng file trên hai PR không trao đổi.
 
 ## 7. Điều kiện nghiệm thu bắt buộc
+
+Bổ sung M02 ngày 19/10: [mục 9 đặc tả API](../source/common/M02_M03_API.md) có GET/POST cập nhật audio đồng loạt. Thao tác tạo các phiên bản Question/Lesson mới; không đổi lịch sử. M03 vẫn đọc đúng LessonVersion/QuestionVersion/MaterialVersion đã pin khi tạo Attempt. Lesson do ADMIN tạo trong Unit thuộc giảng viên vẫn giữ chủ sở hữu là chủ Unit. Xem [kết quả kiểm tra](../statics/results/module-2-audio-update-validation.md).
 
 ### M02
 

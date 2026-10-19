@@ -8,6 +8,10 @@ server:
         same-site: lax
         secure: ${SESSION_COOKIE_SECURE:false}
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5242880B
+      max-request-size: 6291456B
   jpa:
     open-in-view: false
     hibernate:
@@ -31,9 +35,11 @@ spring:
     time-zone: UTC
     deserialization:
       fail-on-unknown-properties: true
+      accept-float-as-int: false
 app:
   assets:
     directory: ${ASSET_DIRECTORY:./data/assets}
+    probe-executable: ${MEDIA_PROBE_EXECUTABLE:ffprobe}
   demo:
     enabled: ${DEMO_ENABLED:false}
     teacher-email: ${DEMO_TEACHER_EMAIL:teacher@english.local}

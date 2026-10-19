@@ -12,6 +12,7 @@ import vn.edu.ptit.english.enums.Role;
 import vn.edu.ptit.english.repository.UserRepository;
 
 @Component
+@org.springframework.core.annotation.Order(10)
 @ConditionalOnProperty(name = "app.demo.enabled", havingValue = "true")
 public class DemoInitializer implements ApplicationRunner {
     private final UserRepository users;
