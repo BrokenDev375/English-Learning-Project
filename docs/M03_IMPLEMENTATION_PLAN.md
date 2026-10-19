@@ -2,7 +2,7 @@
 
 Ngày lập: 19/10/2026. Nhánh triển khai: `feature/m03-learning-attempts`.
 
-Trạng thái ban đầu: M01/M02 đã có trong mã nguồn; V4, API lượt làm và giao diện làm bài M03 chưa triển khai. Các checkbox dưới đây là công việc cần thực hiện, không phải kết quả đã nghiệm thu.
+Trạng thái ban đầu: M01/M02 đã có trong mã nguồn; V4, API lượt làm và giao diện làm bài M03 chưa triển khai. Cập nhật tiến độ tại [M03_PROGRESS](M03_PROGRESS.md); chỉ đánh dấu checkbox khi đã có kết quả kiểm tra tương ứng.
 
 ## 1. Mục tiêu và nguồn đặc tả
 
@@ -129,12 +129,14 @@ Làm tuần tự theo các cổng nghiệm thu dưới đây. Tên class/file m�
 
 Phụ thuộc: bước 0.
 
-- [ ] Thêm Flyway V4; ánh xạ 7 bảng, khóa ghép, enum và JSON có cấu trúc. Giữ nguyên FK/unique/CHECK của hợp đồng.
-- [ ] Thêm repository interface/implementation và JPA repository cho truy vấn/khóa lượt, exposures, trials, submission và progress.
-- [ ] Tạo `AttemptRequests`, `AttemptViews`/DTO tương đương, từ chối trường lạ và validate giới hạn ID/UUID/null theo schema.
-- [ ] Tách validator response và grader thuần cho ba dạng; cùng kết quả chấm dùng cho check/submit/retry.
-- [ ] Test unit ca đúng/sai/trống/partial, Unicode/whitespace/case, matching đã xáo và ID không hợp lệ.
-- [ ] Test MySQL nâng V3 → V4 và khởi tạo V1 → V4, Hibernate validate, unique Submission và trial sequence. Không đụng DB demo.
+- [x] Thêm Flyway V4; ánh xạ 7 bảng, khóa ghép, enum và JSON có cấu trúc. Giữ nguyên FK/unique/CHECK của hợp đồng.
+- [x] Thêm repository interface/implementation và JPA repository cho truy vấn/khóa lượt, exposures, trials, submission và progress.
+- [x] Tạo `AttemptRequests`, `AttemptViews`/DTO tương đương, từ chối trường lạ và validate giới hạn ID/UUID/null theo schema.
+- [x] Tách validator response và grader thuần cho ba dạng; cùng kết quả chấm dùng cho check/submit/retry.
+- [x] Test unit ca đúng/sai/trống/partial, Unicode/whitespace/case, matching đã xáo và ID không hợp lệ.
+- [x] Test MySQL nâng V3 → V4 và khởi tạo V1 → V4, Hibernate validate, unique Submission và trial sequence. Không đụng DB demo.
+
+Kết quả: [nghiệm thu bước 1](../statics/results/module-3-step1-validation.md). Thay đổi bước 1 để chưa commit để người triển khai tự commit.
 
 Cổng nghiệm thu: schema ánh xạ đúng, bộ chấm độc lập với HTTP và có fixture phân biệt chưa trả lời/điền thiếu/điền đủ nhưng sai.
 

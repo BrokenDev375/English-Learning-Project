@@ -1,5 +1,7 @@
 # Cấu trúc backend M01 và M02 hoàn chỉnh
 
+M03 bước 1 bổ sung nền V4 và 7 entity học tập, `AttemptRepository`/implementation và JPA repositories, DTO `AttemptData/AttemptRequests/AttemptViews`, `AnswerValidator` và `AnswerGrader`/implementation. Chưa có controller/service nghiệp vụ Attempt hoặc progress. Theo dõi [tiến độ M03](M03_PROGRESS.md), [nghiệm thu nền](../statics/results/module-3-step1-validation.md). V4 chỉ được áp dụng ở test trong lượt triển khai này; backend build mới sẽ tự migrate database được cấu hình khi khởi động.
+
 M02 bước 1 bổ sung AuthorCatalogController → CatalogService/impl → CatalogRepository/impl → JPA cho Topic/Objective/Unit, cùng RequestReceiptService dùng chung. Theo dõi phạm vi hiện tại ở [tiến độ M02](M02_PROGRESS.md). Mô tả M01 bên dưới vẫn áp dụng cho nền tài khoản.
 
 M02 bước 2 bổ sung AssetController → AssetService/impl → AssetRepository/impl và AuthorMaterialController → MaterialService/impl → MaterialRepository/impl. AssetStorage giữ file trong volume, dọn file khi transaction rollback; MediaInspector kiểm tra PNG/JPEG bằng ImageIO và MP3/WAV/OGG bằng ffprobe có giới hạn thời gian. MaterialData/MaterialRequests kiểm tra DTO theo từng loại, MaterialViews tạo response. Bản công bố bất biến; write khóa actor trước material root, dùng RequestReceiptService và revision/previewToken.

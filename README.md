@@ -1,5 +1,7 @@
 # English Learning
 
+M03 bước 0–1 đã có nền tích hợp receipt, migration V4, entity/repository, DTO và bộ chấm ba dạng câu. API và giao diện làm bài sẽ được nối ở các bước sau; xem [tiến độ M03](docs/M03_PROGRESS.md) và [kế hoạch triển khai](docs/M03_IMPLEMENTATION_PLAN.md).
+
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 đã hoàn thành bốn bước: danh mục, tài liệu đọc/nghe/ảnh, ngân hàng câu hỏi, biên soạn bài học có phiên bản và seed 6 bài/90 câu. Làm bài, ôn tập, XP và Giải đấu tuần thuộc các module tiếp theo.
 
 ## M02 — biên soạn học liệu đã có thể dùng thử

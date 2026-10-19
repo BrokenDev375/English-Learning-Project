@@ -1,5 +1,7 @@
 # Database — English Learning (M01 và M02 hoàn chỉnh)
 
+Cập nhật M03 bước 1 (19/10/2026): mã nguồn đã bổ sung Flyway V4, mapping 7 bảng và repository cho lượt làm. Đã kiểm tra migration/ORM trên MySQL riêng; DB demo không được nâng trong lượt triển khai này. Backend build mới sẽ tự áp dụng V4 khi khởi động. Chưa có API tạo/lưu/nộp bài hoặc tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md).
+
 Nguồn schema chính: source/server/src/main/resources/db/migration/. Runtime đã có Flyway V1, V2 và V3; Hibernate validate khi khởi động. M02 bước 2–4 dùng tiếp V3, không thêm hoặc sửa migration.
 
 | Bảng | Vai trò |
@@ -22,4 +24,4 @@ V3 tạo đủ 13 bảng học liệu/receipt đã thiết kế và đã đượ
 - [V4 — M03, 7 bảng](docs/database/planned/V4__learning_attempts.sql): lượt làm, đáp án nháp, trial, bài nộp, lịch sử đã gặp và tiến độ bài.
 - [Bàn giao và quan hệ dữ liệu](docs/M02_M03_HANDOFF.md), [hợp đồng API](source/common/M02_M03_API.md).
 
-V3 đã được sao chép vào Flyway và áp dụng; file trong planned giữ hợp đồng gốc để đối chiếu. V4 vẫn là kế hoạch. Giữ JPA validate và không sửa migration đã chạy. Lịch ôn/XP/league thuộc module sau, chưa có trong V3/V4. Xem [tiến độ M02](docs/M02_PROGRESS.md).
+V3 đã được sao chép vào Flyway và áp dụng; file trong planned giữ hợp đồng gốc để đối chiếu. V4 đã có trong Flyway ở bước 1 M03; file planned giữ nguyên để đối chiếu. Giữ JPA validate và không sửa migration đã chạy. Lịch ôn/XP/league thuộc module sau, chưa có trong V3/V4. Xem [tiến độ M02](docs/M02_PROGRESS.md) và [M03](docs/M03_PROGRESS.md).
