@@ -6,7 +6,8 @@ import { Brand, formatDate, initials } from './components/Brand';
 import AuthPage from './features/auth/AuthPage';
 import AdminAccounts from './features/admin/AdminAccounts';
 import ContentWorkspace from './features/content/ContentWorkspace';
-import LearningCatalog from './features/content/LearningCatalog';
+import LearningWorkspace from './features/learning/LearningWorkspace';
+import { activateLearningUser, clearLearningSessions, hasUnsavedLearning } from './features/learning/session';
 import { navigate, useRouteParam } from './navigation';
 
 export default function App() {
@@ -23,8 +24,14 @@ export default function App() {
     finally { setLoading(false); }
   }
   useEffect(() => { void restore(); }, []);
+  useEffect(() => { if (user) activateLearningUser(user.id); }, [user?.id]);
   useEffect(() => {
-    const expired = () => { setUser(null); setView('home', true); resetCsrf(); setNotice('Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.'); };
+    const warn = (event: BeforeUnloadEvent) => { if (hasUnsavedLearning()) { event.preventDefault(); event.returnValue = ''; } };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, []);
+  useEffect(() => {
+    const expired = () => { setUser(null); if (!window.location.hash.startsWith('#/learning')) setView('home', true); resetCsrf(); setNotice('Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.'); };
     window.addEventListener('session-expired', expired);
     return () => window.removeEventListener('session-expired', expired);
   }, []);
@@ -49,8 +56,9 @@ export default function App() {
     return () => { cancelled = true; window.clearTimeout(retry); window.clearInterval(beat); socket?.close(); setConnected(false); };
   }, [user?.id]);
   async function logout() {
+    if (hasUnsavedLearning() && !window.confirm('Có thay đổi hoặc thao tác học chưa được xác nhận. Đăng xuất sẽ bỏ dữ liệu chưa đồng bộ trong phiên này. Bạn vẫn muốn đăng xuất?')) return;
     setBusy(true);
-    try { await api('/api/auth/logout', 'POST'); resetCsrf(); setUser(null); setView('home', true); setNotice(''); }
+    try { await api('/api/auth/logout', 'POST'); clearLearningSessions(); resetCsrf(); setUser(null); setView('home', true); setNotice(''); }
     catch (failure) { setNotice(errorMessage(failure)); } finally { setBusy(false); }
   }
   if (loading) return <div className="loading-screen"><Brand /><p>Đang mở không gian học tập…</p></div>;
@@ -70,7 +78,7 @@ export default function App() {
       <div className="topbar-actions"><span className={'connection ' + (connected ? 'online' : '')}><i />{connected ? 'Đã kết nối' : 'Đang kết nối lại'}</span><button className="link-button" disabled={busy} onClick={logout}>{busy ? 'Đang thoát…' : 'Đăng xuất'}</button></div></header>
       <main className="main-content">
         {notice && <div className="message error" role="alert">{notice}</div>}
-        {view === 'learning' ? <LearningCatalog /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
+        {view === 'learning' ? <LearningWorkspace key={user.id} user={user} /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
           <section><span className="eyebrow">THÔNG TIN CÁ NHÂN</span><h1>Tài khoản của bạn<span>.</span></h1><p className="muted">Thông tin và quyền truy cập hiện tại của bạn.</p>
             <div className="panel profile-card"><span className="avatar large">{initials(user.fullName)}</span><h2>{user.fullName}</h2><span className="role-pill">{roleNames[user.role]}</span>
               <dl><div><dt>Email</dt><dd>{user.email}</dd></div><div><dt>Vai trò</dt><dd>{roleNames[user.role]}</dd></div><div><dt>Trạng thái</dt><dd>Hoạt động</dd></div><div><dt>Ngày tham gia</dt><dd>{formatDate(user.createdAt)}</dd></div></dl></div>

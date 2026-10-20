@@ -25,6 +25,10 @@ public class RequestReceiptServiceImpl implements RequestReceiptService {
     }
     @Override @Transactional(propagation = Propagation.MANDATORY)
     public Result execute(UserPrincipal actor, String requestId, String operation, Object payload, int status, Supplier<?> action) {
+        return execute(actor, requestId, operation, payload, () -> new Reply(status, action.get()));
+    }
+    @Override @Transactional(propagation = Propagation.MANDATORY)
+    public Result execute(UserPrincipal actor, String requestId, String operation, Object payload, Supplier<Reply> action) {
         // Serializing mutations by actor also closes concurrent-create and duplicate-request races.
         guard.lockCurrent(actor);
         JsonNode tree = json.valueToTree(payload);
@@ -37,9 +41,12 @@ public class RequestReceiptServiceImpl implements RequestReceiptService {
                 throw new ApiException(HttpStatus.CONFLICT,"REQUEST_ID_REUSED","Mã yêu cầu đã được dùng với nội dung khác.");
             return new Result(receipt.getResponseStatus(),receipt.getResponseJson(),true);
         }
-        JsonNode body = json.valueToTree(action.get());
-        repository.save(new RequestReceiptEntity(actor.id(),requestId,operation,hash,status,body));
-        return new Result(status,body,false);
+        Reply reply = action.get();
+        if (reply == null || reply.status() < 200 || reply.status() >= 300)
+            throw new IllegalArgumentException("A receipt requires a successful response");
+        JsonNode body = json.valueToTree(reply.body());
+        repository.save(new RequestReceiptEntity(actor.id(),requestId,operation,hash,reply.status(),body));
+        return new Result(reply.status(),body,false);
     }
     private String hash(JsonNode node) {
         try {
