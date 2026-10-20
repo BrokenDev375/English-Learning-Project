@@ -6,6 +6,7 @@ import type { Answer, Draft, Feedback, PlayerState, Result, Snapshot } from './t
 
 interface SessionState {
   snapshot: Snapshot | null; draft: Draft | null; result: Result | null; busy: boolean; loading: boolean;
+  playerRestoreVersion: number;
   pending: Operation | null; conflict: Snapshot | null; error: string; loginRequired: boolean;
   hints: Record<number, string>; feedback: Record<number, { data: Feedback; response: Answer | null }>;
 }
@@ -15,7 +16,7 @@ function fromSnapshot(s: Snapshot): Draft { return { answers: s.items.map(i => (
 
 /** In-memory only. Pending commands keep their original key/payload until replay + GET succeed. */
 export class AttemptSession {
-  private value: SessionState = { snapshot: null, draft: null, result: null, busy: false, loading: false, pending: null, conflict: null, error: '', loginRequired: false, hints: {}, feedback: {} };
+  private value: SessionState = { snapshot: null, draft: null, result: null, busy: false, loading: false, playerRestoreVersion: 0, pending: null, conflict: null, error: '', loginRequired: false, hints: {}, feedback: {} };
   private listeners = new Set<() => void>();
   private generation = 0;
   constructor(readonly id: number) {}
@@ -34,7 +35,11 @@ export class AttemptSession {
       const s = await readAttempt(this.id);
       const result = s.state === 'SUBMITTED' ? await readResult(this.id) : null;
       if (this.value.snapshot && this.dirty && s.revision !== this.value.snapshot.revision) this.update({ conflict: s, result });
-      else this.update({ snapshot: s, result, draft: this.dirty || this.value.pending ? this.value.draft : clone(fromSnapshot(s)), loginRequired: false });
+      else {
+        const keepDraft = this.dirty || !!this.value.pending;
+        this.update({ snapshot: s, result, draft: keepDraft ? this.value.draft : clone(fromSnapshot(s)), loginRequired: false,
+          playerRestoreVersion: this.value.playerRestoreVersion + (keepDraft ? 0 : 1) });
+      }
     } catch (e) { this.failure(e); } finally { this.update({ loading: false }); }
   }
   edit(itemId: number, response: Answer | null) {
@@ -85,7 +90,9 @@ export class AttemptSession {
   private failure(e: unknown) { this.update({ error: errorMessage(e), loginRequired: e instanceof ApiError && e.status === 401 }); }
   resolveConflict(keepLocal: boolean) {
     const s = this.value.conflict; if (!s || this.value.busy) return;
-    this.update({ snapshot: s, conflict: null, pending: null, error: '', draft: keepLocal && s.state === 'IN_PROGRESS' ? this.value.draft : clone(fromSnapshot(s)) });
+    const keepDraft = keepLocal && s.state === 'IN_PROGRESS';
+    this.update({ snapshot: s, conflict: null, pending: null, error: '', draft: keepDraft ? this.value.draft : clone(fromSnapshot(s)),
+      playerRestoreVersion: this.value.playerRestoreVersion + (keepDraft ? 0 : 1) });
     if (s.state === 'SUBMITTED') void this.load();
   }
 }

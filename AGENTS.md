@@ -41,7 +41,7 @@ Có ba vai trò:
 | M01 — Tài khoản và quản trị | Đã có đăng ký/đăng nhập, session/CSRF, quản trị, kiểm tra quyền hiện hành, nền WebSocket và thu hồi kết nối |
 | M02 — Học liệu | Đã có danh mục, file/đọc/nghe/ảnh, biên soạn/xuất bản/phiên bản, cập nhật audio hàng loạt và learner catalog |
 | M03 — Học/luyện tập | Đã triển khai bước 0–5: dữ liệu/bộ chấm, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện |
-| M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao; chưa commit bước 6, người dùng tạo PR trên web sau |
+| M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao tại commit `9b0f1e0`; người dùng tạo PR trên web sau |
 | M04/M05/M06/M07 | Lần lượt: lịch ôn, XP/giải đấu tuần, offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
@@ -184,6 +184,8 @@ Trong `features/learning/`:
 Hiện tại dùng **lưu nháp chủ động bằng nút**, chưa có autosave. Không báo đã lưu trước ACK. Bộ nhớ phiên trang giữ bản nhập khi chuyển màn SPA và khi cùng user đăng nhập lại; đăng xuất chủ động/đổi user xóa bộ nhớ. App giữ route học khi hết phiên và cảnh báo reload/đóng tab nếu còn thay đổi.
 
 Pending command giữ đúng key/payload tới khi replay và GET đối soát xong; chặn mutation tiếp theo khi kết quả chưa rõ. Generation bảo vệ bản nhập mới hơn khỏi ACK cũ. 409 cần lựa chọn rõ ràng sau so sánh, không tự tăng revision rồi ghi đè.
+
+Cập nhật 20/10: `AttemptSession.playerRestoreVersion` đánh dấu lần nhận playerState từ server khi tải bản nháp hoặc chọn **Dùng bản máy chủ**. Runner truyền mốc này cho LearningMaterial để seek audio sau khi metadata sẵn sàng. Giữ bản local hoặc nhận ACK lưu thông thường phải giữ vị trí đang nghe; không seek lại theo mỗi tick cập nhật local. Hồi quy và phạm vi kiểm tra tại [bản sửa khôi phục audio](statics/results/module-3-audio-restore-validation.md).
 
 URL/history chỉ chứa màn hình, ID và bộ lọc; không chứa đáp án hoặc nội dung học liệu. F5/deep link đọc Attempt đã có, không gọi create để chọn lại câu. Chưa có IndexedDB/localStorage/outbox: không khẳng định phần chưa commit được lưu bền vững tại máy.
 

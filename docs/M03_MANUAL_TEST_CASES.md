@@ -30,6 +30,8 @@ Phạm vi: LEARN/PRACTICE, nháp, hint/check, nộp, kết quả/chữa và ti�
 | UI-15 | TEACHER/ADMIN mở danh mục/giới thiệu | Được khám phá; không nút tạo lượt thật, không gọi attempt/progress |
 | UI-16 | Audio: nghe, tua, lưu, F5; thử đoạn nghe có metadata fixture; viewport 390px | Lưu giây tuyệt đối, khôi phục đúng, clamp theo đoạn/thời lượng; không tràn ngang |
 | UI-17 | Dùng bàn phím chọn radio/nhập/điều hướng; prompt dài, input fill quá 200 ký tự | Điều khiển có nhãn/focus; mobile không tràn; fill giới hạn 200 ký tự |
+| UI-18 | Hai tab cùng lượt có audio: cùng lưu giây 1; tab A lưu giây 7, tab B đang giây 2 nhận 409; chọn Dùng bản máy chủ hoặc giữ bản đang nhập | Dùng server đưa audio về giây 7 và trạng thái sạch; giữ local vẫn giây 2, lưu tiếp đưa server về giây 2 |
+| UI-19 | Lưu vị trí giây 2, giữ chậm phản hồi sau commit; trong lúc chờ tua tới giây 4, rồi trả ACK | Audio và bản nhập giữ giây 4; server vẫn giây 2 tới lần lưu tiếp theo; ACK cũ không tua ngược hoặc báo sạch sai |
 
 Ca UI-11–13 cần interception có kiểm soát như [Playwright M03](../source/client/e2e/module-three-learning.spec.ts), không dùng ngắt mạng tùy ý để kết luận server đã commit. Fixture 401/503 và metadata không thay thế kiểm tra quyền/media thật ở backend.
 

@@ -13,7 +13,7 @@ Tra cứu: [kế hoạch triển khai](M03_IMPLEMENTATION_PLAN.md), [hướng d�
 | 2–3 — Lượt làm và nháp | Tạo/tiếp tục, selector, snapshot/media, lưu và khôi phục full draft | `759ccb3`; [kiểm tra](../statics/results/module-3-step23-validation.md) |
 | 4 — Feedback và kết quả | Hint/check, submit/result, CORRECTION và tiến độ | `2f09404`; [kiểm tra](../statics/results/module-3-step4-validation.md) |
 | 5 — Giao diện | Catalog, giới thiệu bài, PRACTICE, lịch sử, runner, kết quả/chữa và đối soát lỗi | `97a881d`; [kiểm tra](../statics/results/module-3-step5-validation.md) |
-| 6 — Nghiệm thu và bàn giao | Ma trận, hồi quy, restart/recreate/seed/replay/media và tài liệu hoàn tất; PR do người dùng mở sau | Chưa commit; [biên bản](../statics/results/module-3-validation.md), [ca nghiệm thu](M03_MANUAL_TEST_CASES.md) |
+| 6 — Nghiệm thu và bàn giao | Ma trận, hồi quy, restart/recreate/seed/replay/media và tài liệu hoàn tất; PR do người dùng mở sau | `9b0f1e0`; [biên bản](../statics/results/module-3-validation.md), [ca nghiệm thu](M03_MANUAL_TEST_CASES.md) |
 
 ## Phạm vi hiện có
 
@@ -33,6 +33,12 @@ Các số trên thuộc đúng mốc source ghi trong báo cáo, không tự áp
 
 ## Việc còn lại
 
-Người dùng review/commit/push phần bước 6, rồi tạo PR vào main trên web; mô tả PR được cung cấp trong cuộc trao đổi để sao chép. Checklist thủ công là quy trình tái hiện; chưa có phiên thao tác thủ công độc lập chạy lại từng dòng, không coi việc có checklist là bằng chứng chạy tay.
+### Cập nhật 20/10 — khôi phục vị trí audio sau xung đột
+
+Đã sửa trường hợp chọn **Dùng bản máy chủ** khôi phục đáp án nhưng audio vẫn ở vị trí local. Session đánh dấu lần nhận playerState từ server; player seek theo mốc đó khi metadata sẵn sàng. Chọn giữ bản đang nhập và nhận ACK lưu thông thường vẫn giữ vị trí đang nghe.
+
+Đã tái hiện lỗi trước sửa trên backend/audio thật, sau sửa **17/17 Playwright M03 đạt** (14 ca sẵn có + 3 hồi quy mới), TypeScript/Vite build đạt. Chi tiết và lệnh tái hiện: [bản sửa audio](../statics/results/module-3-audio-restore-validation.md).
+
+Người dùng review rồi tạo PR vào main trên web. Bước 6 đã có commit `9b0f1e0`. Checklist thủ công là quy trình tái hiện; chưa có phiên thao tác thủ công độc lập chạy lại từng dòng, không coi việc có checklist là bằng chứng chạy tay.
 
 REVIEW hiện trả REVIEW_NOT_READY khi chưa có provider M04. Lịch ôn M04, XP M05, offline bền vững M06 và thống kê nâng cao M07 chưa được triển khai đầy đủ trong phạm vi này.

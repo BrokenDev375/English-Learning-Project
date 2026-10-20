@@ -1,20 +1,24 @@
-import { useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { Material } from './types';
-export default function LearningMaterial({ material: m, savedSeconds, onPosition }: { material: Material; savedSeconds?: number; onPosition?: (seconds: number) => void }) {
+export default function LearningMaterial({ material: m, savedSeconds, restoreVersion = 0, onPosition }: { material: Material; savedSeconds?: number; restoreVersion?: number; onPosition?: (seconds: number) => void }) {
   const audio = useRef<HTMLAudioElement>(null);
   const restore = useRef(savedSeconds);
+  const latestSaved = useRef(savedSeconds);
   const [failed, setFailed] = useState(false), [retry, setRetry] = useState(0);
-  function bounds(player: HTMLAudioElement) {
+  const bounds = useCallback((player: HTMLAudioElement) => {
     const duration = Number.isFinite(player.duration) ? player.duration : 86400;
     const end = Math.max(0, Math.min(m.endSeconds ?? duration, duration, 86400));
     return { start: Math.min(Math.max(0, m.startSeconds ?? 0), end), end };
-  }
-  function clamp(restoring = false) {
+  }, [m.startSeconds, m.endSeconds]);
+  const clamp = useCallback((restoring = false) => {
     const player = audio.current; if (!player || !Number.isFinite(player.duration)) return;
     const { start, end } = bounds(player);
     const current = Math.min(end, Math.max(start, restoring ? restore.current ?? start : player.currentTime));
     if (Math.abs(player.currentTime - current) > 0.005) player.currentTime = current;
-  }
+  }, [bounds]);
+  useLayoutEffect(() => { latestSaved.current = savedSeconds; }, [savedSeconds]);
+  // Only adopting a server draft restores playback. Local ticks and save ACKs keep the current player position.
+  useLayoutEffect(() => { restore.current = latestSaved.current; clamp(true); }, [restoreVersion, clamp]);
   function record() {
     const player = audio.current; if (!player || !Number.isFinite(player.duration)) return;
     const { start, end } = bounds(player);
