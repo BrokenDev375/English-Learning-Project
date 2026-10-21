@@ -9,6 +9,7 @@ import { createAttempt, createCommand, listAttempts } from './api';
 import type { Create, Summary } from './types';
 import { modeNames } from './types';
 import AttemptRunner from './AttemptRunner';
+import PersonalReview from './PersonalReview';
 import { activateLearningUser, getPendingCreate, setPendingCreate } from './session';
 import './learning.css';
 
@@ -34,16 +35,16 @@ export default function LearningWorkspace({ user }: { user: User }) {
     return Number.isSafeInteger(id) && id > 0 ? <AttemptRunner key={user.id + ':' + id} id={id} userId={user.id} /> : <div className="message error" role="alert">Mã lượt làm không hợp lệ.<button className="link-button" onClick={() => navigate({ attempt: null })}>Về danh sách</button></div>;
   }
   return <>
-    {user.role === 'STUDENT' && <div className="learning-tabs" role="tablist" aria-label="Học và luyện tập">{[['catalog', 'Khám phá bài học'], ['practice', 'Luyện tập theo chủ đề'], ['history', 'Lượt làm của tôi']].map(([key, label]) => <button role="tab" key={key} aria-selected={tab === key} onClick={() => { if (!command) { setError(''); setTab(key); } }}>{label}</button>)}</div>}
+    {user.role === 'STUDENT' && <div className="learning-tabs" role="tablist" aria-label="Học và luyện tập">{[['catalog', 'Khám phá bài học'], ['practice', 'Luyện tập theo chủ đề'], ['review', 'Ôn tập cá nhân'], ['history', 'Lượt làm của tôi']].map(([key, label]) => <button role="tab" key={key} aria-selected={tab === key} onClick={() => { if (!command) { setError(''); setTab(key); } }}>{label}</button>)}</div>}
     {error && <div className="message error" role="alert">{error}</div>}
     {command && <div className="message warning" role="status">{busy ? 'Đang tạo hoặc tiếp tục lượt làm…' : 'Chưa nhận được xác nhận tạo lượt. Gửi lại đúng thao tác trước khi chọn lượt mới.'}{!busy && <button className="button secondary" onClick={() => void start(null)}>Gửi lại yêu cầu tạo lượt</button>}</div>}
-    {user.role !== 'STUDENT' || tab === 'catalog' ? <LearningCatalog student={user.role === 'STUDENT'} start={lessonId => void start({ mode: 'LEARN', lessonId })} disabled={busy || !!command} /> : tab === 'practice' ? <PracticeForm start={input => void start(input)} disabled={busy || !!command} /> : <AttemptHistory />}
+    {user.role !== 'STUDENT' || tab === 'catalog' ? <LearningCatalog student={user.role === 'STUDENT'} start={lessonId => void start({ mode: 'LEARN', lessonId })} disabled={busy || !!command} /> : tab === 'practice' ? <PracticeForm start={input => void start(input)} disabled={busy || !!command} /> : tab === 'review' ? <PersonalReview start={input => void start(input)} disabled={busy || !!command} /> : <AttemptHistory />}
   </>;
 }
 function PracticeForm({ start, disabled }: { start: (c: Create) => void; disabled: boolean }) {
   const [topics, setTopics] = useState<Topic[]>([]), [topic, setTopic] = useState(''), [difficulty, setDifficulty] = useState('EASY'), [count, setCount] = useState(10), [error, setError] = useState(''), [refresh, setRefresh] = useState(0);
   useEffect(() => { let active = true; setError(''); void allPages<Topic>('/api/topics').then(rows => { if (active) { setTopics(rows); setTopic(rows[0] ? String(rows[0].id) : ''); } }).catch(e => { if (active) setError(errorMessage(e)); }); return () => { active = false; }; }, [refresh]);
-  return <section><span className="eyebrow">TỰ CHỌN MỘT THỬ THÁCH NHỎ</span><h1>Luyện tập theo chủ đề<span>.</span></h1><p className="muted">Luyện các câu tự làm. Nếu chưa đủ câu phù hợp, bạn sẽ nhận số câu hiện có. Ôn tập theo lịch sẽ được bổ sung sau.</p>{error && <div className="message error" role="alert">{error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Tải lại chủ đề</button></div>}<form className="panel learning-panel practice-form" onSubmit={e => { e.preventDefault(); if (topic) start({ mode: 'PRACTICE', topicId: Number(topic), difficulty, count }); }}>
+  return <section><span className="eyebrow">TỰ CHỌN MỘT THỬ THÁCH NHỎ</span><h1>Luyện tập theo chủ đề<span>.</span></h1><p className="muted">Luyện các câu tự làm. Nếu chưa đủ câu phù hợp, bạn sẽ nhận số câu hiện có. Mở Ôn tập cá nhân để xem nội dung cần luyện từ kết quả của bạn.</p>{error && <div className="message error" role="alert">{error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Tải lại chủ đề</button></div>}<form className="panel learning-panel practice-form" onSubmit={e => { e.preventDefault(); if (topic) start({ mode: 'PRACTICE', topicId: Number(topic), difficulty, count }); }}>
     <label>Chủ đề luyện tập<select required value={topic} disabled={disabled} onChange={e => setTopic(e.target.value)}><option value="">Chọn chủ đề</option>{topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
     <label>Độ khó<select disabled={disabled} value={difficulty} onChange={e => setDifficulty(e.target.value)}><option value="EASY">Dễ</option><option value="MEDIUM">Vừa</option><option value="HARD">Khó</option></select></label>
     <label>Số câu<input disabled={disabled} type="number" min={1} max={10} required value={count} onChange={e => setCount(Number(e.target.value))} /></label>

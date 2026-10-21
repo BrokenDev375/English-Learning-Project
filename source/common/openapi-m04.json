@@ -1,0 +1,420 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "English Learning M04",
+    "version": "1.0.0",
+    "description": "Xem M04_API.md về quy tắc lịch, bằng chứng FIRST, backfill và giao dịch. Cookie session; POST yêu cầu CSRF."
+  },
+  "paths": {
+    "/api/me/review": {
+      "get": {
+        "operationId": "personalReviewDashboard",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "DUE",
+                "MISTAKES"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bộ lọc không hợp lệ"
+          },
+          "401": {
+            "description": "Cần đăng nhập"
+          },
+          "403": {
+            "description": "Chỉ STUDENT"
+          }
+        }
+      }
+    },
+    "/api/me/review/sync": {
+      "post": {
+        "operationId": "synchronizePersonalReview",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sync"
+                }
+              }
+            },
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "true khi trả receipt đã lưu",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body không hợp lệ"
+          },
+          "401": {
+            "description": "Cần đăng nhập"
+          },
+          "403": {
+            "description": "Sai vai trò/CSRF"
+          },
+          "409": {
+            "description": "REQUEST_ID_REUSED"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE hoặc REVIEW_SCHEMA_UNSUPPORTED"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    },
+    "schemas": {
+      "SyncRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requestId"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        }
+      },
+      "Sync": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "processedSubmissions",
+          "remainingSubmissions"
+        ],
+        "properties": {
+          "processedSubmissions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "remainingSubmissions": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "ObjectiveReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectiveId",
+          "topicId",
+          "name",
+          "status",
+          "reason",
+          "needsReview",
+          "hasMistakes",
+          "stage",
+          "lastPracticedAt",
+          "nextReviewAt",
+          "submissionCount",
+          "firstAnsweredCount",
+          "firstCorrectCount",
+          "assistedCount",
+          "unansweredCount",
+          "lastWrongCount",
+          "lastIndependentAnswered",
+          "lastIndependentCorrect",
+          "availableQuestionCount",
+          "unseenQuestionCount",
+          "freshSetCount",
+          "freshAnsweredCount",
+          "freshCorrectCount",
+          "currentDifficulty",
+          "recommendedDifficulty",
+          "recommendationReason"
+        ],
+        "properties": {
+          "objectiveId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "topicId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NO_EVIDENCE",
+              "NEEDS_PRACTICE",
+              "NEEDS_INDEPENDENT_WORK",
+              "DUE",
+              "SCHEDULED"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "needsReview": {
+            "type": "boolean"
+          },
+          "hasMistakes": {
+            "type": "boolean"
+          },
+          "stage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "lastPracticedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nextReviewAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submissionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "firstAnsweredCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "firstCorrectCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "assistedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unansweredCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastWrongCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastIndependentAnswered": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastIndependentCorrect": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "availableQuestionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unseenQuestionCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "freshSetCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "freshAnsweredCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "freshCorrectCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currentDifficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "recommendedDifficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "recommendationReason": {
+            "type": "string",
+            "enum": [
+              "KEEP_PRACTICING",
+              "NOT_ENOUGH_DATA",
+              "NOT_ENOUGH_NEW_QUESTIONS",
+              "HIGHEST_DEMO_LEVEL",
+              "TRY_NEXT_DIFFICULTY"
+            ]
+          }
+        }
+      },
+      "Dashboard": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "pendingSubmissions",
+          "totalObjectives",
+          "needsReviewCount",
+          "mistakeObjectives",
+          "objectives"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pendingSubmissions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalObjectives": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "needsReviewCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mistakeObjectives": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "objectives": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items",
+              "totalElements",
+              "page",
+              "size",
+              "totalPages"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ObjectiveReview"
+                }
+              },
+              "totalElements": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "totalPages": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

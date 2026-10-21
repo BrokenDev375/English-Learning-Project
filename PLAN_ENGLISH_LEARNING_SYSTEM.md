@@ -1,10 +1,10 @@
 # Kế hoạch module — ứng dụng học và ôn tập tiếng Anh có gamification và Giải đấu tuần
 
-Cập nhật: 16/10/2026. Đây là kế hoạch cho hướng đề tài mới, không phải danh sách chức năng đã triển khai. Phạm vi hiện tại gồm 7 module M01–M07, giữ Giải đấu tuần đo độ chăm học. Danh sách module được đánh lại số theo phạm vi hiện tại. Hạng thử thách solo được chuyển riêng sang M08 mở rộng, chờ người phụ trách xác nhận trước khi triển khai. Quy định unit, độ khó, seed tại M02.1/M02.2 và cấp câu tại M03.1 giữ theo trao đổi. Các mức thưởng XP và chính sách còn ghi “đề xuất” vẫn chưa chốt.
+Cập nhật: 21/10/2026. Đây là kế hoạch cho hướng đề tài mới; trạng thái triển khai tra cứu trong tiến độ và biên bản từng module. Phạm vi hiện tại gồm 7 module M01–M07, giữ Giải đấu tuần đo độ chăm học. Danh sách module được đánh lại số theo phạm vi hiện tại. Hạng thử thách solo được chuyển riêng sang M08 mở rộng, chờ người phụ trách xác nhận trước khi triển khai. Quy định unit, độ khó, seed tại M02.1/M02.2 và cấp câu tại M03.1 giữ theo trao đổi. Các mức thưởng XP và chính sách còn ghi “đề xuất” vẫn chưa chốt.
 
 Tên đề xuất: **Ứng dụng học và ôn tập tiếng Anh tích hợp gamification theo mô hình client–server.**
 
-Plan cho app tiếng Anh mới tại english-learning-project/. M01 được triển khai trước; các module sau và những quyết định ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
+Plan cho app tiếng Anh mới tại english-learning-project/. M01–M03 và phần P0 của M04 đã triển khai; M05–M07 cùng những quyết định ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
 
 Tài liệu này được sao chép từ plan ở thư mục gốc LTM; mã nguồn app mới nằm cùng thư mục dự án. Các file môn học được giữ nguyên ở INSTRUCTION.md, TOPICS.md và SUBMISSION.md.
 
@@ -13,7 +13,7 @@ Tài liệu này được sao chép từ plan ở thư mục gốc LTM; mã ngu�
 - [Phân công, database, API và nghiệm thu](docs/M02_M03_HANDOFF.md).
 - [Quy tắc API](source/common/M02_M03_API.md), [OpenAPI 1.0.0](source/common/openapi-m02-m03.json), [ví dụ request/response](source/common/examples-m02-m03.json).
 - DDL dự kiến: [V3 của M02](docs/database/planned/V3__learning_content.sql), [V4 của M03](docs/database/planned/V4__learning_attempts.sql).
-- Đây là hợp đồng triển khai; V3, API M02 danh mục/file/tài liệu/câu hỏi/bài học/learner catalog và seed đầy đủ đã có ở runtime sau bốn bước M02. M03 chưa triển khai. M02 giao nền V3/DTO/service học liệu trước, M03 triển khai V4/runner sau; M04 nhận kết quả để chọn bài ôn.
+- Đây là hợp đồng triển khai; M02 có V3/API học liệu và seed, M03 có V4/runner cùng kết quả bất biến, M04 có V5 để tổng hợp kết quả và chọn bài ôn. Xem tiến độ và biên bản của từng module để biết phạm vi đã kiểm tra.
 
 ## 1. Phạm vi và mục tiêu
 
@@ -331,13 +331,17 @@ Chọn phạm vi nội dung trước rồi mới lấy câu phù hợp. Không b
 
 ### M04. Ôn tập cá nhân và gợi ý mức luyện — P0 đơn giản, P1 điều chỉnh sâu
 
-- Có mục “Ôn tập hôm nay”, “Ôn lỗi sai” và “Luyện theo chủ đề”. Mỗi mục tiêu/từ/cấu trúc có lịch sử, trạng thái học và lần ôn tiếp theo.
-- Câu hỏi gắn mục tiêu chính từ M02. Sai câu về does/doesn't thì ưu tiên nội dung đó, không giao lại toàn bộ chủ đề nếu không cần.
-- Đề xuất lịch demo có cấu hình: ôn sau 1 → 3 → 7 ngày khi tự làm đúng; trả lời sai đưa về lượt ôn sớm hơn. Đây là heuristic của prototype, chưa có bằng chứng là lịch tối ưu.
-- Theo dõi gợi ý đã dùng; trả lời đúng sau xem đáp án không tự đánh dấu đã nhớ. Ôn lại ưu tiên câu biến thể chưa thấy của cùng mục tiêu.
-- Người học tự chọn điểm bắt đầu; có thể kiểm tra ngắn để nhận gợi ý. Các bước NHẬN BIẾT/VẬN DỤNG/TỔNG HỢP mô tả mục tiêu hoạt động; một dạng câu có thể có nhiều mức khó. Không lấy các nhãn nội bộ làm chứng chỉ trình độ.
-- Quy tắc nâng mức đề xuất: tự làm tốt trên ít nhất hai bộ câu mới của nội dung đó; ngưỡng và số câu để cấu hình/kiểm thử. Không nâng chỉ vì thuộc lại một câu. Ngân hàng demo có hạn: nếu chưa đủ câu mới để đánh giá một mục tiêu thì ghi “chưa đủ dữ liệu”, tiếp tục ôn hoặc yêu cầu bổ sung câu; không tự dùng lại cùng bộ để đạt điều kiện nâng mức.
-- Lịch ôn và tiến độ server là dữ liệu dùng chung; client mở lại để tải. Có thể tính gợi ý tại client từ lịch sử được cấp; server lưu lịch được hệ thống chấp nhận.
+**Triển khai P0 ngày 21/10/2026:** [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md), [tiến độ](docs/M04_PROGRESS.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md).
+
+- Tab “Ôn tập cá nhân” có nội dung cần ôn và mục tiêu còn lỗi sai; luyện chủ đề tiếp tục dùng M03. Mỗi mục tiêu đã có kết quả có lịch sử, lý do ưu tiên và mốc nhắc.
+- Giảng viên chuẩn bị câu ở M02, phân nhóm khi đưa vào Lesson trong Unit. M04 chọn REVIEW_VARIANT chưa gặp trước, sau đó câu INDEPENDENT mới/câu cũ cùng mục tiêu và mức ưu tiên; không tự sinh học liệu.
+- Tính theo mục tiêu, không lập lịch tối ưu riêng cho từng câu. Sai ưu tiên ngay; tự làm đúng tăng stage tối đa một lần mỗi ngày Việt Nam, nhắc lại sau 1 → 3 → 7 ngày. Lịch có cấu hình, chưa có bằng chứng tối ưu.
+- Bản P0 dùng cấu hình backend chung. Chưa có màn hình/API cho giảng viên chỉnh quy tắc theo Unit; đây là phần bổ sung đã trao đổi, chưa triển khai. Mốc nhắc hiện hiển thị trong ứng dụng, chưa có email/thông báo đẩy.
+- Dùng FIRST bất biến của Submission; GUIDED/hỗ trợ/bỏ trống/câu từng gặp được phân biệt. Chữa sau nộp không sửa bằng chứng. Trả lời đúng nhờ hướng dẫn chưa chứng minh tự làm.
+- Bài nhiều mức khó: ưu tiên mức thấp nhất còn sai; nếu không sai thì mức cao nhất đã tự làm có trả lời. Đây là mức luyện nội bộ, không phải chứng chỉ trình độ.
+- Gợi ý tăng mức: tối thiểu hai bộ tốt mới liên tiếp đủ câu cùng mục tiêu/mức; mặc định ít nhất 3 câu mới/bộ, đạt 80%. Chỉ đề xuất khi không còn ưu tiên cần luyện và mức kế tiếp có đủ câu mới. Học viên tự chọn mức.
+- Thiếu câu cấp số thực có; thiếu bằng chứng hoặc học liệu hiển thị lý do, không lặp origin để tạo bộ “mới”.
+- Flyway V5 lưu progress/evidence/processed Submission ledger. POST sync backfill theo batch và receipt, GET chỉ đọc, provider REVIEW nối runner/lưu/nộp M03. Không dùng callback RAM làm nguồn duy nhất.
 
 **Hoàn thành khi:** hai người học cùng bài nhưng sai mục tiêu khác nhau nhận bộ ôn khác nhau; ôn đúng/sai cập nhật đúng lịch; tài khoản khác trên cùng máy không nhận nháp/tiến độ của nhau.
 
@@ -448,9 +452,10 @@ Hợp đồng **1.0.0 ngày 16/10/2026** đã chốt trong [bàn giao](docs/M02_
 |---|---|---|
 | M02/V3 | request_receipts, topics, learning_objectives, units, assets, materials, material_versions, questions, question_versions, lessons, lesson_versions, lesson_objectives, lesson_questions | /api/topics, /api/objectives, /api/units, /api/lessons/{id}; /api/author/**; /api/assets |
 | M03/V4 | attempts, attempt_questions, attempt_answers, answer_trials, submissions, question_exposures, lesson_progress | /api/attempts/**; /api/me/learning-progress |
-| M04 trở đi — sẽ thiết kế riêng | ObjectiveProgress/ReviewSchedule, XP/Badge/Streak/League, thống kê | API ôn cá nhân/gamification/socket sự kiện hoàn thiện sau; chưa nằm trong V3/V4 |
+| M04/V5 | review_objective_progress, review_difficulty_evidence, review_processed_submissions | /api/me/review, /api/me/review/sync; tạo REVIEW qua /api/attempts |
+| M05 trở đi — sẽ thiết kế riêng | XP/Badge/Streak/League, thống kê | API gamification/socket sự kiện hoàn thiện sau; chưa nằm trong V3–V5 |
 
-Bản SQL cụ thể ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **V3 đã áp dụng vào DB đang chạy; V4 vẫn là kế hoạch.** Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
+Bản SQL hợp đồng gốc ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **Migration runtime V1–V5 nằm trong source/server/src/main/resources/db/migration/**; bản P0 M04 đã kiểm tra nâng V4 → V5 giữ dữ liệu. Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
 
 Dữ liệu định danh/lọc/quyền ở cột quan hệ; content/answer/source/instructions và snapshot linh hoạt dùng JSON có schemaVersion. Mỗi câu có một mục tiêu chính. LessonQuestion lưu Version ID + GUIDED/INDEPENDENT/REVIEW_VARIANT + thứ tự. MaterialVersion dùng chung file qua Asset, transcript không cấp trong snapshot làm bài.
 

@@ -1,8 +1,8 @@
-# Database — English Learning (M01, M02 và M03)
+# Database — English Learning (M01–M04)
 
 Cập nhật M03 ngày 19/10/2026: V4 đã được dùng cho tạo/tiếp tục lượt, nháp, hint/check, nộp/kết quả/chữa và tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md), [nghiệm thu toàn module](statics/results/module-3-validation.md). Backend build mới tự áp dụng migration còn thiếu khi khởi động; giữ volume hiện có.
 
-Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Runtime có Flyway V1–V4; Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
+Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Runtime có Flyway V1–V5; Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
 
 | Bảng | Vai trò |
 |---|---|
@@ -16,7 +16,7 @@ Role: STUDENT (người học), TEACHER (biên soạn), ADMIN (quản trị). St
 
 Ứng dụng dùng database english_learning và volume english-learning-project_mysql_data mặc định. Không dùng volume IELTS/IoT. M02 lưu byte ảnh/audio ở asset_data; bảng assets chỉ giữ metadata, storage_key nội bộ, SHA-256 và quyền sở hữu.
 
-V3 tạo đủ 13 bảng học liệu/receipt đã thiết kế và đã được dùng qua API và seed ở bước 1–4. Seed chuẩn có 3 Topic, 3 Unit, 6 mục tiêu, 6 Lesson root, 90 Question root, 13 Material root và 7 Asset; dữ liệu người dùng có thể làm tổng số hàng lớn hơn. Nâng bài mẫu cũ bằng LessonVersion mới, giữ bản công bố cũ và ID/origin của các câu cũ đủ điều kiện. Material/Question/Lesson root giữ con trỏ nháp/công bố và revision; bản công bố bất biến, bản chỉnh sửa tạo version mới. Question lưu origin_key CHAR(36), sao chép giữ origin. JSON content/answer được parse theo từng dạng trước khi lưu. LessonVersion giữ instructions_json và hai tập tham chiếu lesson_objectives/lesson_questions theo Version ID; nhóm/thứ tự nằm ở slot. Bỏ nháp không xóa lịch sử công bố/file hoặc các câu/tài liệu độc lập. Bài làm đã dùng V4; lịch ôn và XP thuộc module sau. Tài liệu IELTS cũ trong docs/archive là tham khảo lịch sử, không phải schema app này.
+V3 tạo đủ 13 bảng học liệu/receipt đã thiết kế và đã được dùng qua API và seed ở bước 1–4. Seed chuẩn có 3 Topic, 3 Unit, 6 mục tiêu, 6 Lesson root, 90 Question root, 13 Material root và 7 Asset; dữ liệu người dùng có thể làm tổng số hàng lớn hơn. Nâng bài mẫu cũ bằng LessonVersion mới, giữ bản công bố cũ và ID/origin của các câu cũ đủ điều kiện. Material/Question/Lesson root giữ con trỏ nháp/công bố và revision; bản công bố bất biến, bản chỉnh sửa tạo version mới. Question lưu origin_key CHAR(36), sao chép giữ origin. JSON content/answer được parse theo từng dạng trước khi lưu. LessonVersion giữ instructions_json và hai tập tham chiếu lesson_objectives/lesson_questions theo Version ID; nhóm/thứ tự nằm ở slot. Bỏ nháp không xóa lịch sử công bố/file hoặc các câu/tài liệu độc lập. Bài làm dùng V4, lịch ôn dùng V5; XP thuộc M05. Tài liệu IELTS cũ trong docs/archive là tham khảo lịch sử, không phải schema app này.
 
 ## Dữ liệu học M03 — V4
 
@@ -42,4 +42,18 @@ Nháp và kết quả đã commit nằm trong MySQL; bytes ảnh/audio nằm tro
 - [V4 — M03, 7 bảng](docs/database/planned/V4__learning_attempts.sql): lượt làm, đáp án nháp, trial, bài nộp, lịch sử đã gặp và tiến độ bài.
 - [Bàn giao và quan hệ dữ liệu](docs/M02_M03_HANDOFF.md), [hợp đồng API](source/common/M02_M03_API.md).
 
-V3 đã được sao chép vào Flyway và áp dụng; file trong planned giữ hợp đồng gốc để đối chiếu. V4 đã có trong Flyway ở bước 1 M03; file planned giữ nguyên để đối chiếu. Giữ JPA validate và không sửa migration đã chạy. Lịch ôn/XP/league thuộc module sau, chưa có trong V3/V4. Xem [tiến độ M02](docs/M02_PROGRESS.md) và [M03](docs/M03_PROGRESS.md).
+V3 đã được sao chép vào Flyway và áp dụng; file trong planned giữ hợp đồng gốc để đối chiếu. V4 đã có trong Flyway ở bước 1 M03; file planned giữ nguyên để đối chiếu. Giữ JPA validate và không sửa migration đã chạy. M04 thêm V5; XP/league thuộc M05. Xem [tiến độ M02](docs/M02_PROGRESS.md), [M03](docs/M03_PROGRESS.md) và [M04](docs/M04_PROGRESS.md).
+
+## Ôn tập cá nhân M04 — V5
+
+Schema thực thi: [V5__personal_review.sql](source/server/src/main/resources/db/migration/V5__personal_review.sql).
+
+| Bảng | Khóa và trách nhiệm |
+|---|---|
+| review_objective_progress | PK user_id + objective_id; số liệu FIRST, cờ lỗi/cần luyện, độ khó ưu tiên, stage, ngày thành công gần nhất và next_review_at |
+| review_difficulty_evidence | PK user_id + objective_id + difficulty; số bộ/câu mới, số đúng và chuỗi bộ tốt đủ câu |
+| review_processed_submissions | PK submission_id, kèm user_id/processed_at; ledger chống xử lý cùng Submission hai lần |
+
+Kết quả gốc vẫn ở submissions.result_json của V4. POST sync đọc tối đa 100 kết quả chưa có ledger theo user, tổng hợp mỗi mục tiêu một lần, ghi cả ba bảng và request_receipts cùng transaction dưới actor lock. Học viên cũ được backfill khi mở Ôn tập cá nhân; GET chỉ đọc. Restart không mất ledger/lịch; gửi lại không tăng số lượt.
+
+Mốc dựa vào submittedAt của kết quả gốc, không lấy thời điểm sync để làm mới lịch. Stage tăng tối đa một lần theo ngày Việt Nam; mốc lưu UTC. Gợi ý mức không lấy câu từng gặp/GUIDED/CORRECTION làm bộ câu mới. Xem [quy tắc/API](source/common/M04_API.md).

@@ -34,7 +34,7 @@ Có ba vai trò:
 
 Đặc trưng của bài tập mạng nằm trong cách xử lý phiên đăng nhập, WebSocket, timeout, mất phản hồi sau commit, gửi lại request và ghi đồng thời. Chưa có bằng chứng đo tải hoặc hiệu quả học tập; không tự mô tả dự án như một hệ thống nhiều backend, offline đầy đủ hoặc ứng dụng đã nghiệm thu toàn bộ.
 
-### Mốc đã kiểm tra ngày 19/10/2026
+### Mốc tiến độ cập nhật ngày 21/10/2026
 
 | Module | Trạng thái thực tế |
 |---|---|
@@ -42,7 +42,8 @@ Có ba vai trò:
 | M02 — Học liệu | Đã có danh mục, file/đọc/nghe/ảnh, biên soạn/xuất bản/phiên bản, cập nhật audio hàng loạt và learner catalog |
 | M03 — Học/luyện tập | Đã triển khai bước 0–5: dữ liệu/bộ chấm, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện |
 | M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao tại commit `9b0f1e0`; người dùng tạo PR trên web sau |
-| M04/M05/M06/M07 | Lần lượt: lịch ôn, XP/giải đấu tuần, offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
+| M04 — Ôn tập cá nhân | Đã có V5, backfill/ledger, dashboard, provider REVIEW và giao diện; xem docs/M04_PROGRESS.md và biên bản kiểm tra M04 |
+| M05/M06/M07 | Lần lượt: XP/giải đấu tuần, offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
 Seed M02 có **3 Unit, 6 Lesson, 90 Question, 13 Material**. Mỗi bài biên soạn có 5 GUIDED, 5 INDEPENDENT và 5 REVIEW_VARIANT; lượt LEARN hiện cấp 10 câu GUIDED + INDEPENDENT theo selector.
@@ -72,7 +73,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V4 đang chạy
+│   │   │   ├── db/migration/                  Flyway V1–V5
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -151,7 +152,7 @@ Không serialize entity trực tiếp cho API; không để controller tự th�
 | Tiến độ | LearningProgressService |
 | Gửi lại request | RequestReceiptService và request_receipts |
 | Quyền file theo lượt | AttemptAssetReadGrant |
-| Chọn câu ôn tương lai | ReviewSelectionProvider |
+| Ôn tập cá nhân | PersonalReviewService, ReviewRepository, PersonalReviewSelectionProvider, ReviewQuestionPool |
 
 Dùng `rg` tìm tên lớp; chỉ mở implementation, DTO và test của luồng đang sửa.
 
@@ -175,6 +176,7 @@ Trong `features/learning/`:
 - `types.ts`: DTO học viên và hàm xác định đã trả lời/đầy đủ; không dùng DTO tác giả chứa keys để dựng câu trước nộp.
 - `api.ts`: adapter create/read/list/mutation/result; tái sử dụng `api.ts` chung để giữ cookie/CSRF.
 - `LearningWorkspace.tsx`: nối catalog vào LEARN; form PRACTICE và lịch sử.
+- `PersonalReview.tsx`: sync kết quả theo batch, dashboard cá nhân và tạo lượt REVIEW qua cùng start/pending command của M03.
 - `LessonIntroduction.tsx`: trang giới thiệu gọn, tóm tắt số câu, CTA bắt đầu/tiếp tục/học lại theo lượt thực tế và kết quả gần nhất. Bài COMPLETED vẫn có thể có lượt học lại dở; khi tìm kết quả gần nhất phải so submittedAt, không lấy updatedAt của lượt vừa chữa làm thứ tự nộp.
 - `AttemptRunner.tsx`: runner chung, điều hướng câu, hint/check, lưu và xác nhận submit.
 - `AnswerFields.tsx`, `LearningMaterial.tsx`: renderer đáp án và đọc/ảnh/audio công khai.
@@ -199,6 +201,7 @@ URL/history chỉ chứa màn hình, ID và bộ lọc; không chứa đáp án 
 | V2 | Quản trị tài khoản, trạng thái/security_version và account_control |
 | V3 | Topic/Objective/Unit, Asset, Material/Question/Lesson và các Version/join, request_receipts |
 | V4 | attempts, attempt_questions, attempt_answers, answer_trials, submissions, question_exposures, lesson_progress |
+| V5 | review_objective_progress, review_difficulty_evidence, review_processed_submissions |
 
 Flyway quản lý schema; Hibernate giữ `ddl-auto=validate`. Không sửa migration đã áp dụng, không dùng create/update để chữa lệch schema. Thay đổi schema tiếp theo cần migration mới. SQL dưới `docs/database/planned/` là tài liệu hợp đồng, không tự chạy thay migration runtime.
 
@@ -238,7 +241,15 @@ Submit lưu final/trials/Submission/state/revision/progress/receipt **cùng mộ
 
 LEARN hoàn thành khi mọi đáp án đầy đủ và mọi GUIDED đã CHECK trước submit; không yêu cầu đúng hết. DB chỉ lưu STARTED/COMPLETED, API tổng hợp NOT_STARTED. Học lại/nộp dở không hạ COMPLETED. Tiến độ gồm bài đang công bố và lịch sử riêng; bài retire có currentPublishedVersionId=null. updateAvailable so bản công bố với bản hoàn thành gần nhất, hoặc bản lượt gần nhất nếu chưa hoàn thành.
 
-REVIEW chưa có provider M04 thì trả REVIEW_NOT_READY; không chọn câu ngẫu nhiên để giả lập tính năng đã hoàn thành. Chưa cộng XP hoặc phát sự kiện nghiệp vụ chỉ có trong RAM thay cho dữ liệu Submission bền vững.
+REVIEW có provider M04; khi kết quả chưa đồng bộ trả REVIEW_SYNC_REQUIRED. Bản test có thể thay provider bằng mock để kiểm tra lỗi REVIEW_NOT_READY. Chưa cộng XP.
+
+### M04 — ôn tập cá nhân
+
+PersonalReviewService đồng bộ tối đa 100 Submission schema 1/batch dưới actor lock và receipt; progress/evidence/ledger cùng transaction. GET chỉ đọc. Khi tạo REVIEW, provider dùng progress đã đồng bộ; M03 tiếp tục kiểm tra và pin mọi Version ID. Không đưa callback RAM làm nguồn duy nhất hoặc sửa FIRST/Submission khi chữa.
+
+Tổng hợp mỗi objective một lần mỗi Submission; stage tăng tối đa một lần mỗi ngày Việt Nam, khoảng 1–3–7 ngày có cấu hình. Câu hỗ trợ/GUIDED/bỏ trống/cũ không chứng minh tăng mức. Câu cũ tự làm đúng có thể đặt mốc ôn. Gợi ý mức cần ít nhất hai bộ mới đủ câu và nội dung mức kế tiếp; giữ lý do thiếu dữ liệu/học liệu. Seed chia nhiều độ khó nên số câu phù hợp có thể thấp hơn yêu cầu.
+
+Xem docs/M04_IMPLEMENTATION_PLAN.md, source/common/M04_API.md và statics/results/module-4-validation.md trước khi đổi luật hoặc diễn giải kiểm thử.
 
 ## 8. Quyền, transaction và độ tin cậy
 
@@ -272,6 +283,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 | Việc đang làm | Đọc trước |
 |---|---|
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
+| Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
 | Luật nghiệp vụ M03 | [Bàn giao M02–M03](docs/M02_M03_HANDOFF.md), mục 2, 4, 6–7; [quy tắc API](source/common/M02_M03_API.md), mục liên quan |
 | Trường/kiểu payload chính xác | Đúng schema/path trong [OpenAPI](source/common/openapi-m02-m03.json), [ví dụ](source/common/examples-m02-m03.json), [fixture](source/server/src/test/resources/contracts/m03-fixtures.json) |
 | Giao diện học/phục hồi | [Hướng dẫn UI](docs/M03_UI_SMOKE.md), session.ts và test M03 |

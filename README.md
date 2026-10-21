@@ -1,14 +1,20 @@
 # English Learning
 
-M03 đã có API và giao diện học/luyện tập: tạo/tiếp tục lượt, khôi phục nháp, hint/check, nộp/chấm, kết quả, chữa và tiến độ. Xem [hướng dẫn giao diện](docs/M03_UI_SMOKE.md), [tiến độ M03](docs/M03_PROGRESS.md), [ma trận nghiệm thu](docs/M03_MANUAL_TEST_CASES.md) và [kết quả toàn module](statics/results/module-3-validation.md).
+M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
-Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 đã có đăng nhập, đăng ký người học, quản trị tài khoản và nền session/WebSocket. M02 có biên soạn học liệu phiên bản và seed 6 bài/90 câu; M03 đã nối luồng làm bài thực tế. Ôn theo lịch, XP và Giải đấu tuần thuộc các module tiếp theo.
+Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.
+
+## M04 — ôn tập cá nhân
+
+Đăng nhập STUDENT → Học bài → tab **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và gợi ý mức luyện. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
+
+Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng mục tiêu và mức cần luyện. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch nhắc mặc định 1–3–7 ngày là quy tắc demo, không phải mô hình đã chứng minh tối ưu. Gợi ý tăng mức cần ít nhất hai bộ câu mới đủ dữ liệu và nội dung ở mức kế tiếp. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
 
 ## M03 — học và luyện tập
 
 Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. Bấm **Lưu nháp lên máy chủ** để xác nhận lưu; đây là lưu chủ động, không autosave. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
 
-Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, giao diện giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu sau đối chiếu. Bản nhập chưa lưu chỉ ở bộ nhớ phiên trang, chưa có outbox offline bền vững. REVIEW theo lịch chờ M04. Xem [cách thử và phục hồi lỗi](docs/M03_UI_SMOKE.md).
+Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, giao diện giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu sau đối chiếu. Bản nhập chưa lưu chỉ ở bộ nhớ phiên trang, chưa có outbox offline bền vững. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi](docs/M03_UI_SMOKE.md).
 
 ## M02 — biên soạn học liệu đã có thể dùng thử
 
