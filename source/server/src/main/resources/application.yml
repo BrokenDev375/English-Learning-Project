@@ -53,4 +53,6 @@ app:
     email: ${BOOTSTRAP_ADMIN_EMAIL:admin@english.local}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:}
   socket:
+    presence-timeout-ms: ${WS_PRESENCE_TIMEOUT_MS:75000}
+    sweep-ms: ${WS_SWEEP_MS:5000}
     allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}

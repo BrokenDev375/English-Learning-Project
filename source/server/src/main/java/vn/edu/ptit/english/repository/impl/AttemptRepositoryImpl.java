@@ -22,13 +22,15 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     private final EntityManager em;
     private final LessonQuestionJpaRepository slots;
     private final LessonJpaRepository lessons;
+    private final org.springframework.context.ApplicationEventPublisher events;
     public AttemptRepositoryImpl(AttemptJpaRepository attempts,AttemptQuestionJpaRepository items,AttemptAnswerJpaRepository answers,
         AnswerTrialJpaRepository trials,SubmissionJpaRepository submissions,QuestionExposureJpaRepository exposures,
-        LessonProgressJpaRepository progress,EntityManager em,LessonQuestionJpaRepository slots,LessonJpaRepository lessons) {
+        LessonProgressJpaRepository progress,EntityManager em,LessonQuestionJpaRepository slots,LessonJpaRepository lessons,org.springframework.context.ApplicationEventPublisher events) {
         this.attempts=attempts; this.items=items; this.answers=answers; this.trials=trials; this.submissions=submissions;
         this.exposures=exposures; this.progress=progress; this.em=em;
         this.slots=slots;
         this.lessons=lessons;
+        this.events=events;
     }
     public Optional<AttemptEntity> attempt(long id,long userId,boolean lock) {
         var result=lock?attempts.lockOwned(id,userId):attempts.findByIdAndUserId(id,userId);
@@ -61,7 +63,11 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     }
     public Page<LessonProgressEntity> progress(long userId,Long unitId,int page,int size){return progress.pageOwned(userId,unitId,PageRequest.of(page,size));}
     public Page<LessonEntity> progressLessons(long userId,Long unitId,int page,int size){return lessons.progressLessons(userId,unitId,PageRequest.of(page,size));}
-    public AttemptEntity save(AttemptEntity v){return attempts.saveAndFlush(v);}
+    public AttemptEntity save(AttemptEntity v){
+        var saved=attempts.saveAndFlush(v);
+        if(saved.getRevision()>0) events.publishEvent(new vn.edu.ptit.english.socket.AttemptChanged(saved.getUserId(),saved.getId(),saved.getRevision()));
+        return saved;
+    }
     public AttemptQuestionEntity save(AttemptQuestionEntity v){return items.saveAndFlush(v);}
     public AttemptAnswerEntity save(AttemptAnswerEntity v){return answers.saveAndFlush(v);}
     public AnswerTrialEntity save(AnswerTrialEntity v){return trials.saveAndFlush(v);}

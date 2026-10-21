@@ -1,0 +1,35 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "English Learning M06 — Presence", "version": "1.0.0", "description": "HTTP supplement. WebSocket and recovery behavior: M06_API.md. Existing M01/M03/M04 contracts remain unchanged." },
+  "paths": {
+    "/api/me/connections": {
+      "get": {
+        "operationId": "ownConnectionPresence",
+        "summary": "Presence of the authenticated user only",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Private, no-store; active authenticated sockets for the current user",
+            "headers": { "Cache-Control": { "schema": { "type": "string" }, "example": "no-store, private" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Presence" } } }
+          },
+          "401": { "description": "Missing, expired or revoked HTTP session" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": { "sessionCookie": { "type": "apiKey", "in": "cookie", "name": "JSESSIONID" } },
+    "schemas": {
+      "Presence": {
+        "type": "object", "additionalProperties": false,
+        "required": ["online", "activeConnectionCount", "measuredAt"],
+        "properties": {
+          "online": { "type": "boolean" },
+          "activeConnectionCount": { "type": "integer", "minimum": 0 },
+          "measuredAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
