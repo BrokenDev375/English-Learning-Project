@@ -1,0 +1,2521 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "English Learning — M05",
+    "version": "1.0.0",
+    "description": "All eight M05 endpoints and GAMIFICATION/LEAGUE subscriptions are implemented. See M05_PROGRESS.md and validation reports for executed checks and limitations."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "CookieAuth": []
+    }
+  ],
+  "paths": {
+    "/api/me/gamification": {
+      "get": {
+        "operationId": "m05Summary",
+        "summary": "m05Summary",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                },
+                "example": {
+                  "serverTime": "2026-10-21T10:00:00Z",
+                  "zone": "Asia/Ho_Chi_Minh",
+                  "policyVersion": "m05-p0-v1",
+                  "activatedAt": "2026-10-21T00:00:00Z",
+                  "revision": 0,
+                  "totalXp": 0,
+                  "activityLevel": 1,
+                  "levelFloorXp": 0,
+                  "nextLevelAtXp": 100,
+                  "day": {
+                    "date": "2026-10-21",
+                    "awardedXp": 0,
+                    "capXp": 200,
+                    "qualifiedSubmissions": 0,
+                    "isActive": false
+                  },
+                  "streak": {
+                    "current": 0,
+                    "best": 0,
+                    "lastActiveDate": null
+                  },
+                  "badges": {
+                    "earnedCount": 0,
+                    "totalCount": 3
+                  },
+                  "backlog": {
+                    "pendingSubmissions": 0,
+                    "deferredSubmissions": 0
+                  },
+                  "processingState": "IDLE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/gamification/sync": {
+      "post": {
+        "operationId": "m05Sync",
+        "summary": "m05Sync",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-TOKEN",
+            "required": true,
+            "description": "Use headerName/token from GET /api/auth/csrf.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                },
+                "description": "Present only when replaying a committed receipt."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                },
+                "example": {
+                  "requestId": "00000000-0000-4000-8000-000000000001",
+                  "processedSubmissions": 1,
+                  "remainingSubmissions": 0,
+                  "deferredSubmissions": 0,
+                  "revision": 1,
+                  "processedAt": "2026-10-21T10:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Command"
+              },
+              "example": {
+                "requestId": "00000000-0000-4000-8000-000000000001"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/gamification/activities": {
+      "get": {
+        "operationId": "m05Activities",
+        "summary": "m05Activities",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "submissionId",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivitiesPage"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "submissionId": 1,
+                      "attemptId": 1,
+                      "mode": "PRACTICE",
+                      "submittedAt": "2026-10-21T10:00:00Z",
+                      "processedAt": "2026-10-21T10:00:00Z",
+                      "activityDate": "2026-10-21",
+                      "policyVersion": "m05-p0-v1",
+                      "disposition": "PROCESSED",
+                      "requestedXp": 5,
+                      "awardedXp": 5,
+                      "qualifiedActivity": true,
+                      "decisions": [
+                        {
+                          "rewardType": "NEW_QUESTION",
+                          "attemptQuestionId": 10,
+                          "objectiveId": 2,
+                          "requestedXp": 5,
+                          "awardedXp": 5,
+                          "reason": "AWARDED"
+                        }
+                      ],
+                      "league": {
+                        "seasonId": null,
+                        "countedXp": 0,
+                        "reason": "NOT_JOINED"
+                      }
+                    }
+                  ],
+                  "totalElements": 1,
+                  "page": 0,
+                  "size": 20,
+                  "totalPages": 1,
+                  "requestedSubmission": {
+                    "submissionId": 1,
+                    "state": "PROCESSED"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/badges": {
+      "get": {
+        "operationId": "m05Badges",
+        "summary": "m05Badges",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Badges"
+                },
+                "example": {
+                  "serverTime": "2026-10-21T10:00:00Z",
+                  "items": [
+                    {
+                      "code": "FIRST_LESSON",
+                      "name": "FIRST_LESSON",
+                      "description": "Fixture",
+                      "earnedAt": null,
+                      "evidenceSourceAt": null,
+                      "progress": 0,
+                      "target": 1
+                    },
+                    {
+                      "code": "DUE_REVIEW",
+                      "name": "DUE_REVIEW",
+                      "description": "Fixture",
+                      "earnedAt": null,
+                      "evidenceSourceAt": null,
+                      "progress": 0,
+                      "target": 1
+                    },
+                    {
+                      "code": "SEVEN_DAY_STREAK",
+                      "name": "SEVEN_DAY_STREAK",
+                      "description": "Fixture",
+                      "earnedAt": null,
+                      "evidenceSourceAt": null,
+                      "progress": 0,
+                      "target": 7
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/league": {
+      "get": {
+        "operationId": "m05League",
+        "summary": "m05League",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeagueOverview"
+                },
+                "example": {
+                  "serverTime": "2026-10-21T10:00:00Z",
+                  "revision": 0,
+                  "state": "NOT_JOINED",
+                  "canJoin": true,
+                  "season": {
+                    "id": 1,
+                    "startAt": "2026-10-18T17:00:00Z",
+                    "endAt": "2026-10-25T17:00:00Z",
+                    "cutoffAt": "2026-10-25T17:02:00Z",
+                    "status": "OPEN",
+                    "policyVersion": "m05-p0-v1",
+                    "rules": {
+                      "capacity": 25,
+                      "minimumMembers": 10,
+                      "minimumActive": 5,
+                      "promotionPercent": 20,
+                      "demotionPercent": 20
+                    }
+                  },
+                  "membership": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/league/join": {
+      "post": {
+        "operationId": "m05Join",
+        "summary": "m05Join",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-TOKEN",
+            "required": true,
+            "description": "Use headerName/token from GET /api/auth/csrf.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                },
+                "description": "Present only when replaying a committed receipt."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinResult"
+                },
+                "example": {
+                  "requestId": "00000000-0000-4000-8000-000000000001",
+                  "created": true,
+                  "revision": 1,
+                  "season": {
+                    "id": 1,
+                    "startAt": "2026-10-18T17:00:00Z",
+                    "endAt": "2026-10-25T17:00:00Z",
+                    "cutoffAt": "2026-10-25T17:02:00Z",
+                    "status": "OPEN",
+                    "policyVersion": "m05-p0-v1",
+                    "rules": {
+                      "capacity": 25,
+                      "minimumMembers": 10,
+                      "minimumActive": 5,
+                      "promotionPercent": 20,
+                      "demotionPercent": 20
+                    }
+                  },
+                  "membership": {
+                    "memberKey": "00000000-0000-4000-8000-000000000001",
+                    "groupId": 1,
+                    "tier": "BRONZE",
+                    "joinedAt": "2026-10-21T10:00:00Z",
+                    "weeklyXp": 0,
+                    "rank": 1,
+                    "projectedOutcome": "KEEP",
+                    "result": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Command"
+              },
+              "example": {
+                "requestId": "00000000-0000-4000-8000-000000000001"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/league/leaderboard": {
+      "get": {
+        "operationId": "m05Leaderboard",
+        "summary": "m05Leaderboard",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardPage"
+                },
+                "example": {
+                  "serverTime": "2026-10-21T10:00:00Z",
+                  "seasonId": 1,
+                  "groupId": 1,
+                  "tier": "BRONZE",
+                  "revision": 1,
+                  "provisional": true,
+                  "groupStats": {
+                    "memberCount": 1,
+                    "activeCount": 0,
+                    "capacity": 25,
+                    "promotionQuota": 0,
+                    "demotionQuota": 0,
+                    "movementEnabled": false,
+                    "holdReason": "TOO_FEW_MEMBERS"
+                  },
+                  "self": {
+                    "memberKey": "00000000-0000-4000-8000-000000000001",
+                    "displayName": "Học viên thử nghiệm",
+                    "isSelf": true,
+                    "rank": 1,
+                    "weeklyXp": 0,
+                    "outcome": "KEEP"
+                  },
+                  "items": [
+                    {
+                      "memberKey": "00000000-0000-4000-8000-000000000001",
+                      "displayName": "Học viên thử nghiệm",
+                      "isSelf": true,
+                      "rank": 1,
+                      "weeklyXp": 0,
+                      "outcome": "KEEP"
+                    }
+                  ],
+                  "totalElements": 1,
+                  "page": 0,
+                  "size": 20,
+                  "totalPages": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/league/history": {
+      "get": {
+        "operationId": "m05LeagueHistory",
+        "summary": "m05LeagueHistory",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; replay preserves the original snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPage"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "season": {
+                        "id": 1,
+                        "startAt": "2026-10-18T17:00:00Z",
+                        "endAt": "2026-10-25T17:00:00Z",
+                        "cutoffAt": "2026-10-25T17:02:00Z",
+                        "status": "FINALIZED",
+                        "policyVersion": "m05-p0-v1",
+                        "rules": {
+                          "capacity": 25,
+                          "minimumMembers": 10,
+                          "minimumActive": 5,
+                          "promotionPercent": 20,
+                          "demotionPercent": 20
+                        }
+                      },
+                      "groupId": 1,
+                      "result": {
+                        "rank": 1,
+                        "memberCount": 1,
+                        "activeCount": 0,
+                        "weeklyXp": 0,
+                        "tierBefore": "BRONZE",
+                        "tierAfter": "BRONZE",
+                        "outcome": "KEEP",
+                        "holdReason": "TOO_FEW_MEMBERS",
+                        "finalizedAt": "2026-10-25T17:02:01Z"
+                      }
+                    }
+                  ],
+                  "totalElements": 1,
+                  "page": 0,
+                  "size": 20,
+                  "totalPages": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "CookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    },
+    "schemas": {
+      "SafeInteger": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "PositiveId": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "Instant": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$"
+      },
+      "LocalDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "Tier": {
+        "type": "string",
+        "enum": [
+          "BRONZE",
+          "SILVER",
+          "GOLD",
+          "PLATINUM",
+          "DIAMOND"
+        ]
+      },
+      "Outcome": {
+        "type": "string",
+        "enum": [
+          "PROMOTE",
+          "KEEP",
+          "DEMOTE"
+        ]
+      },
+      "HoldReason": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "TOO_FEW_MEMBERS",
+          "TOO_FEW_ACTIVE",
+          "TIED_BOUNDARY",
+          "MINIMUM_TIER",
+          "MAXIMUM_TIER"
+        ]
+      },
+      "PolicyVersion": {
+        "const": "m05-p0-v1"
+      },
+      "Command": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        "required": [
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string"
+          },
+          "fieldErrors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "fieldErrors"
+        ],
+        "additionalProperties": false
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "zone": {
+            "const": "Asia/Ho_Chi_Minh"
+          },
+          "policyVersion": {
+            "$ref": "#/components/schemas/PolicyVersion"
+          },
+          "activatedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "totalXp": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "activityLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "levelFloorXp": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "nextLevelAtXp": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 9007199254740991
+          },
+          "day": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "$ref": "#/components/schemas/LocalDate"
+              },
+              "awardedXp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 200
+              },
+              "capXp": {
+                "const": 200
+              },
+              "qualifiedSubmissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "isActive": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "date",
+              "awardedXp",
+              "capXp",
+              "qualifiedSubmissions",
+              "isActive"
+            ],
+            "additionalProperties": false
+          },
+          "streak": {
+            "type": "object",
+            "properties": {
+              "current": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "best": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lastActiveDate": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/LocalDate"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "current",
+              "best",
+              "lastActiveDate"
+            ],
+            "additionalProperties": false
+          },
+          "badges": {
+            "type": "object",
+            "properties": {
+              "earnedCount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "totalCount": {
+                "const": 3
+              }
+            },
+            "required": [
+              "earnedCount",
+              "totalCount"
+            ],
+            "additionalProperties": false
+          },
+          "backlog": {
+            "type": "object",
+            "properties": {
+              "pendingSubmissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "deferredSubmissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "pendingSubmissions",
+              "deferredSubmissions"
+            ],
+            "additionalProperties": false
+          },
+          "processingState": {
+            "type": "string",
+            "enum": [
+              "IDLE",
+              "PENDING",
+              "DEFERRED"
+            ]
+          }
+        },
+        "required": [
+          "serverTime",
+          "zone",
+          "policyVersion",
+          "activatedAt",
+          "revision",
+          "totalXp",
+          "activityLevel",
+          "levelFloorXp",
+          "nextLevelAtXp",
+          "day",
+          "streak",
+          "badges",
+          "backlog",
+          "processingState"
+        ],
+        "additionalProperties": false
+      },
+      "SyncResult": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "processedSubmissions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "remainingSubmissions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deferredSubmissions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "processedAt": {
+            "$ref": "#/components/schemas/Instant"
+          }
+        },
+        "required": [
+          "requestId",
+          "processedSubmissions",
+          "remainingSubmissions",
+          "deferredSubmissions",
+          "revision",
+          "processedAt"
+        ],
+        "additionalProperties": false
+      },
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "rewardType": {
+            "type": "string",
+            "enum": [
+              "NEW_QUESTION",
+              "DUE_REVIEW"
+            ]
+          },
+          "attemptQuestionId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PositiveId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "objectiveId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PositiveId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestedXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "awardedXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "AWARDED",
+              "DAILY_CAP_REACHED",
+              "ALREADY_CLAIMED",
+              "ALREADY_REWARDED_TODAY",
+              "SEEN_BEFORE",
+              "GUIDED",
+              "SUPPORTED",
+              "FIRST_NOT_CORRECT",
+              "INCOMPLETE_FIRST",
+              "NO_REVIEW_CONTEXT",
+              "REVIEW_NOT_DUE",
+              "REVIEW_OBJECTIVE_NOT_PASSED",
+              "BEFORE_ACTIVATION"
+            ]
+          }
+        },
+        "required": [
+          "rewardType",
+          "attemptQuestionId",
+          "objectiveId",
+          "requestedXp",
+          "awardedXp",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "rewardType": {
+                  "const": "NEW_QUESTION"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "attemptQuestionId": {
+                  "$ref": "#/components/schemas/PositiveId"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "rewardType": {
+                  "const": "DUE_REVIEW"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "attemptQuestionId": {
+                  "type": "null"
+                },
+                "objectiveId": {
+                  "$ref": "#/components/schemas/PositiveId"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Activity": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "attemptId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "LEARN",
+              "PRACTICE",
+              "REVIEW"
+            ]
+          },
+          "submittedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "processedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "activityDate": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "policyVersion": {
+            "$ref": "#/components/schemas/PolicyVersion"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "PROCESSED",
+              "BEFORE_ACTIVATION"
+            ]
+          },
+          "requestedXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "awardedXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200
+          },
+          "qualifiedActivity": {
+            "type": "boolean"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Decision"
+            }
+          },
+          "league": {
+            "type": "object",
+            "properties": {
+              "seasonId": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PositiveId"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "countedXp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 200
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "COUNTED",
+                  "NOT_JOINED",
+                  "BEFORE_JOIN",
+                  "LATE_AFTER_CUTOFF",
+                  "NO_AWARDED_XP",
+                  "BEFORE_ACTIVATION"
+                ]
+              }
+            },
+            "required": [
+              "seasonId",
+              "countedXp",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "submissionId",
+          "attemptId",
+          "mode",
+          "submittedAt",
+          "processedAt",
+          "activityDate",
+          "policyVersion",
+          "disposition",
+          "requestedXp",
+          "awardedXp",
+          "qualifiedActivity",
+          "decisions",
+          "league"
+        ],
+        "additionalProperties": false
+      },
+      "ActivitiesPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Activity"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "requestedSubmission": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "submissionId": {
+                    "$ref": "#/components/schemas/PositiveId"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "PENDING",
+                      "DEFERRED",
+                      "PROCESSED",
+                      "BEFORE_ACTIVATION"
+                    ]
+                  }
+                },
+                "required": [
+                  "submissionId",
+                  "state"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages",
+          "requestedSubmission"
+        ],
+        "additionalProperties": false
+      },
+      "Badge": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "FIRST_LESSON",
+              "DUE_REVIEW",
+              "SEVEN_DAY_STREAK"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "earnedAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Instant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidenceSourceAt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Instant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7
+          },
+          "target": {
+            "type": "integer",
+            "enum": [
+              1,
+              7
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "description",
+          "earnedAt",
+          "evidenceSourceAt",
+          "progress",
+          "target"
+        ],
+        "additionalProperties": false
+      },
+      "Badges": {
+        "type": "object",
+        "properties": {
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Badge"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "serverTime",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "LeagueRules": {
+        "type": "object",
+        "properties": {
+          "capacity": {
+            "const": 25
+          },
+          "minimumMembers": {
+            "const": 10
+          },
+          "minimumActive": {
+            "const": 5
+          },
+          "promotionPercent": {
+            "const": 20
+          },
+          "demotionPercent": {
+            "const": 20
+          }
+        },
+        "required": [
+          "capacity",
+          "minimumMembers",
+          "minimumActive",
+          "promotionPercent",
+          "demotionPercent"
+        ],
+        "additionalProperties": false
+      },
+      "Season": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "startAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "endAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "cutoffAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSING",
+              "FINALIZED"
+            ]
+          },
+          "policyVersion": {
+            "$ref": "#/components/schemas/PolicyVersion"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/LeagueRules"
+          }
+        },
+        "required": [
+          "id",
+          "startAt",
+          "endAt",
+          "cutoffAt",
+          "status",
+          "policyVersion",
+          "rules"
+        ],
+        "additionalProperties": false
+      },
+      "LeagueResult": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25
+          },
+          "memberCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25
+          },
+          "activeCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25
+          },
+          "weeklyXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "tierBefore": {
+            "$ref": "#/components/schemas/Tier"
+          },
+          "tierAfter": {
+            "$ref": "#/components/schemas/Tier"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Outcome"
+          },
+          "holdReason": {
+            "$ref": "#/components/schemas/HoldReason"
+          },
+          "finalizedAt": {
+            "$ref": "#/components/schemas/Instant"
+          }
+        },
+        "required": [
+          "rank",
+          "memberCount",
+          "activeCount",
+          "weeklyXp",
+          "tierBefore",
+          "tierAfter",
+          "outcome",
+          "holdReason",
+          "finalizedAt"
+        ],
+        "additionalProperties": false
+      },
+      "Membership": {
+        "type": "object",
+        "properties": {
+          "memberKey": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "groupId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/Tier"
+          },
+          "joinedAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "weeklyXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 25
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "projectedOutcome": {
+            "$ref": "#/components/schemas/Outcome"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeagueResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "memberKey",
+          "groupId",
+          "tier",
+          "joinedAt",
+          "weeklyXp",
+          "rank",
+          "projectedOutcome",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "LeagueOverview": {
+        "type": "object",
+        "properties": {
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "UNAVAILABLE",
+              "NOT_JOINED",
+              "WAITING_PREVIOUS_SETTLEMENT",
+              "ACTIVE",
+              "CLOSING",
+              "FINALIZED"
+            ]
+          },
+          "canJoin": {
+            "type": "boolean"
+          },
+          "season": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "membership": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Membership"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "serverTime",
+          "revision",
+          "state",
+          "canJoin",
+          "season",
+          "membership"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "UNAVAILABLE"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "season": {
+                  "type": "null"
+                },
+                "membership": {
+                  "type": "null"
+                },
+                "canJoin": {
+                  "const": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "NOT_JOINED",
+                    "WAITING_PREVIOUS_SETTLEMENT"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "season": {
+                  "$ref": "#/components/schemas/Season"
+                },
+                "membership": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "WAITING_PREVIOUS_SETTLEMENT"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "canJoin": {
+                  "const": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "ACTIVE",
+                    "CLOSING",
+                    "FINALIZED"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "season": {
+                  "$ref": "#/components/schemas/Season"
+                },
+                "membership": {
+                  "$ref": "#/components/schemas/Membership"
+                },
+                "canJoin": {
+                  "const": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "FINALIZED"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "membership": {
+                  "properties": {
+                    "result": {
+                      "$ref": "#/components/schemas/LeagueResult"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "JoinResult": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "season": {
+            "$ref": "#/components/schemas/Season"
+          },
+          "membership": {
+            "$ref": "#/components/schemas/Membership"
+          }
+        },
+        "required": [
+          "requestId",
+          "created",
+          "revision",
+          "season",
+          "membership"
+        ],
+        "additionalProperties": false
+      },
+      "GroupStats": {
+        "type": "object",
+        "properties": {
+          "memberCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25
+          },
+          "activeCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25
+          },
+          "capacity": {
+            "const": 25
+          },
+          "promotionQuota": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "demotionQuota": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "movementEnabled": {
+            "type": "boolean"
+          },
+          "holdReason": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "TOO_FEW_MEMBERS",
+              "TOO_FEW_ACTIVE"
+            ]
+          }
+        },
+        "required": [
+          "memberCount",
+          "activeCount",
+          "capacity",
+          "promotionQuota",
+          "demotionQuota",
+          "movementEnabled",
+          "holdReason"
+        ],
+        "additionalProperties": false
+      },
+      "LeaderboardMember": {
+        "type": "object",
+        "properties": {
+          "memberKey": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isSelf": {
+            "type": "boolean"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25
+          },
+          "weeklyXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Outcome"
+          }
+        },
+        "required": [
+          "memberKey",
+          "displayName",
+          "isSelf",
+          "rank",
+          "weeklyXp",
+          "outcome"
+        ],
+        "additionalProperties": false
+      },
+      "LeaderboardPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardMember"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "seasonId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "groupId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/Tier"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "provisional": {
+            "type": "boolean"
+          },
+          "groupStats": {
+            "$ref": "#/components/schemas/GroupStats"
+          },
+          "self": {
+            "$ref": "#/components/schemas/LeaderboardMember"
+          }
+        },
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages",
+          "serverTime",
+          "seasonId",
+          "groupId",
+          "tier",
+          "revision",
+          "provisional",
+          "groupStats",
+          "self"
+        ],
+        "additionalProperties": false
+      },
+      "HistoryItem": {
+        "type": "object",
+        "properties": {
+          "season": {
+            "$ref": "#/components/schemas/Season"
+          },
+          "groupId": {
+            "$ref": "#/components/schemas/PositiveId"
+          },
+          "result": {
+            "$ref": "#/components/schemas/LeagueResult"
+          }
+        },
+        "required": [
+          "season",
+          "groupId",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "HistoryPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "additionalProperties": false
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "const": 1
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SUBSCRIBE",
+              "UNSUBSCRIBE"
+            ]
+          },
+          "resource": {
+            "type": "string",
+            "enum": [
+              "GAMIFICATION",
+              "LEAGUE"
+            ]
+          }
+        },
+        "required": [
+          "version",
+          "requestId",
+          "type",
+          "resource"
+        ],
+        "additionalProperties": false
+      },
+      "InvalidationEvent": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "const": 1
+          },
+          "eventId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GAMIFICATION_CHANGED",
+              "LEADERBOARD_CHANGED",
+              "LEAGUE_CHANGED"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          }
+        },
+        "required": [
+          "version",
+          "eventId",
+          "type",
+          "resourceId",
+          "revision",
+          "serverTime"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

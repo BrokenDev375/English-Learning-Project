@@ -24,6 +24,7 @@ import vn.edu.ptit.english.enums.AttemptEnums.*;
 import vn.edu.ptit.english.repository.*;
 import static org.assertj.core.api.Assertions.*;
 
+@org.springframework.test.annotation.DirtiesContext(classMode=org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties={"app.demo.enabled=false","app.bootstrap-admin.enabled=false"})
 @Testcontainers
@@ -82,15 +83,15 @@ class AttemptPersistenceTest {
         assertThat(users.findByEmail("v3-preserved@test.local")).isPresent();
         tx.executeWithoutResult(s -> {
             assertThat(((Number)em.createNativeQuery("SELECT COUNT(*) FROM topics WHERE code='v3-preserved'").getSingleResult()).intValue()).isEqualTo(1);
-            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("5");
+            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("8");
         });
     }
-    @Test void emptyDatabaseMigratesThroughAllFiveVersions() {
+    @Test void emptyDatabaseMigratesThroughCurrentVersion() {
         try(var fresh=new MySQLContainer<>("mysql:8.4")) {
             fresh.start();
             var flyway=Flyway.configure().dataSource(fresh.getJdbcUrl(),fresh.getUsername(),fresh.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(5);
-            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("5");
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(8);
+            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("8");
             flyway.validate();
         }
     }

@@ -40,6 +40,12 @@ public class AccountSocketHandler extends TextWebSocketHandler {
             String type = input.path("type").asText();
             if (input.path("version").asInt() != 1 || requestId.isBlank() || requestId.length() > 64) {
                 code = "INVALID_MESSAGE";
+            } else if(type.equals("SUBSCRIBE")||type.equals("UNSUBSCRIBE")) {
+                if(actor.role()!=vn.edu.ptit.english.enums.Role.STUDENT) code="FORBIDDEN";
+                else if(!java.util.Set.of("GAMIFICATION","LEAGUE").contains(input.path("resource").asText())||input.size()!=4
+                    ||!input.path("version").isIntegralNumber()
+                    ||!requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) code="INVALID_SUBSCRIPTION";
+                else raw.getAttributes().put(input.path("resource").asText().equals("LEAGUE")?"leagueSubscribed":"gamificationSubscribed",type.equals("SUBSCRIBE"));
             } else if (!type.equals("HELLO") && !type.equals("HEARTBEAT")) {
                 code = "UNSUPPORTED_TYPE";
             }

@@ -2,6 +2,7 @@ package vn.edu.ptit.english.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,9 +28,12 @@ public class AttemptServiceImpl implements AttemptService {
     private final RequestReceiptService receipts;
     private final AccountGuard accounts;
     private final ObjectMapper json;
+    private final ReviewRewardContextRecorder rewardContexts;
+    private final Clock clock;
     public AttemptServiceImpl(AttemptRepository attempts,AttemptSelector selector,AttemptSnapshotReader snapshots,
-        RequestReceiptService receipts,AccountGuard accounts,ObjectMapper json) {
+        RequestReceiptService receipts,AccountGuard accounts,ObjectMapper json,ReviewRewardContextRecorder rewardContexts,Clock clock) {
         this.attempts=attempts; this.selector=selector; this.snapshots=snapshots; this.receipts=receipts; this.accounts=accounts; this.json=json;
+        this.rewardContexts=rewardContexts; this.clock=clock;
     }
     @Override @Transactional(isolation=Isolation.READ_COMMITTED)
     public RequestReceiptService.Result create(Create input,UserPrincipal actor) {
@@ -40,7 +44,7 @@ public class AttemptServiceImpl implements AttemptService {
                 return new RequestReceiptService.Reply(200,snapshots.read(existing));
             var chosen=selector.select(input,actor.id());
             var attempt=attempts.save(new AttemptEntity(actor.id(),input.mode(),chosen.lessonVersionId(),selection,PlayerState.empty()));
-            Long first=null; int position=0; Instant now=Instant.now();
+            Long first=null; int position=0; Instant now=clock.instant();
             for(var selected:chosen.questions()) {
                 var q=selected.question();
                 var key=new QuestionExposureKey(actor.id(),q.originKey());
@@ -57,6 +61,8 @@ public class AttemptServiceImpl implements AttemptService {
                 attempts.save(exposure);
             }
             attempt.savePlayerState(new PlayerState(first,List.of())); attempts.save(attempt);
+            if(input.mode()==Mode.REVIEW) rewardContexts.capture(attempt.getId(),actor.id(),
+                chosen.questions().stream().map(q->q.question().data().objectiveId()).toList(),now);
             if(input.mode()==Mode.LEARN) {
                 var key=new LessonProgressKey(actor.id(),input.lessonId());
                 var progress=attempts.progress(key,true).orElseGet(()->new LessonProgressEntity(actor.id(),input.lessonId(),attempt.getId()));

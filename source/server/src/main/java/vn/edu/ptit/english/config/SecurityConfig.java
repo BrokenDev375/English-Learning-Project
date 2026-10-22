@@ -48,6 +48,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/login", "/api/auth/register", "/error").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/me/gamification", "/api/me/gamification/**", "/api/me/badges", "/api/me/league", "/api/me/league/**").hasRole("STUDENT")
                 .requestMatchers("/api/attempts", "/api/attempts/**", "/api/me/learning-progress", "/api/me/review", "/api/me/review/**").hasRole("STUDENT")
                 .requestMatchers("/api/author/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/assets").hasAnyRole("TEACHER","ADMIN")

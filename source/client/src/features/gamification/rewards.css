@@ -1,0 +1,26 @@
+.reward-strip{display:flex;align-items:center;gap:32px;padding:22px 28px;margin:24px 0}.reward-strip>div{display:flex;flex-direction:column;gap:5px}.reward-strip strong{font-size:23px;color:var(--primary,#006a50)}.reward-strip span{font-size:12px;color:#6e817a}.reward-strip>button{margin-left:auto}.reward-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:28px}.reward-heading h1{margin:8px 0 12px}.reward-heading p{max-width:640px}.rewards-page{display:grid;gap:24px}.rewards-page>h2{margin:8px 0 -8px}.reward-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.reward-stats article{padding:26px}.reward-level{background:#eaf4e8}.reward-number{font-size:48px;font-weight:750;line-height:1.2;margin:14px 0;color:#163e32}.reward-number span{display:block;font-size:14px;font-weight:500;margin:8px 0 16px;color:#5d776c}.rewards-page progress,.reward-stats progress{width:100%;height:8px;accent-color:#007356;margin:8px 0 12px;display:block}.rewards-page small,.reward-stats small{display:block;color:#657d71;font-size:12px;line-height:1.7}.reward-rules{padding:24px 28px;border-left:4px solid #bd9b25}.reward-rules>p{color:#61766d;line-height:1.8;margin:10px 0}.reward-badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.reward-badge{padding:26px;display:flex;flex-direction:column}.reward-badge p{font-size:14px;color:#6b7e75;line-height:1.8;flex:1}.reward-badge h3{margin-bottom:0}.badge-symbol{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#eef1eb;color:#7a8b80;font-size:28px}.reward-badge.earned .badge-symbol{background:#fff1bd;color:#806318}.reward-badge.earned{border-color:#c9b15c}.reward-history{padding:28px}.reward-history>article{padding:20px 0;border-top:1px solid #e0e9e2}.reward-history-head{display:flex;justify-content:space-between;align-items:center;gap:18px}.reward-history-head small{margin-top:6px}.xp-award{color:#006b4f;font-size:22px;white-space:nowrap}.reward-details{margin-top:14px;font-size:13px}.reward-details summary{cursor:pointer;color:#006b4f;padding:7px 0}.reward-details ul{padding:0;list-style:none}.reward-details li{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #edf0eb;padding:10px 0;line-height:1.7}.reward-details li strong{white-space:nowrap;color:#315c47}.attempt-rewards{padding:26px;margin-bottom:20px}.attempt-rewards h2{color:#006b4f;margin:8px 0}.reward-history .pagination{margin-top:16px}@media(max-width:800px){.reward-stats,.reward-badges{grid-template-columns:1fr}.reward-heading{align-items:flex-start;flex-direction:column}.reward-strip{flex-wrap:wrap;gap:20px;padding:20px}.reward-strip>button{margin-left:0;width:100%;text-align:left}.reward-number{font-size:40px}.reward-history{padding:20px}.reward-details li{align-items:flex-start}}
+.league-intro,.league-board,.league-rules { padding: 24px; }
+.league-intro h2,.league-board h2 { margin: 8px 0; }
+.league-state { padding: 8px 12px; border-radius: 20px; background: #e8f3e7; color: #086b4b; font-size: .85rem; }
+.league-self { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; border-top: 1px solid #dfe8e1; margin-top: 20px; padding-top: 20px; }
+.league-self span { display: block; color: #697f80; font-size: .88rem; }
+.league-self strong { display: block; font-size: 1.65rem; margin-top: 6px; color: #086b4b; }
+.league-table-wrap { overflow-x: auto; }
+.league-board table { width: 100%; border-collapse: collapse; text-align: left; }
+.league-board th,.league-board td { padding: 14px 10px; border-bottom: 1px solid #e1e9e3; }
+.league-board th { font-size: .8rem; color: #697f80; font-weight: 600; }
+.league-board td:nth-child(2) { overflow-wrap: anywhere; }
+.league-me { background: #edf7ec; }
+.league-me small { color: #087252; white-space: nowrap; }
+.league-rules summary { cursor: pointer; font-weight: 650; }
+.league-rules p { color: #607b7c; line-height: 1.65; }
+@media(max-width:600px) {
+  .league-intro,.league-board,.league-rules { padding: 16px; }
+  .league-self { gap: 10px; }
+  .league-self strong { font-size: 1.15rem; }
+  .league-board th,.league-board td { padding: 12px 5px; font-size: .8rem; }
+  .league-state { font-size: .75rem; }
+}
+.reward-strip { flex-wrap: wrap; }
+.reward-strip .reward-strip-links { margin-left: auto; align-items: flex-start; }
+@media(max-width:800px) { .reward-strip .reward-strip-links { margin-left: 0; flex-basis: 100%; } }

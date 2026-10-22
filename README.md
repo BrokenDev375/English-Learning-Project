@@ -1,5 +1,30 @@
 # English Learning
 
+## Demo M05 hiện tại
+
+Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.
+
+Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Ôn tập cá nhân giải thích điều kiện thưởng; giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
+
+1. Chọn bài/chủ đề chưa từng làm, tự trả lời đúng các câu độc lập rồi nộp: mỗi nguồn câu mới hợp lệ được **5 XP**, tối đa **200 XP/ngày**. Câu GUIDED, câu đã gặp, trả lời sai/thiếu hoặc chữa lại không tạo XP câu mới.
+2. Nộp đủ ít nhất `min(3, số câu độc lập được giao)` câu độc lập tự làm và đúng ít nhất một câu để ghi nhận ngày hoạt động. Streak tính theo ngày Việt Nam; làm lại câu cũ vẫn có thể giữ streak.
+3. Hoàn thành bài LEARN đủ điều kiện nhận huy hiệu bài đầu tiên. Hai huy hiệu còn lại cần ôn đúng mốc hợp lệ và chuỗi 7 ngày; giao diện hiển thị tiến độ thật, không trao sẵn để demo.
+4. Mở lại trang hoặc gửi lại cùng thao tác không cộng trùng. Nếu cập nhật chậm, đợi worker vài giây hoặc bấm **Cập nhật phần thưởng**. Hai bài nộp cũ trước lúc bật M05 hiển thị lý do không thưởng, không được hồi tố.
+
+Đã có XP/cấp độ/streak/huy hiệu, worker, outbox và cập nhật qua WebSocket. Xem [tiến độ M05](docs/M05_PROGRESS.md), [kiểm tra XP](statics/results/module-5-xp-validation.md) và [kiểm tra Giải đấu tuần](statics/results/module-5-league-validation.md).
+
+Nghiệm thu/bàn giao P0: [hướng dẫn M05](docs/M05_HANDOFF.md), [kết quả lượt cuối](statics/results/module-5-validation.md). Từ root chạy `node scripts/verify-m05-acceptance.mjs` để tái hiện backlog/restart/recreate/replay/ledger audit và workload local 20 học viên/40 socket/120 bài; cần Docker Desktop, `.env` hợp lệ và dependency frontend đã cài. Script chỉ dùng project/volume test riêng `english-learning-m05-acceptance` tại 15177/18084, dừng container khi xong và giữ volume.
+
+### Demo Giải đấu tuần
+
+Đăng nhập học viên → **Giải đấu tuần** → **Tham gia tuần này** rồi làm bài mới đủ điều kiện nhận XP. Bảng nhóm tự cập nhật, hiển thị XP tuần, thứ hạng tạm thời và dự kiến lên/giữ/xuống bậc. Điểm trước khi tham gia không được cộng ngược vào tuần. Mỗi tuần bắt đầu thứ Hai 00:00 Việt Nam; tuần sau phải chủ động tham gia lại.
+
+Để thử hai học viên, dùng hai hồ sơ trình duyệt hoặc một cửa sổ thường và một cửa sổ ẩn danh. Hai tab trong cùng hồ sơ dùng chung cookie đăng nhập. Đăng ký học viên mới nếu muốn thử câu chưa gặp; không sửa database để tạo XP giả.
+
+Nhóm tối đa 25 người cùng bậc, chỉ xét lên/xuống khi có ít nhất 10 thành viên và 5 người có XP. Nhóm nhỏ demo vẫn xếp hạng nhưng giữ bậc; không tạo người giả cho đủ số. Người bằng điểm cùng hạng, khối hòa vắt ranh giới giữ bậc. Bậc từ Đồng đến Kim Cương.
+
+Sau hết tuần có 2 phút xử lý bài nộp thuộc tuần cũ, rồi job tự chốt từng nhóm và lưu **Lịch sử tuần của bạn**. Nguồn xét quá mốc vẫn có thể nhận XP cá nhân nhưng không thay bảng tuần cũ. Không có nút đổi giờ/chốt tuần sớm trong app thật; kiểm tra biên tuần dùng Clock trong test riêng.
+
 M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.

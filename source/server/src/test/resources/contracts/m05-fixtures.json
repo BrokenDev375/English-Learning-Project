@@ -1,0 +1,1095 @@
+{
+  "contractVersion": "1.0.0",
+  "valid": [
+    {
+      "name": "m05SummarySuccess",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05SyncSuccess",
+      "schema": "#/components/schemas/SyncResult",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "processedSubmissions": 1,
+        "remainingSubmissions": 0,
+        "deferredSubmissions": 0,
+        "revision": 1,
+        "processedAt": "2026-10-21T10:00:00Z"
+      },
+      "path": "/api/me/gamification/sync",
+      "method": "post",
+      "status": 200
+    },
+    {
+      "name": "m05SyncRequest",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001"
+      },
+      "path": "/api/me/gamification/sync",
+      "method": "post",
+      "kind": "request"
+    },
+    {
+      "name": "m05ActivitiesSuccess",
+      "schema": "#/components/schemas/ActivitiesPage",
+      "body": {
+        "items": [
+          {
+            "submissionId": 1,
+            "attemptId": 1,
+            "mode": "PRACTICE",
+            "submittedAt": "2026-10-21T10:00:00Z",
+            "processedAt": "2026-10-21T10:00:00Z",
+            "activityDate": "2026-10-21",
+            "policyVersion": "m05-p0-v1",
+            "disposition": "PROCESSED",
+            "requestedXp": 5,
+            "awardedXp": 5,
+            "qualifiedActivity": true,
+            "decisions": [
+              {
+                "rewardType": "NEW_QUESTION",
+                "attemptQuestionId": 10,
+                "objectiveId": 2,
+                "requestedXp": 5,
+                "awardedXp": 5,
+                "reason": "AWARDED"
+              }
+            ],
+            "league": {
+              "seasonId": null,
+              "countedXp": 0,
+              "reason": "NOT_JOINED"
+            }
+          }
+        ],
+        "totalElements": 1,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1,
+        "requestedSubmission": {
+          "submissionId": 1,
+          "state": "PROCESSED"
+        }
+      },
+      "path": "/api/me/gamification/activities",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05BadgesSuccess",
+      "schema": "#/components/schemas/Badges",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "items": [
+          {
+            "code": "FIRST_LESSON",
+            "name": "FIRST_LESSON",
+            "description": "Fixture",
+            "earnedAt": null,
+            "evidenceSourceAt": null,
+            "progress": 0,
+            "target": 1
+          },
+          {
+            "code": "DUE_REVIEW",
+            "name": "DUE_REVIEW",
+            "description": "Fixture",
+            "earnedAt": null,
+            "evidenceSourceAt": null,
+            "progress": 0,
+            "target": 1
+          },
+          {
+            "code": "SEVEN_DAY_STREAK",
+            "name": "SEVEN_DAY_STREAK",
+            "description": "Fixture",
+            "earnedAt": null,
+            "evidenceSourceAt": null,
+            "progress": 0,
+            "target": 7
+          }
+        ]
+      },
+      "path": "/api/me/badges",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05LeagueSuccess",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 0,
+        "state": "NOT_JOINED",
+        "canJoin": true,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": null
+      },
+      "path": "/api/me/league",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05JoinSuccess",
+      "schema": "#/components/schemas/JoinResult",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "created": true,
+        "revision": 1,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "groupId": 1,
+          "tier": "BRONZE",
+          "joinedAt": "2026-10-21T10:00:00Z",
+          "weeklyXp": 0,
+          "rank": 1,
+          "projectedOutcome": "KEEP",
+          "result": null
+        }
+      },
+      "path": "/api/me/league/join",
+      "method": "post",
+      "status": 200
+    },
+    {
+      "name": "m05JoinRequest",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001"
+      },
+      "path": "/api/me/league/join",
+      "method": "post",
+      "kind": "request"
+    },
+    {
+      "name": "m05LeaderboardSuccess",
+      "schema": "#/components/schemas/LeaderboardPage",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "seasonId": 1,
+        "groupId": 1,
+        "tier": "BRONZE",
+        "revision": 1,
+        "provisional": true,
+        "groupStats": {
+          "memberCount": 1,
+          "activeCount": 0,
+          "capacity": 25,
+          "promotionQuota": 0,
+          "demotionQuota": 0,
+          "movementEnabled": false,
+          "holdReason": "TOO_FEW_MEMBERS"
+        },
+        "self": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "displayName": "Học viên thử nghiệm",
+          "isSelf": true,
+          "rank": 1,
+          "weeklyXp": 0,
+          "outcome": "KEEP"
+        },
+        "items": [
+          {
+            "memberKey": "00000000-0000-4000-8000-000000000001",
+            "displayName": "Học viên thử nghiệm",
+            "isSelf": true,
+            "rank": 1,
+            "weeklyXp": 0,
+            "outcome": "KEEP"
+          }
+        ],
+        "totalElements": 1,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      },
+      "path": "/api/me/league/leaderboard",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05LeagueHistorySuccess",
+      "schema": "#/components/schemas/HistoryPage",
+      "body": {
+        "items": [
+          {
+            "season": {
+              "id": 1,
+              "startAt": "2026-10-18T17:00:00Z",
+              "endAt": "2026-10-25T17:00:00Z",
+              "cutoffAt": "2026-10-25T17:02:00Z",
+              "status": "FINALIZED",
+              "policyVersion": "m05-p0-v1",
+              "rules": {
+                "capacity": 25,
+                "minimumMembers": 10,
+                "minimumActive": 5,
+                "promotionPercent": 20,
+                "demotionPercent": 20
+              }
+            },
+            "groupId": 1,
+            "result": {
+              "rank": 1,
+              "memberCount": 1,
+              "activeCount": 0,
+              "weeklyXp": 0,
+              "tierBefore": "BRONZE",
+              "tierAfter": "BRONZE",
+              "outcome": "KEEP",
+              "holdReason": "TOO_FEW_MEMBERS",
+              "finalizedAt": "2026-10-25T17:02:01Z"
+            }
+          }
+        ],
+        "totalElements": 1,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      },
+      "path": "/api/me/league/history",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "pendingSubmissionIsNotZeroAward",
+      "schema": "#/components/schemas/ActivitiesPage",
+      "body": {
+        "items": [],
+        "totalElements": 0,
+        "page": 0,
+        "size": 20,
+        "totalPages": 0,
+        "requestedSubmission": {
+          "submissionId": 1,
+          "state": "PENDING"
+        }
+      }
+    },
+    {
+      "name": "unavailableSeason",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 0,
+        "state": "UNAVAILABLE",
+        "canJoin": false,
+        "season": null,
+        "membership": null
+      }
+    },
+    {
+      "name": "activeMembership",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 1,
+        "state": "ACTIVE",
+        "canJoin": false,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "groupId": 1,
+          "tier": "BRONZE",
+          "joinedAt": "2026-10-21T10:00:00Z",
+          "weeklyXp": 0,
+          "rank": 1,
+          "projectedOutcome": "KEEP",
+          "result": null
+        }
+      }
+    },
+    {
+      "name": "finalizedMembership",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 2,
+        "state": "FINALIZED",
+        "canJoin": false,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "FINALIZED",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "groupId": 1,
+          "tier": "BRONZE",
+          "joinedAt": "2026-10-21T10:00:00Z",
+          "weeklyXp": 0,
+          "rank": 1,
+          "projectedOutcome": "KEEP",
+          "result": {
+            "rank": 1,
+            "memberCount": 1,
+            "activeCount": 0,
+            "weeklyXp": 0,
+            "tierBefore": "BRONZE",
+            "tierAfter": "BRONZE",
+            "outcome": "KEEP",
+            "holdReason": "TOO_FEW_MEMBERS",
+            "finalizedAt": "2026-10-25T17:02:01Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "dueClaimBlockedByCap",
+      "schema": "#/components/schemas/Decision",
+      "body": {
+        "rewardType": "DUE_REVIEW",
+        "attemptQuestionId": null,
+        "objectiveId": 2,
+        "requestedXp": 5,
+        "awardedXp": 0,
+        "reason": "DAILY_CAP_REACHED"
+      }
+    },
+    {
+      "name": "subscription",
+      "schema": "#/components/schemas/Subscription",
+      "body": {
+        "version": 1,
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "type": "SUBSCRIBE",
+        "resource": "LEAGUE"
+      }
+    },
+    {
+      "name": "invalidation",
+      "schema": "#/components/schemas/InvalidationEvent",
+      "body": {
+        "version": 1,
+        "eventId": "00000000-0000-4000-8000-000000000001",
+        "type": "LEADERBOARD_CHANGED",
+        "resourceId": "group:1",
+        "revision": 2,
+        "serverTime": "2026-10-21T10:00:00Z"
+      }
+    },
+    {
+      "name": "sharedErrorShape",
+      "schema": "#/components/schemas/ApiError",
+      "body": {
+        "code": "LEAGUE_SETTLEMENT_PENDING",
+        "message": "Đang chốt nhóm trước.",
+        "fieldErrors": {}
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "cannotChooseuserId",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "userId": 2
+      }
+    },
+    {
+      "name": "cannotChoosexp",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "xp": 500
+      }
+    },
+    {
+      "name": "cannotChoosedate",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "date": "2026-10-20"
+      }
+    },
+    {
+      "name": "cannotChoosetier",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "tier": "DIAMOND"
+      }
+    },
+    {
+      "name": "cannotChooseseasonId",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "seasonId": 2
+      }
+    },
+    {
+      "name": "cannotChoosegroupId",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "groupId": 3
+      }
+    },
+    {
+      "name": "missingKey",
+      "schema": "#/components/schemas/Command",
+      "body": {}
+    },
+    {
+      "name": "numericKey",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": 1
+      }
+    },
+    {
+      "name": "uppercaseKey",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "ABCDEFAB-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "nonUuidKey",
+      "schema": "#/components/schemas/Command",
+      "body": {
+        "requestId": "key"
+      }
+    },
+    {
+      "name": "negativeXp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": -1,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "fractionalXp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 1.5,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "unsafeInteger",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 9007199254740992,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "stringXp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": "5",
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "wrongZone",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "UTC",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "credentialLeak",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE",
+        "passwordHash": "not-allowed"
+      }
+    },
+    {
+      "name": "overDailyCap",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 201,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "nonUtcTimestamp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T17:00:00+07:00",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "badCalendarDate",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v1",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 100,
+        "day": {
+          "date": "2026-02-30",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      }
+    },
+    {
+      "name": "oversizedBatch",
+      "schema": "#/components/schemas/SyncResult",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "processedSubmissions": 101,
+        "remainingSubmissions": 0,
+        "deferredSubmissions": 0,
+        "revision": 1,
+        "processedAt": "2026-10-21T10:00:00Z"
+      }
+    },
+    {
+      "name": "cannotJoinWhileActive",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 1,
+        "state": "ACTIVE",
+        "canJoin": true,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "groupId": 1,
+          "tier": "BRONZE",
+          "joinedAt": "2026-10-21T10:00:00Z",
+          "weeklyXp": 0,
+          "rank": 1,
+          "projectedOutcome": "KEEP",
+          "result": null
+        }
+      }
+    },
+    {
+      "name": "activeNeedsMembership",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 1,
+        "state": "ACTIVE",
+        "canJoin": false,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": null
+      }
+    },
+    {
+      "name": "finalizedNeedsResult",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 2,
+        "state": "FINALIZED",
+        "canJoin": false,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "FINALIZED",
+          "policyVersion": "m05-p0-v1",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 10,
+            "minimumActive": 5,
+            "promotionPercent": 20,
+            "demotionPercent": 20
+          }
+        },
+        "membership": {
+          "memberKey": "00000000-0000-4000-8000-000000000001",
+          "groupId": 1,
+          "tier": "BRONZE",
+          "joinedAt": "2026-10-21T10:00:00Z",
+          "weeklyXp": 0,
+          "rank": 1,
+          "projectedOutcome": "KEEP",
+          "result": null
+        }
+      }
+    },
+    {
+      "name": "emailLeak",
+      "schema": "#/components/schemas/LeaderboardMember",
+      "body": {
+        "memberKey": "00000000-0000-4000-8000-000000000001",
+        "displayName": "Học viên thử nghiệm",
+        "isSelf": true,
+        "rank": 1,
+        "weeklyXp": 0,
+        "outcome": "KEEP",
+        "email": "private@test.local"
+      }
+    },
+    {
+      "name": "internalUserIdLeak",
+      "schema": "#/components/schemas/LeaderboardMember",
+      "body": {
+        "memberKey": "00000000-0000-4000-8000-000000000001",
+        "displayName": "Học viên thử nghiệm",
+        "isSelf": true,
+        "rank": 1,
+        "weeklyXp": 0,
+        "outcome": "KEEP",
+        "userId": 99
+      }
+    },
+    {
+      "name": "unsupportedTier",
+      "schema": "#/components/schemas/Membership",
+      "body": {
+        "memberKey": "00000000-0000-4000-8000-000000000001",
+        "groupId": 1,
+        "tier": "MASTER",
+        "joinedAt": "2026-10-21T10:00:00Z",
+        "weeklyXp": 0,
+        "rank": 1,
+        "projectedOutcome": "KEEP",
+        "result": null
+      }
+    },
+    {
+      "name": "rankZero",
+      "schema": "#/components/schemas/LeaderboardMember",
+      "body": {
+        "memberKey": "00000000-0000-4000-8000-000000000001",
+        "displayName": "Học viên thử nghiệm",
+        "isSelf": true,
+        "rank": 0,
+        "weeklyXp": 0,
+        "outcome": "KEEP"
+      }
+    },
+    {
+      "name": "overCapacity",
+      "schema": "#/components/schemas/GroupStats",
+      "body": {
+        "memberCount": 26,
+        "activeCount": 0,
+        "capacity": 25,
+        "promotionQuota": 0,
+        "demotionQuota": 0,
+        "movementEnabled": false,
+        "holdReason": "TOO_FEW_MEMBERS"
+      }
+    },
+    {
+      "name": "dueNeedsObjective",
+      "schema": "#/components/schemas/Decision",
+      "body": {
+        "rewardType": "DUE_REVIEW",
+        "attemptQuestionId": null,
+        "objectiveId": null,
+        "requestedXp": 5,
+        "awardedXp": 5,
+        "reason": "AWARDED"
+      }
+    },
+    {
+      "name": "newQuestionNeedsItem",
+      "schema": "#/components/schemas/Decision",
+      "body": {
+        "rewardType": "NEW_QUESTION",
+        "attemptQuestionId": null,
+        "objectiveId": 2,
+        "requestedXp": 5,
+        "awardedXp": 5,
+        "reason": "AWARDED"
+      }
+    },
+    {
+      "name": "subscribeOtherGroup",
+      "schema": "#/components/schemas/Subscription",
+      "body": {
+        "version": 1,
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "type": "SUBSCRIBE",
+        "resource": "LEAGUE",
+        "groupId": 2
+      }
+    },
+    {
+      "name": "eventCannotCarryAnswer",
+      "schema": "#/components/schemas/InvalidationEvent",
+      "body": {
+        "version": 1,
+        "eventId": "00000000-0000-4000-8000-000000000001",
+        "type": "GAMIFICATION_CHANGED",
+        "resourceId": "me",
+        "revision": 1,
+        "serverTime": "2026-10-21T10:00:00Z",
+        "answerKey": {
+          "correctOptionId": "a"
+        }
+      }
+    }
+  ]
+}
