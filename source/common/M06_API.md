@@ -55,7 +55,7 @@ Database `english-learning-recovery`, schema version 1. Thiết kế thực tế
 | Store | Khóa/nội dung |
 |---|---|
 | workingDrafts | userId:attemptId:writerId; snapshot học viên, draft/playerState, result/feedback đã được cấp, generation, manualSaveRequired, pending operation và pendingAck |
-| commands | userId:requestId; pending create hoặc review-sync, body nguyên bản, PREPARED/ACKED và ACK khi có |
+| commands | userId:requestId; pending create hoặc review-sync, body nguyên bản, PREPARED/ACKED và ACK khi có; queuedAt tùy chọn để khôi phục lựa chọn create mới nhất |
 | leases | userId:lane; holder/fence/expiry để phối hợp sender cùng origin |
 
 Writer ID ở sessionStorage chỉ chứa định danh, không chứa đáp án. Web Locks nhận diện writer trùng do nhân tab và giữ exclusive lane khi hỗ trợ; fallback dùng lease IndexedDB 25 giây, renew 5 giây. Lease không thay server revision/receipt: request của sender đã chết vẫn có thể tới server.
@@ -65,6 +65,10 @@ Không Web Locks thì writer mới cho mỗi document, nhận lại bản cũ qu
 Snapshot/feedback chỉ lấy từ API học viên theo thời điểm cho phép. Không lưu password/cookie/CSRF/HTTP session ID/storageKey hoặc DTO tác giả. Logout marker trong localStorage chỉ gồm ID user và cờ chặn; không phải token đăng nhập. Schema và route command được kiểm tra trước replay; không dispatch URL/method tùy ý từ storage.
 
 Lưu tại máy chỉ được báo sau transaction complete. Trước mutation Attempt, persist full bản nhập + command bất biến; sau ACK persist pendingAck; sau GET đối soát persist baseline và clear pending. Nếu crash ở giữa, hydrate command cũ và replay cùng key/payload trước khi cho ghi tiếp. Create/review sync dùng journal tương tự; create còn GET Attempt trước clear command.
+
+Create phân biệt intent bằng requestId, không lấy kết quả của pending A trả cho thao tác chọn B. Trong lane create, persist B trước, đối soát các command cũ theo thứ tự rồi gửi B; chỉ kết quả B được trả về để điều hướng. Có thể còn nhiều command create trong journal khi các tab đã mở sẵn chọn khác nhau, nhưng sender vẫn tuần tự. Nếu A chưa đối soát được, giữ cả A/B và giao diện chờ/gửi lại; reload chọn create có queuedAt mới nhất. Record cũ không có queuedAt được coi là cũ hơn, không cần nâng schema IndexedDB. Cùng requestId với payload khác bị từ chối trước HTTP; lỗi 4xx dứt khoát của A trước ACK xóa A rồi cho B tiếp tục, 401 hoặc lỗi sau ACK vẫn giữ command cần đối soát. Review-sync tiếp tục phát lại command đang chờ theo batch.
+
+Dọn workingDrafts phải đọc, kiểm tra clean và xóa trong cùng transaction readwrite, có fence user/epoch. Giới hạn 100 bản clean/30 ngày không cho phép xóa dữ liệu mới chưa đồng bộ từ writer khác. Kiểm tra HTTP auth sau socket close mang generation của lượt kết nối: phản hồi cũ không được phát session-expired hoặc tạo retry timer sau khi lượt mới đã bắt đầu; 401 của lượt hiện tại vẫn kết thúc phiên giao diện.
 
 Nhận ACK cũ không được làm mất draft generation mới hơn. GET SUBMITTED không chứng minh command của mình thắng: replay receipt xác nhận operation cụ thể. 409 giữ hai bản, user chọn rõ; chọn giữ bản nhập yêu cầu bấm lưu, không tự autosave đè. CORRECTION không đổi FIRST/final/Submission/điểm.
 

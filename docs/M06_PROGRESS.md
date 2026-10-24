@@ -1,6 +1,15 @@
 # Tiến độ M06 — Kết nối và phục hồi
 
-Cập nhật **21/10/2026**, nhánh `feature/m06-connection-recovery`, nền `57f2951`. Phần triển khai M06 hiện chưa commit; trạng thái Git quyết định mốc chính xác.
+Cập nhật **23/10/2026**, nhánh `feature/m06-connection-recovery`, nền `57f2951`. M06 gốc đã commit `3956855`; bản sửa ba lỗi concurrency ngày 23/10 chưa commit/push. Trạng thái Git quyết định mốc chính xác.
+
+## Bản sửa sau review ngày 23/10
+
+- Dọn clean draft dùng một transaction readwrite cho đọc/kiểm tra/xóa, tránh xóa bản vừa được writer khác sửa. Giữ giới hạn 100 clean/30 ngày và fence user/epoch.
+- Create giữ riêng intent/requestId. Persist lựa chọn B trước khi đối soát A; chỉ trả kết quả B để điều hướng, không mở A thay B. queuedAt tùy chọn giúp reload lấy lựa chọn mới nhất, tương thích record schema v1 cũ. Sender vẫn tuần tự theo lane; lỗi chưa rõ giữ cả command, không xóa A chỉ vì mất mạng.
+- Auth callback sau socket close được kiểm tra generation cả khi thành công/lỗi; phản hồi của lượt cũ không phát session-expired hoặc tạo retry timer. 401 của lượt hiện tại vẫn yêu cầu đăng nhập.
+- Thêm hai browser E2E chọn B từ tab mở sẵn, gồm trường hợp A đã commit/mất ACK và tải lại B giữa đối soát; thêm harness IndexedDB thật và hai regression manager.
+- Kiểm tra tập trung: manager **7/7 PASS**, IndexedDB/journal **6/6 PASS**, production build PASS. Toàn bộ browser E2E **68/68 PASS** trong một lượt, 3,1 phút: 13 M06 + 55 hồi quy; xem biên bản cho môi trường và giới hạn.
+- Không đổi backend, migration V1–V5, luật chấm hoặc lịch M04. Công việc M07 được giữ ở Git stash riêng trước khi chuyển nhánh.
 
 ## Phần đã triển khai
 
@@ -15,7 +24,7 @@ Cập nhật **21/10/2026**, nhánh `feature/m06-connection-recovery`, nền `57
 - [x] Cách ly record sai trước dispatch; cảnh báo lỗi IndexedDB; dọn tối đa 100 bản clean/30 ngày, không tự xóa dirty/pending.
 - [x] Script browser restart/recreate/seed và giữ kết quả/tiến độ/ledger M04; checklist và biên bản bàn giao.
 
-## Kiểm tra
+## Kiểm tra M06 gốc ngày 21/10
 
 - Baseline: build frontend đạt; 59 test backend tập trung M01/M03/M04 đạt trước sửa.
 - Backend M06: **162/162 PASS**, 0 failure/error/skipped; XML được lưu trong thư mục ignored.

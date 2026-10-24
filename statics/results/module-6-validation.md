@@ -1,6 +1,6 @@
 # Nghiệm thu M06 — Kết nối và phục hồi
 
-Ngày **21/10/2026**, nhánh `feature/m06-connection-recovery`, nền Git **`57f2951`**, source M06 chưa commit. Không sửa migration V1–V5, luật chấm M03 hoặc ReviewPolicy M04; không thêm dependency. Môi trường Windows, Node **24.15.0**/npm **11.14.0**, Chrome có sẵn qua Playwright; backend Java 17/Maven 3.9/ffmpeg trong Docker, MySQL 8.4 riêng.
+Biên bản gốc ngày **21/10/2026**, nhánh `feature/m06-connection-recovery`, nền Git **`57f2951`**; source gốc sau đó đã commit thành `3956855`. Bản sửa sau review ngày 23/10 nằm ở mục cuối. Không sửa migration V1–V5, luật chấm M03 hoặc ReviewPolicy M04; không thêm dependency. Môi trường Windows, Node **24.15.0**/npm **11.14.0**, Chrome có sẵn qua Playwright; backend Java 17/Maven 3.9/ffmpeg trong Docker, MySQL 8.4 riêng.
 
 ## Kết quả thực tế
 
@@ -90,4 +90,34 @@ Chưa có phiên thao tác tay độc lập chạy hết [checklist](../../docs/
 
 Không có service worker/PWA, login offline hoặc cache toàn bộ audio. Nếu reload khi không tải được shell/không xác minh được auth thì không mở cache riêng. Phần chưa commit tại máy có thể mất; IndexedDB bị browser xóa không thay backup. Fallback không Web Locks dùng writer mới và khôi phục có lựa chọn, lease có thể đợi expiry.
 
-Session/presence/subscription ở RAM một backend, nháp/kết quả/ledger server ở MySQL/file volume. Chưa có XP M05 hoặc dashboard M07. Chưa commit/push/tạo PR; nội dung PR cung cấp trong cuộc trao đổi khi người dùng yêu cầu.
+Session/presence/subscription ở RAM một backend, nháp/kết quả/ledger server ở MySQL/file volume. Chưa có XP M05 hoặc dashboard M07 trên nhánh M06. Bản gốc đã commit/push tại `3956855`; bản sửa bên dưới chưa commit/push/tạo PR.
+
+## Sửa sau review — 23/10/2026
+
+Nền kiểm tra `3956855` cộng diff ba lỗi frontend. Không đổi backend hoặc migration. Phần M07 chưa commit đã được giữ riêng trước khi chuyển nhánh.
+
+| Kiểm tra mới chạy | Kết quả |
+|---|---|
+| Production build TypeScript/Vite | PASS, 59 modules; build máy Windows và build image client từ source đã sửa |
+| `npm run test:connection` | **7/7 PASS**: 5 ca cũ và 2 ca phản hồi auth cũ (401/thành công) sau khi socket thay thế đã connected; không phát session-expired hoặc thêm timer; 401 hiện hành vẫn dừng reconnect |
+| `npm run test:recovery-storage` | **6/6 PASS** với IndexedDB Chrome thật: đua prune/write, B được persist/return đúng, lỗi mạng giữ B để recovery, từ chối đổi payload cùng requestId, A bị từ chối dứt khoát không chặn B, hồi quy review-sync |
+| Toàn bộ browser E2E | **68/68 PASS**, 0 failed/skipped, **3,1 phút** trong một lượt; 13 M06 + 55 hồi quy M01–M04/M02/navigation |
+| Hai regression giao diện nhiều tab | PASS: A đã commit nhưng mất ACK; B chọn cấu hình khác, đứng ở danh sách trong lúc đối soát rồi chỉ mở B. Ca thứ hai làm đối soát A lỗi lần nữa, reload B và gửi lại vẫn giữ đúng key/payload, không thêm lượt trùng |
+
+Browser E2E chạy source đã sửa trong project Docker riêng **english-learning-m06-fix-e2e**, cổng **15178/18088**, MySQL/asset volume riêng và dữ liệu test. Không dùng demo 5173/8080 để ghi test, không xóa volume. Môi trường test được dừng sau kiểm tra.
+
+Lệnh từ `source/client`:
+
+```powershell
+npm run build
+npm run test:connection
+$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH='C:\Program Files\Google\Chrome\Application\chrome.exe'
+npm run test:recovery-storage
+# E2E_BASE_URL chỉ tới môi trường test riêng đã build/chạy:
+$env:E2E_BASE_URL='http://127.0.0.1:15178'
+node node_modules/@playwright/test/cli.js test --reporter=line,json
+```
+
+Log/JSON full E2E của lượt này được giữ ngoài Git tại `C:\Users\Admin\AppData\Local\Temp\english-m06-fixes-20261023\e2e-full.log` và `e2e-full.json`. Hai harness in PASS hoặc dừng với assertion thất bại. Windows sandbox chặn Vite/Chrome bằng EPERM nên build/browser được chạy với quyền tạo tiến trình phù hợp; không sửa ứng dụng để né môi trường.
+
+Phân biệt bằng chứng: storage harness dùng module thực và IndexedDB thực, HTTP được điều khiển; manager harness dùng module thực với clock/socket/auth giả lập; E2E nhiều tab dùng server/MySQL thực và giữ/abort phản hồi HTTP có chủ đích. Không coi đây là benchmark hay kiểm tra mất gói vật lý. Không chạy lại backend suite 162 ca hoặc script restart/recreate trong lượt sửa frontend này; các con số ở phần 21/10 là lịch sử.

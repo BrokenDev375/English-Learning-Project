@@ -94,6 +94,56 @@ test('create committed without ACK persists through reload and does not allocate
   expect(calls).toBe(2); expect((await (await page.request.get('/api/attempts')).json()).totalElements).toBe(2);
 });
 
+for (const reloadWhileWaiting of [false, true]) test(`another tab selecting B never opens pending A${reloadWhileWaiting ? ', including recovery after reload' : ''}`, async ({ page, context }) => {
+  await student(page);
+  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click();
+  await page.getByRole('tab', { name: 'Luyện tập theo chủ đề', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 });
+  await page.getByLabel('Số câu', { exact: true }).fill('2');
+  // Both catalogs are mounted before A creates its shared journal entry.
+  const tab = await context.newPage(); await tab.goto(page.url());
+  await tab.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 });
+  await tab.getByLabel('Số câu', { exact: true }).fill('3');
+  let bodyA: { requestId: string }, attemptA = 0;
+  await page.route('**/api/attempts', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    bodyA = route.request().postDataJSON();
+    const response = await route.fetch(); expect(response.status()).toBe(201);
+    attemptA = (await response.json()).attemptId; await route.abort();
+  });
+  await page.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true })).toBeVisible();
+  let release!: () => void, started!: () => void, failRecovery = reloadWhileWaiting;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const recoveryStarted = new Promise<void>(resolve => { started = resolve; });
+  const posted: { requestId: string; count: number }[] = [];
+  await tab.route('**/api/attempts', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const body = route.request().postDataJSON(); posted.push(body);
+    if (body.requestId === bodyA.requestId) {
+      started(); await gate;
+      if (failRecovery) { failRecovery = false; return route.abort(); }
+    }
+    return route.continue();
+  });
+  try {
+    await tab.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click();
+    await recoveryStarted;
+    await expect(tab.getByRole('status').filter({ hasText: 'Đang xác nhận và mở lượt làm bạn đã chọn' })).toBeVisible();
+    expect(tab.url()).not.toContain('attempt=');
+  } finally { release(); }
+  if (reloadWhileWaiting) {
+    await expect(tab.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true })).toBeVisible();
+    await tab.reload();
+    await tab.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true }).click();
+  }
+  await expect(tab.locator('.question-nav button')).toHaveCount(3);
+  expect((await snapshot(tab)).attemptId).not.toBe(attemptA);
+  expect(posted.filter(row => row.requestId !== bodyA.requestId).map(row => row.count)).toEqual([3]);
+  expect((await (await tab.request.get('/api/attempts')).json()).totalElements).toBe(3);
+  await tab.close();
+});
+
 for (const corruption of ['command', 'snapshot']) test(`corrupt persisted ${corruption} is quarantined instead of dispatching an arbitrary URL`, async ({ page }) => {
   await student(page); let forbidden = 0; page.on('request', r => { if (r.url().endsWith('/api/auth/logout')) forbidden++; });
   await page.evaluate(corruption => new Promise<void>((resolve, reject) => {

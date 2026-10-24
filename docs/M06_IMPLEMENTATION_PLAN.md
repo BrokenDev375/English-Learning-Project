@@ -2,7 +2,7 @@
 
 Ngày lập: **21/10/2026**. Nhánh `feature/m06-connection-recovery`, nền Git **`57f2951`**: đã gồm M03, bản sửa khôi phục audio `0bf107f` và M04. Kế hoạch được cập nhật theo triển khai; bằng chứng kiểm thử nằm trong biên bản, không suy ra chỉ từ checkbox.
 
-Cập nhật triển khai cùng ngày: đã thực hiện P0 theo các bước dưới; số liệu và giới hạn tại [tiến độ](M06_PROGRESS.md), [biên bản](../statics/results/module-6-validation.md). Checkbox là phạm vi đã triển khai/đối chiếu, không thay kết quả chạy từng nhánh của ma trận. Chưa commit/push/PR.
+Cập nhật triển khai: P0 bên dưới đã được commit tại `3956855`; bản sửa concurrency ngày 23/10 chưa commit/push. Số liệu, thay đổi và giới hạn tại [tiến độ](M06_PROGRESS.md), [biên bản](../statics/results/module-6-validation.md). Checkbox là phạm vi đã triển khai/đối chiếu, không thay kết quả chạy từng nhánh của ma trận.
 
 ## 1. Mục tiêu và nguồn đặc tả
 

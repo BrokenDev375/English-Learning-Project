@@ -49,6 +49,7 @@ Từ `source/client`:
 
 ```powershell
 node scripts/test-connection.mjs
+node scripts/test-recovery-storage.mjs
 npm run build
 npm run test:e2e -- module-six-recovery.spec.ts
 npm run test:e2e
@@ -58,6 +59,17 @@ node scripts/verify-m06-recovery.mjs
 Cài Chromium hoặc đặt PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH cho Chrome sẵn có. Script restart tự build source, tạo user test, bỏ draft ACK sau commit rồi restart server; reload yêu cầu đăng nhập lại và replay đúng command. Sau submit và sync M04, force recreate ba container giữ volume, đối chiếu Result/progress/dashboard/ledger và số hàng seed/receipt. Script dừng môi trường test khi xong, giữ volume.
 
 Kiểm tra thêm M01 auth/admin/thu hồi phiên, M02 biên soạn/audio/seed, M03 ba renderer/nháp/nộp/chữa, M04 REVIEW/sync. Mobile 390px, bàn phím, Back/Forward và audio restore phải giữ hành vi hiện có.
+
+## Hồi quy ba lỗi sau review 23/10
+
+| Tình huống | Kết quả cần thấy |
+|---|---|
+| Dọn hơn 100 clean draft đồng thời một writer ghi đáp án mới vào bản ứng viên xóa | Đáp án/generation mới còn trong IndexedDB; lần dọn sau vẫn giữ dirty. Harness storage dùng IndexedDB Chrome thật, kiểm soát thứ tự transaction để tái hiện |
+| Hai tab đã mở danh sách; tab A tạo lượt, server commit nhưng mất ACK; tab B chọn cấu hình B khác A | Tab B ở danh sách và báo đang xác nhận/mở lựa chọn; đối soát A phía sau, chỉ vào runner B; không hiện runner A và không tạo A lần hai |
+| B đã chọn nhưng đối soát A lại lỗi mạng; tải lại tab B rồi gửi lại | Journal giữ cả A/B; UI phục hồi B theo queuedAt, gửi nguyên payload/key A để đối soát rồi nguyên payload/key B; mở B |
+| Auth check của socket cũ còn chờ, focus mở socket mới và nhận HELLO ACK; sau đó check cũ trả 401 hoặc thành công | Vẫn connected, không bật về đăng nhập và không thêm retry timer từ lượt cũ. Harness manager kiểm soát HTTP/clock/socket; 401 hiện hành vẫn được kiểm tra riêng |
+
+Các ca giữ phản hồi/abort là mô phỏng có kiểm soát, không phải đo mất gói vật lý. Không có bước bắt người dùng xác nhận lại việc chọn B; ACK/GET là xác nhận từ server.
 
 ## Giới hạn
 

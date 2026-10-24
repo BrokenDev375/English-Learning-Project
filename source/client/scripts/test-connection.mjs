@@ -7,7 +7,7 @@ const code = ts.transpileModule(readFileSync(new URL('../src/features/connection
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
 class ApiError extends Error { constructor(status) { super('test'); this.status = status; } }
-function fixture(authenticated = true) {
+function fixture(authenticated = true, authenticate = async () => { if (!authenticated) throw new ApiError(401); return { id: 7 }; }) {
   let now = 0, serial = 0;
   const timers = new Map(); const sockets = [];
   const window = Object.assign(new EventTarget(), {
@@ -24,7 +24,7 @@ function fixture(authenticated = true) {
     async close(code = 1000) { if (this.readyState === 3) return; this.readyState = 3; await this.onclose?.({ code }); }
   }
   const module = {};
-  new Function('require', 'exports', 'window', 'location', 'WebSocket', code)(() => ({ ApiError, requestId: () => 'request-' + ++serial, api: async () => { if (!authenticated) throw new ApiError(401); return { id: 7 }; } }), module, window, { protocol: 'http:', host: 'test.local' }, Socket);
+  new Function('require', 'exports', 'window', 'location', 'WebSocket', code)(() => ({ ApiError, requestId: () => 'request-' + ++serial, api: authenticate }), module, window, { protocol: 'http:', host: 'test.local' }, Socket);
   async function advance(ms) {
     const until = now + ms;
     for (;;) {
@@ -36,7 +36,7 @@ function fixture(authenticated = true) {
     }
     now = until;
   }
-  return { module, sockets, window, advance };
+  return { module, sockets, window, advance, timers };
 }
 
 {
@@ -70,4 +70,22 @@ function fixture(authenticated = true) {
   const f = fixture(false); const manager = new f.module.ConnectionManager(7, () => 0); manager.start();
   await f.sockets[0].close(1006); assert.equal(f.module.connectionSnapshot(), 'auth-required'); await f.advance(60000); assert.equal(f.sockets.length, 1); manager.stop();
 }
-console.log('PASS: 5 deterministic manager scenarios (ACK deadline/subscription, capped backoff/cancel, revoked auth, stale callback/wrong ACK, restart/1006 auth).');
+for (const outcome of ['401', 'success']) {
+  let resolveAuth, rejectAuth;
+  const pendingAuth = new Promise((resolve, reject) => { resolveAuth = resolve; rejectAuth = reject; });
+  const f = fixture(true, () => pendingAuth), manager = new f.module.ConnectionManager(7, () => 0);
+  let expired = 0; f.window.addEventListener('session-expired', () => expired++); manager.start();
+  const oldClose = f.sockets[0].close(1006);
+  f.window.dispatchEvent(new Event('focus'));
+  const replacement = f.sockets[1]; replacement.message({ type: 'CONNECTED', userId: 7 });
+  replacement.message({ type: 'ACK', requestId: replacement.sent.at(-1).requestId });
+  assert.equal(f.module.connectionSnapshot(), 'connected');
+  const timerCount = f.timers.size;
+  if (outcome === '401') rejectAuth(new ApiError(401)); else resolveAuth({ id: 7 });
+  await oldClose;
+  assert.equal(f.module.connectionSnapshot(), 'connected');
+  assert.equal(expired, 0); assert.equal(replacement.readyState, 1);
+  assert.equal(f.timers.size, timerCount, 'obsolete auth must not add a retry timer');
+  manager.stop();
+}
+console.log('PASS: 7 deterministic manager scenarios, including late 401/success after a replacement connection.');

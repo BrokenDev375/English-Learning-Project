@@ -196,6 +196,8 @@ URL/history chỉ chứa màn hình, ID và bộ lọc, không chứa đáp án/
 
 Điểm vào M06: `features/connection/manager.ts` (clock/ACK/backoff/subscription), `storage/database.ts` (transaction/writer/lease/retention), `storage/journal.ts` (create/review sync), `session.ts` (working copy/pending). Backend: ConnectionService, LiveConnections, AccountSocketHandler và AttemptChanged AFTER_COMMIT. Không sửa luật chấm/ReviewPolicy hoặc migration V1–V5 để làm recovery.
 
+Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite transaction; create mới lưu riêng requestId/queuedAt trước khi đối soát command cũ, chỉ điều hướng bằng kết quả intent đã chọn; auth callback được fence theo generation kết nối. Hồi quy tập trung: `npm run test:connection`, `npm run test:recovery-storage` (Chrome qua PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH khi cần) và hai ca nhiều tab trong `module-six-recovery.spec.ts`. Xem tiến độ/biên bản M06 cho kết quả thực tế.
+
 ## 7. Mô hình dữ liệu và vòng đời nghiệp vụ
 
 ### Các nhóm bảng

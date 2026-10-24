@@ -17,13 +17,14 @@ export class ConnectionManager {
   private beat?: number;
   private deadline?: number;
   private retries = 0;
+  private generation = 0;
   private pending = new Map<string, { timer: number; subscribed?: number }>();
   private resources = new Set<number>();
   private ready = new Set<number>();
   constructor(private userId: number, private random = Math.random) {}
   start() { window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
   stop() {
-    this.stopped = true; window.removeEventListener('online', this.wake); window.removeEventListener('focus', this.wake);
+    this.stopped = true; this.generation++; window.removeEventListener('online', this.wake); window.removeEventListener('focus', this.wake);
     this.clear(); this.socket?.close(); this.socket = null;
   }
   private clear() {
@@ -43,6 +44,8 @@ export class ConnectionManager {
   }
   private connect() {
     if (this.stopped || this.socket) return;
+    const generation = ++this.generation;
+    const current = () => !this.stopped && generation === this.generation;
     publish('connecting');
     const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/events`);
     this.socket = socket;
@@ -74,11 +77,12 @@ export class ConnectionManager {
       if (this.stopped || socket !== this.socket) return;
       this.socket = null; this.clear(); publish('interrupted');
       // A restart/failed handshake often closes with 1006, not the explicit 1008.
-      // Check HTTP auth for every reconnect and fence late callbacks after stop.
+      // A focus/online event may start a replacement while this check awaits HTTP.
+      // Only the current connection generation may expire auth or schedule retries.
       void event;
-      try { const current = await api<{ id: number }>('/api/auth/me', 'GET', undefined, true); if (this.stopped) return; if (current.id !== this.userId) throw new ApiError(401, 'USER_CHANGED', 'Tài khoản đã thay đổi.'); }
-      catch (e) { if (this.stopped) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new Event('session-expired')); return; } }
-      if (!this.stopped) this.retry = window.setTimeout(() => this.connect(), Math.min(connectionConfig.maxBackoffMs, connectionConfig.backoffMs * 2 ** Math.min(this.retries++, 5)) * (0.75 + this.random() * 0.25));
+      try { const user = await api<{ id: number }>('/api/auth/me', 'GET', undefined, true); if (!current()) return; if (user.id !== this.userId) throw new ApiError(401, 'USER_CHANGED', 'Tài khoản đã thay đổi.'); }
+      catch (e) { if (!current()) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new Event('session-expired')); return; } }
+      if (current()) this.retry = window.setTimeout(() => { if (current()) this.connect(); }, Math.min(connectionConfig.maxBackoffMs, connectionConfig.backoffMs * 2 ** Math.min(this.retries++, 5)) * (0.75 + this.random() * 0.25));
     };
   }
 }

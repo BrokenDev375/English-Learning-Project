@@ -60,14 +60,28 @@ export async function purgeStorage(user: number) {
 export async function unlockStorage(user: number) { if (denied(user)) await purgeStorage(user); activateStorage(user); }
 
 export async function pruneCleanDrafts(user: number) {
-  const rows = await readRows<Row & { updatedAt?: number; state?: { pending?: unknown; conflict?: unknown; draft?: unknown; snapshot?: { items: { attemptQuestionId: number; response: unknown }[]; playerState: unknown } } }>('workingDrafts', user);
-  const clean = rows.filter(r => {
-    const s = r.state;
-    return r.version === 1 && typeof r.updatedAt === 'number' && !s?.pending && !s?.conflict && Array.isArray(s?.snapshot?.items)
-      && JSON.stringify(s.draft) === JSON.stringify({ answers: s.snapshot.items.map(i => ({ attemptQuestionId: i.attemptQuestionId, response: i.response })), playerState: s.snapshot.playerState });
-  }).sort((a, b) => b.updatedAt! - a.updatedAt!);
-  const remove = clean.filter((r, n) => n >= 100 || Date.now() - r.updatedAt! > 30 * 86400000).map(r => r.key);
-  if (remove.length) await writeRows(user, userEpoch(), {}, { workingDrafts: remove });
+  const stamp = userEpoch(), db = await database();
+  if (!isCurrent(user, stamp)) return;
+  type CachedDraft = Row & { updatedAt?: number; state?: { pending?: unknown; conflict?: unknown; draft?: unknown; snapshot?: { items: { attemptQuestionId: number; response: unknown }[]; playerState: unknown } } };
+  await new Promise<void>((resolve, reject) => {
+    // Keep the read, eligibility check and delete in one transaction. Another tab
+    // must not turn a clean candidate into an unsynced draft between these steps.
+    const tx = db.transaction('workingDrafts', 'readwrite'), store = tx.objectStore('workingDrafts');
+    const get = store.getAll();
+    get.onsuccess = () => {
+      if (!isCurrent(user, stamp)) { tx.abort(); return; }
+      const clean = (get.result as CachedDraft[]).filter(r => {
+        const s = r.state;
+        return r.userId === user && r.version === 1 && typeof r.updatedAt === 'number' && !s?.pending && !s?.conflict && Array.isArray(s?.snapshot?.items)
+          && JSON.stringify(s.draft) === JSON.stringify({ answers: s.snapshot.items.map(i => ({ attemptQuestionId: i.attemptQuestionId, response: i.response })), playerState: s.snapshot.playerState });
+      }).sort((a, b) => b.updatedAt! - a.updatedAt!);
+      for (const [n, row] of clean.entries()) {
+        if (n >= 100 || Date.now() - row.updatedAt! > 30 * 86400000) store.delete(row.key);
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = tx.onabort = () => reject(tx.error ?? new Error('Không dọn được bản đã đồng bộ tại máy.'));
+  });
 }
 
 let writer = '';

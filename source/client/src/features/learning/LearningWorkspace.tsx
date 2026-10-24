@@ -6,7 +6,7 @@ import type { CatalogPage, Topic } from '../content/catalog';
 import { allPages } from '../content/authoring';
 import LearningCatalog from '../content/LearningCatalog';
 import { createCommand, listAttempts } from './api';
-import { durableCall } from './storage/journal';
+import { durableCall, latestCreateCommand } from './storage/journal';
 import { readRows } from './storage/database';
 import type { CommandRow } from './storage/journal';
 import type { Create, Summary, Snapshot } from './types';
@@ -22,7 +22,7 @@ export default function LearningWorkspace({ user }: { user: User }) {
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [attemptId] = useRouteParam('attempt'), [tab, setTab] = useRouteParam('tab', 'catalog');
   const [command, setCommand] = useState<ReturnType<typeof createCommand> | null>(getPendingCreate), [busy, setBusy] = useState(false), [error, setError] = useState('');
-  useEffect(() => { let alive = true; void readRows<CommandRow>('commands', user.id).then(rows => { const row = rows.find(r => r.kind === 'create'); if (alive && row) { const saved = row.body as ReturnType<typeof createCommand>; setCommand(saved); setPendingCreate(saved); } }).catch(e => { if (alive) setError(errorMessage(e)); }); return () => { alive = false; }; }, [user.id]);
+  useEffect(() => { let alive = true; void readRows<CommandRow>('commands', user.id).then(rows => { const row = latestCreateCommand(rows); if (alive && row && !getPendingCreate()) { const saved = row.body as ReturnType<typeof createCommand>; setCommand(saved); setPendingCreate(saved); } }).catch(e => { if (alive) setError(errorMessage(e)); }); return () => { alive = false; }; }, [user.id]);
   async function start(input: Create | null) {
     if (busy || user.role !== 'STUDENT') return;
     const body = command ?? (input && createCommand(input)); if (!body) return;
@@ -41,7 +41,7 @@ export default function LearningWorkspace({ user }: { user: User }) {
   return <>
     {user.role === 'STUDENT' && <div className="learning-tabs" role="tablist" aria-label="Học và luyện tập">{[['catalog', 'Khám phá bài học'], ['practice', 'Luyện tập theo chủ đề'], ['review', 'Ôn tập cá nhân'], ['history', 'Lượt làm của tôi']].map(([key, label]) => <button role="tab" key={key} aria-selected={tab === key} onClick={() => { if (!command) { setError(''); setTab(key); } }}>{label}</button>)}</div>}
     {error && <div className="message error" role="alert">{error}</div>}
-    {command && <div className="message warning" role="status">{busy ? 'Đang tạo hoặc tiếp tục lượt làm…' : 'Chưa nhận được xác nhận tạo lượt. Gửi lại đúng thao tác trước khi chọn lượt mới.'}{!busy && <button className="button secondary" onClick={() => void start(null)}>Gửi lại yêu cầu tạo lượt</button>}</div>}
+    {command && <div className="message warning" role="status">{busy ? 'Đang xác nhận và mở lượt làm bạn đã chọn…' : 'Chưa nhận được xác nhận tạo lượt. Gửi lại đúng thao tác trước khi chọn lượt mới.'}{!busy && <button className="button secondary" onClick={() => void start(null)}>Gửi lại yêu cầu tạo lượt</button>}</div>}
     {user.role !== 'STUDENT' || tab === 'catalog' ? <LearningCatalog student={user.role === 'STUDENT'} start={lessonId => void start({ mode: 'LEARN', lessonId })} disabled={busy || !!command} /> : tab === 'practice' ? <PracticeForm start={input => void start(input)} disabled={busy || !!command} /> : tab === 'review' ? <PersonalReview userId={user.id} start={input => void start(input)} disabled={busy || !!command} /> : <AttemptHistory />}
   </>;
 }
