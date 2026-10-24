@@ -21,6 +21,14 @@ public class LiveConnections implements HttpSessionListener {
         sockets.put(session.getId(), new Socket(actor.id(), httpSessionId, session));
     }
     public void detach(String id) { sockets.remove(id); }
+    public void notifyGamification(long userId,String message) {
+        sockets.values().stream().filter(s->s.userId()==userId&&Boolean.TRUE.equals(s.session().getAttributes().get("gamificationSubscribed")))
+            .forEach(s->{try { s.session().sendMessage(new TextMessage(message)); } catch(IOException|RuntimeException ex) { close(s.session()); }});
+    }
+    public void notifyLeague(long userId,String message) {
+        sockets.values().stream().filter(s->s.userId()==userId&&Boolean.TRUE.equals(s.session().getAttributes().get("leagueSubscribed")))
+            .forEach(s->{try{s.session().sendMessage(new TextMessage(message));}catch(IOException|RuntimeException ex){close(s.session());}});
+    }
     @Override public void sessionDestroyed(HttpSessionEvent event) {
         String id = event.getSession().getId();
         sessions.remove(id);

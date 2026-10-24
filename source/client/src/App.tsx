@@ -7,6 +7,8 @@ import AuthPage from './features/auth/AuthPage';
 import AdminAccounts from './features/admin/AdminAccounts';
 import ContentWorkspace from './features/content/ContentWorkspace';
 import LearningWorkspace from './features/learning/LearningWorkspace';
+import RewardsDashboard, { RewardStrip } from './features/gamification/Rewards';
+import LeagueDashboard from './features/gamification/League';
 import { activateLearningUser, clearLearningSessions, hasUnsavedLearning } from './features/learning/session';
 import { navigate, useRouteParam } from './navigation';
 
@@ -14,7 +16,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); const [notice, setNotice] = useState('');
   const [routeView] = useRouteParam('view', 'home');
-  const view = ['home', 'account', 'admin', 'content', 'learning'].includes(routeView) ? routeView : 'home';
+  const view = ['home', 'account', 'admin', 'content', 'learning', 'rewards', 'league'].includes(routeView) ? routeView : 'home';
   const setView = (next: string, replace = false) => navigate({ view: next }, { reset: true, replace });
   const [connected, setConnected] = useState(false); const [busy, setBusy] = useState(false);
   async function restore() {
@@ -43,6 +45,9 @@ export default function App() {
       socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/events');
       socket.onopen = () => {
         attempt = 0; setConnected(true);
+        if (user?.role === 'STUDENT') for (const resource of ['GAMIFICATION', 'LEAGUE']) socket?.send(JSON.stringify({ version: 1, type: 'SUBSCRIBE', requestId: requestId(), resource }));
+        window.dispatchEvent(new Event('gamification:changed'));
+        window.dispatchEvent(new Event('league:changed'));
         beat = window.setInterval(() => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ version: 1, type: 'HEARTBEAT', requestId: requestId() })); }, 30000);
       };
       socket.onclose = event => {
@@ -51,6 +56,9 @@ export default function App() {
         retry = window.setTimeout(connect, Math.min(30000, 1000 * 2 ** Math.min(attempt++, 5)) + Math.random() * 500);
       };
       socket.onerror = () => socket?.close();
+      socket.onmessage = message => {
+        try { const event = JSON.parse(message.data); if (event.type === 'GAMIFICATION_CHANGED') window.dispatchEvent(new Event('gamification:changed')); if (['LEAGUE_CHANGED', 'LEADERBOARD_CHANGED'].includes(event.type)) window.dispatchEvent(new Event('league:changed')); } catch { /* Ignore invalid notifications; snapshots are loaded by HTTP. */ }
+      };
     }
     connect();
     return () => { cancelled = true; window.clearTimeout(retry); window.clearInterval(beat); socket?.close(); setConnected(false); };
@@ -69,21 +77,24 @@ export default function App() {
         <button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}><span aria-hidden="true">⌂</span>Trang chủ</button>
         <button className={view === 'account' ? 'active' : ''} onClick={() => setView('account')}><span aria-hidden="true">◎</span>Tài khoản</button>
         <button className={view === 'learning' ? 'active' : ''} onClick={() => setView('learning')}><span aria-hidden="true">▦</span>Khám phá bài học</button>
+        {user.role === 'STUDENT' && <button className={view === 'rewards' ? 'active' : ''} onClick={() => setView('rewards')}><span aria-hidden="true">✦</span>Phần thưởng học tập</button>}
+        {user.role === 'STUDENT' && <button className={view === 'league' ? 'active' : ''} onClick={() => setView('league')}><span aria-hidden="true">♜</span>Giải đấu tuần</button>}
         {user.role !== 'STUDENT' && <button className={view === 'content' ? 'active' : ''} onClick={() => setView('content')}><span aria-hidden="true">▤</span>Quản lý học liệu</button>}
         {user.role === 'ADMIN' && <button className={view === 'admin' ? 'active' : ''} onClick={() => setView('admin')}><span aria-hidden="true">♧</span>Quản lý tài khoản</button>}
       </nav><div className="sidebar-note"><strong>Small steps.<br />Steady progress.</strong><span>Dành một chút thời gian cho bản thân mỗi ngày.</span></div>
       <div className="sidebar-user"><span className="avatar">{initials(user.fullName)}</span><div><strong>{user.fullName}</strong><small>{roleNames[user.role]}</small></div></div>
     </aside>
-    <div className="workspace"><header className="topbar"><span>Không gian học tập <span className="slash">/</span> <strong>{view === 'learning' ? 'Bài học' : view === 'content' ? 'Học liệu' : view === 'admin' ? 'Quản trị' : view === 'account' ? 'Tài khoản' : 'Trang chủ'}</strong></span>
+    <div className="workspace"><header className="topbar"><span>Không gian học tập <span className="slash">/</span> <strong>{view === 'league' ? 'Giải đấu tuần' : view === 'rewards' ? 'Phần thưởng' : view === 'learning' ? 'Bài học' : view === 'content' ? 'Học liệu' : view === 'admin' ? 'Quản trị' : view === 'account' ? 'Tài khoản' : 'Trang chủ'}</strong></span>
       <div className="topbar-actions"><span className={'connection ' + (connected ? 'online' : '')}><i />{connected ? 'Đã kết nối' : 'Đang kết nối lại'}</span><button className="link-button" disabled={busy} onClick={logout}>{busy ? 'Đang thoát…' : 'Đăng xuất'}</button></div></header>
       <main className="main-content">
         {notice && <div className="message error" role="alert">{notice}</div>}
-        {view === 'learning' ? <LearningWorkspace key={user.id} user={user} /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
+        {view === 'league' && user.role === 'STUDENT' ? <LeagueDashboard key={user.id} /> : view === 'rewards' && user.role === 'STUDENT' ? <RewardsDashboard key={user.id} /> : view === 'learning' ? <LearningWorkspace key={user.id} user={user} /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
           <section><span className="eyebrow">THÔNG TIN CÁ NHÂN</span><h1>Tài khoản của bạn<span>.</span></h1><p className="muted">Thông tin và quyền truy cập hiện tại của bạn.</p>
             <div className="panel profile-card"><span className="avatar large">{initials(user.fullName)}</span><h2>{user.fullName}</h2><span className="role-pill">{roleNames[user.role]}</span>
               <dl><div><dt>Email</dt><dd>{user.email}</dd></div><div><dt>Vai trò</dt><dd>{roleNames[user.role]}</dd></div><div><dt>Trạng thái</dt><dd>Hoạt động</dd></div><div><dt>Ngày tham gia</dt><dd>{formatDate(user.createdAt)}</dd></div></dl></div>
           </section> :
           <section><div className="welcome"><span className="eyebrow">MỖI NGÀY, MỘT BƯỚC TIẾN</span><h1>Chào {user.fullName.split(' ').at(-1)}<span>.</span><br />Sẵn sàng cho điều mới?</h1><p>Chào mừng bạn đến với không gian học tiếng Anh của mình.</p><button className="button primary" onClick={() => setView('account')}>Xem tài khoản <span aria-hidden="true">→</span></button><div className="welcome-art" aria-hidden="true"><span>Aa</span><i>hello!</i><b>keep going ↗</b></div></div>
+            {user.role === 'STUDENT' && <RewardStrip key={user.id} />}
             <div className="home-grid"><article className="panel home-card"><span className="eyebrow">KHÔNG GIAN HỌC TẬP</span><h2>Hành trình của bạn</h2><p className="muted">Khám phá các Unit, xem hướng dẫn và mục tiêu của từng bài đã công bố.</p><button className="link-button" onClick={() => setView('learning')}>Xem danh sách bài →</button></article>
               <article className="panel home-card accent"><span className="eyebrow">TÀI KHOẢN</span><h2>{roleNames[user.role]}</h2><p className="muted">{user.role === 'ADMIN' ? 'Quản lý tài khoản, phân quyền và học liệu của hệ thống.' : user.role === 'TEACHER' ? 'Soạn tài liệu, câu hỏi và bài học có phiên bản.' : 'Tài khoản của bạn đã sẵn sàng để tham gia học tập.'}</p>{user.role !== 'STUDENT' && <button className="link-button" onClick={() => setView('content')}>Quản lý học liệu →</button>}</article></div>
           </section>}

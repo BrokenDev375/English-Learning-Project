@@ -5,6 +5,7 @@ import type { Answer } from './types';
 import { complete, outcomeNames } from './types';
 import AnswerFields, { KeyExplanation, responseText } from './AnswerFields';
 import LearningMaterial from './LearningMaterial';
+import { AttemptRewards } from '../gamification/Rewards';
 
 export default function AttemptResult({ session, state }: { session: AttemptSession; state: ReturnType<AttemptSession['getSnapshot']> }) {
   const result = state.result!, snapshot = state.snapshot!;
@@ -15,6 +16,7 @@ export default function AttemptResult({ session, state }: { session: AttemptSess
   const disabled = state.busy || !!state.pending || !!state.conflict || state.loginRequired || state.loading;
   const material = snapshot.materials.find(m => m.materialVersionId === item.materialVersionId);
   return <div className="attempt-result">
+    <AttemptRewards key={result.submissionId} submissionId={result.submissionId} />
     <div className="material-actions"><button className="button secondary" onClick={() => navigate({ attempt: null, tab: 'review', unit: null, lesson: null })}>Xem nội dung cần ôn</button></div>
     <div className="panel result-score"><div><span className="eyebrow">KẾT QUẢ ĐÃ NỘP</span><strong>{result.scorePercent.toFixed(2)}<small>/100</small></strong><p>{result.correctCount}/{result.totalQuestions} câu đúng · {result.unansweredCount} câu chưa trả lời</p></div><div><h2>{result.mode === 'LEARN' ? result.lessonCompleted ? 'Đã hoàn thành bài học' : 'Bài học chưa hoàn thành' : 'Đã hoàn tất lượt luyện tập'}</h2><p className="muted">Nộp lúc {new Date(result.submittedAt).toLocaleString('vi-VN')}. Điểm và câu trả lời khi nộp được giữ nguyên sau khi chữa.</p>{result.mode === 'LEARN' && !result.lessonCompleted && <p className="muted">Để hoàn thành bài, bắt đầu lượt học mới, trả lời đủ mọi câu và kiểm tra từng câu hướng dẫn trước khi nộp.</p>}</div></div>
     <div className="panel table-wrap"><table><caption className="sr-only">Kết quả lần đầu và khi nộp của từng câu</caption><thead><tr><th>Câu</th><th>Lần đầu</th><th>Khi nộp</th><th>Hỗ trợ ở lần đầu</th></tr></thead><tbody>{result.items.map((f, n) => <tr key={f.attemptQuestionId}><td><button className="link-button" onClick={() => setSelected(n)} aria-label={'Xem và chữa câu ' + (n + 1)}>Câu {n + 1}</button></td><td>{outcomeNames[f.firstOutcome]}{!f.firstResponseComplete && ' · chưa đủ'}</td><td>{outcomeNames[f.finalOutcome]}{!f.finalResponseComplete && ' · chưa đủ'}</td><td>{f.firstSupportUsed ? 'Có sử dụng' : 'Không sử dụng'}</td></tr>)}</tbody></table></div>

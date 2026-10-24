@@ -31,6 +31,7 @@ import vn.edu.ptit.english.security.UserPrincipal;
 import vn.edu.ptit.english.service.AssetService;
 import static org.assertj.core.api.Assertions.*;
 
+@org.springframework.test.annotation.DirtiesContext(classMode=org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"app.demo.enabled=false","app.bootstrap-admin.enabled=false"})
 @Testcontainers
 class AuthoringApiTest {

@@ -75,6 +75,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
   return <section className="personal-review">
     <span className="eyebrow">LUYỆN LẠI PHẦN BẠN CẦN</span><h1>Ôn tập cá nhân<span>.</span></h1>
     <p className="muted">Từ kết quả đã nộp, ưu tiên mục tiêu còn sai hoặc đã tới mốc ôn. Câu biến thể chưa gặp được ưu tiên trước câu đã làm.</p>
+    <p className="muted" aria-label="Điều kiện thưởng ôn">Mốc ôn được chốt khi bắt đầu lượt. Mục tiêu có lịch tốt đã đến hạn có thể nhận thêm 5 XP nếu tự làm đúng đầy đủ phần được giao; tối đa một bonus/mục tiêu/ngày và dùng chung trần 200 XP. Luyện lại lỗi sai chưa tự động có bonus đến hạn.</p>
     <div className="panel learning-panel">
       <div className="filters">
         <label>Chủ đề ôn<select value={topic} disabled={disabled || loading} onChange={e => { setTopic(e.target.value); setPage(0); }}>
@@ -113,6 +114,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
         <p className="muted">Lượt gần nhất: tự làm đúng {o.lastIndependentCorrect}/{o.lastIndependentAnswered} câu · {o.lastWrongCount} câu sai lần đầu.</p>
         <p className="muted">Lịch sử: {o.submissionCount} lượt · {o.assistedCount} câu có hướng dẫn/hỗ trợ · {o.unansweredCount} câu bỏ trống.</p>
         <p>Đã luyện: {date(o.lastPracticedAt)}<br />Mốc nhắc ôn: <strong>{date(o.nextReviewAt)}</strong></p>
+        {o.status === 'DUE' && o.stage > 0 && !o.hasMistakes && <p className="muted">Mục tiêu đã tới mốc: phần thưởng ôn sẽ được xét theo điều kiện chốt lúc bắt đầu, kết quả tự làm và trần XP còn lại.</p>}
         <p className="muted">Mức {difficulties[o.currentDifficulty]}: {o.availableQuestionCount} câu trong kho · {o.unseenQuestionCount} câu chưa gặp.</p>
         {!o.availableQuestionCount && <p className="message warning">Chưa có câu đang công bố phù hợp mức này. Giảng viên cần bổ sung học liệu.</p>}
         {o.availableQuestionCount > 0 && o.unseenQuestionCount === 0 && <p className="muted">Lượt ôn sẽ dùng lại câu đã gặp.</p>}
