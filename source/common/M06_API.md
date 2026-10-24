@@ -32,6 +32,12 @@ Event chỉ có ID/revision, gửi cho socket của owner đã subscribe. Ghi At
 
 Subscriber đăng ký → đợi ACK → GET; ghi nhận revision event lớn nhất và GET bù nếu event mới hơn bản vừa đọc. Bỏ event trùng/cũ. Mất socket không khóa HTTP. Focus/online/reconnect và polling có gộp hỗ trợ đối soát; không tự gọi create lại.
 
+### Tích hợp M05 vào M06 — 25/10/2026
+
+Cùng một socket hỗ trợ subscription Attempt ở trên và subscription `GAMIFICATION`/`LEAGUE` theo [hợp đồng M05](M05_API.md). Loại M05 dùng `{version:1,type:"SUBSCRIBE" hoặc "UNSUBSCRIBE",requestId:<UUID>,resource:"GAMIFICATION" hoặc "LEAGUE"}`; chỉ STUDENT, đúng bốn trường. Không nhận userId/nhóm hoặc trộn resource với attemptId. Lỗi tương ứng `FORBIDDEN`/`INVALID_SUBSCRIPTION`; Attempt vẫn dùng `RESOURCE_NOT_FOUND` để không lộ owner.
+
+Hai loại subscription độc lập: bỏ theo dõi phần thưởng không bỏ Attempt hoặc League. Client M06 đợi HELLO ACK, đăng ký lại cả ba loại sau reconnect và kích hoạt GET đối soát phần thưởng/giải đấu. `GAMIFICATION_CHANGED`, `LEAGUE_CHANGED`, `LEADERBOARD_CHANGED` chỉ làm mất hiệu lực snapshot cũ; không chứa ACK bài làm và không cộng XP cục bộ. Tất cả cùng chịu heartbeat/deadline/rate limit và thu hồi phiên của M06. Backend dùng Clock chung từ ApplicationClockConfig, không khai báo Clock thứ hai cho socket.
+
 ## 3. Tham số demo
 
 | Tham số | Giá trị |

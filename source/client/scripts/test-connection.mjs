@@ -88,4 +88,40 @@ for (const outcome of ['401', 'success']) {
   assert.equal(f.timers.size, timerCount, 'obsolete auth must not add a retry timer');
   manager.stop();
 }
-console.log('PASS: 7 deterministic manager scenarios, including late 401/success after a replacement connection.');
+{
+  const f = fixture(), manager = new f.module.ConnectionManager(7, () => 0, true);
+  const events = { rewards: 0, league: 0 }; let attempt;
+  f.window.addEventListener('gamification:changed', () => events.rewards++);
+  f.window.addEventListener('league:changed', () => events.league++);
+  f.window.addEventListener('attempt-invalidation', event => { attempt = event.detail; });
+  manager.subscribe(42); manager.start();
+  function acknowledge(socket) {
+    socket.message({ type: 'CONNECTED', userId: 7 });
+    const hello = socket.sent.at(-1); assert.equal(hello.type, 'HELLO');
+    socket.message({ type: 'ACK', requestId: hello.requestId });
+    const subscriptions = socket.sent.filter(message => message.type === 'SUBSCRIBE');
+    assert.equal(subscriptions.length, 3);
+    assert.deepEqual(subscriptions.filter(message => message.resource).map(message => message.resource).sort(), ['GAMIFICATION', 'LEAGUE']);
+    for (const message of subscriptions) socket.message({ type: 'ACK', requestId: message.requestId });
+    assert.equal(attempt.attemptId, 42);
+  }
+  const first = f.sockets[0]; acknowledge(first);
+  assert.deepEqual(events, { rewards: 1, league: 1 });
+  first.message({ type: 'GAMIFICATION_CHANGED' }); first.message({ type: 'LEAGUE_CHANGED' }); first.message({ type: 'LEADERBOARD_CHANGED' });
+  assert.deepEqual(events, { rewards: 2, league: 3 });
+  first.message({ type: 'ATTEMPT_CHANGED', attemptId: 42, revision: 3 }); assert.equal(attempt.revision, 3);
+  await first.close(1006); await f.advance(750); acknowledge(f.sockets[1]);
+  assert.deepEqual(events, { rewards: 3, league: 4 });
+  first.message({ type: 'GAMIFICATION_CHANGED' }); assert.equal(events.rewards, 3, 'obsolete socket cannot notify the new session');
+  await f.advance(25000); assert.equal(f.sockets[1].sent.at(-1).type, 'HEARTBEAT'); manager.stop();
+}
+{
+  const f = fixture(), manager = new f.module.ConnectionManager(7, () => 0);
+  let events = 0; f.window.addEventListener('gamification:changed', () => events++); f.window.addEventListener('league:changed', () => events++);
+  manager.start(); const socket = f.sockets[0]; socket.message({ type: 'CONNECTED', userId: 7 });
+  socket.message({ type: 'ACK', requestId: socket.sent.at(-1).requestId });
+  assert.equal(socket.sent.filter(message => message.resource).length, 0);
+  socket.message({ type: 'GAMIFICATION_CHANGED' }); socket.message({ type: 'LEAGUE_CHANGED' });
+  assert.equal(events, 0, 'non-student connection does not subscribe or publish reward events'); manager.stop();
+}
+console.log('PASS: 9 deterministic manager scenarios, including M05/M06 subscriptions, reconnect and obsolete auth callbacks.');

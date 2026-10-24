@@ -86,6 +86,21 @@ public class LiveConnections implements HttpSessionListener {
             }
         });
     }
+    public void notifyGamification(long userId, String message) {
+        notifyResource(userId, "gamificationSubscribed", message);
+    }
+    public void notifyLeague(long userId, String message) {
+        notifyResource(userId, "leagueSubscribed", message);
+    }
+    private void notifyResource(long userId, String subscription, String message) {
+        sockets.forEach((id, socket) -> {
+            if (socket.userId == userId && socket.session.isOpen()
+                && Boolean.TRUE.equals(socket.session.getAttributes().get(subscription))) {
+                try { socket.session.sendMessage(new TextMessage(message)); }
+                catch (IOException | RuntimeException ignored) { expire(socket); }
+            }
+        });
+    }
     @Override public void sessionDestroyed(HttpSessionEvent event) {
         String id = event.getSession().getId();
         sessions.remove(id);

@@ -13,6 +13,41 @@ async function student(page: Page) {
 const status = (page: Page) => page.locator('.learning-status');
 async function snapshot(page: Page) { const id = new URL(page.url()).hash.match(/attempt=(\d+)/)![1]; const r = await page.request.get('/api/attempts/' + id); expect(r.status()).toBe(200); return r.json(); }
 
+test('M05 rewards and league share the M06 attempt socket and recover subscriptions together', async ({ page }) => {
+  test.setTimeout(60000);
+  const connections: { sent: Record<string, unknown>[]; received: Record<string, unknown>[]; close: () => void }[] = [];
+  await page.routeWebSocket('**/ws/events', socket => {
+    const server = socket.connectToServer();
+    const connection = { sent: [] as Record<string, unknown>[], received: [] as Record<string, unknown>[],
+      close: () => { socket.close({ code: 1001, reason: 'test reconnect' }); server.close({ code: 1001 }); } };
+    socket.onMessage(message => { connection.sent.push(JSON.parse(message.toString())); server.send(message); });
+    server.onMessage(message => { connection.received.push(JSON.parse(message.toString())); socket.send(message); });
+    connections.push(connection);
+  });
+  await student(page); const before = await snapshot(page);
+  const subscribed = (index: number) => connections[index]?.sent.filter(message => message.type === 'SUBSCRIBE') ?? [];
+  await expect.poll(() => subscribed(0).length).toBe(3);
+  expect(connections).toHaveLength(1);
+  expect(subscribed(0).filter(message => message.resource).map(message => message.resource).sort()).toEqual(['GAMIFICATION', 'LEAGUE']);
+  expect(subscribed(0).find(message => message.attemptId)).toMatchObject({ attemptId: before.attemptId });
+  connections[0].close();
+  await expect.poll(() => connections.length).toBe(2);
+  await expect.poll(() => subscribed(1).length).toBe(3);
+  expect(subscribed(1).filter(message => message.resource).map(message => message.resource).sort()).toEqual(['GAMIFICATION', 'LEAGUE']);
+  expect(subscribed(1).find(message => message.attemptId)).toMatchObject({ attemptId: before.attemptId });
+  await expect(page.locator('.connection')).toContainText('Đã kết nối');
+  await page.locator('.answer-fields').getByRole('radio').last().check();
+  await expect(status(page)).toContainText('Đã lưu trên máy chủ');
+  await expect.poll(() => connections[1].received.some(message => message.type === 'ATTEMPT_CHANGED' && message.attemptId === before.attemptId)).toBe(true);
+  const csrf = await (await page.request.get('/api/auth/csrf')).json();
+  const join = await page.request.post('/api/me/league/join', { headers: { [csrf.headerName]: csrf.token }, data: { requestId: crypto.randomUUID() } });
+  expect(join.ok(), await join.text()).toBeTruthy();
+  await expect.poll(() => connections[1].received.some(message => message.type === 'LEAGUE_CHANGED' || message.type === 'LEADERBOARD_CHANGED'), { timeout: 20000 }).toBe(true);
+  await page.getByRole('button', { name: 'Trang chủ', exact: true }).click();
+  await expect(page.locator('.reward-strip')).toContainText('XP hôm nay');
+  expect(connections).toHaveLength(2);
+});
+
 test('offline edits commit locally; reload after reconnection restores and autosaves the exact draft', async ({ page, context }) => {
   await student(page); const before = await snapshot(page); await context.setOffline(true);
   await page.locator('.answer-fields').getByRole('radio').last().check();

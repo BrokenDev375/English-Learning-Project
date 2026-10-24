@@ -121,3 +121,17 @@ node node_modules/@playwright/test/cli.js test --reporter=line,json
 Log/JSON full E2E của lượt này được giữ ngoài Git tại `C:\Users\Admin\AppData\Local\Temp\english-m06-fixes-20261023\e2e-full.log` và `e2e-full.json`. Hai harness in PASS hoặc dừng với assertion thất bại. Windows sandbox chặn Vite/Chrome bằng EPERM nên build/browser được chạy với quyền tạo tiến trình phù hợp; không sửa ứng dụng để né môi trường.
 
 Phân biệt bằng chứng: storage harness dùng module thực và IndexedDB thực, HTTP được điều khiển; manager harness dùng module thực với clock/socket/auth giả lập; E2E nhiều tab dùng server/MySQL thực và giữ/abort phản hồi HTTP có chủ đích. Không coi đây là benchmark hay kiểm tra mất gói vật lý. Không chạy lại backend suite 162 ca hoặc script restart/recreate trong lượt sửa frontend này; các con số ở phần 21/10 là lịch sử.
+
+## Tích hợp main M05 vào M06 — 25/10/2026
+
+Nguồn tích hợp: M06 80d8f46 và main 6f9387d (M05 510d653). Giải quyết conflict AGENTS/App/AttemptResult/LiveConnections/AccountSocketHandler; nối thông báo GAMIFICATION/LEAGUE vào ConnectionManager M06 thay vì tạo thêm socket. Giữ quyền Attempt, heartbeat, subscription sau reconnect, IndexedDB/autosave và giao diện thưởng. Bỏ bean socketClock trùng, dùng Clock chung của ApplicationClockConfig.
+
+Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS.
+
+Backend dùng Java 17, MySQL Testcontainers riêng và source tích hợp bind read-only, chạy mvn -B -ntp clean test; ba ca mới AccountSocketHandlerTest kiểm tra cả hai dạng subscription, owner/role/không cho giả scope, unsubscribe độc lập và hết heartbeat. Browser dùng Chrome và backend/MySQL thật ở Compose project **english-learning-m06-main-e2e**, UI/API **15180/18090**. Ca tích hợp mới qua cùng socket: subscribe Attempt + GAMIFICATION + LEAGUE, chủ động close/reconnect, đăng ký lại, nhận ATTEMPT_CHANGED sau autosave và invalidation League sau join thật. Cả 14 ca M06 và 68 ca hồi quy/gamification còn lại đều qua. Manager có hai ca mới nối M05/M06 và từ chối thông báo phần thưởng ở kết nối không phải học viên.
+
+Lượt tích hợp đầu backend lỗi do hai bean Clock khiến context không khởi động; đã sửa cấu hình và chạy lại toàn bộ. Browser collection đầu thiếu .env ở staging; tạo từ .env.example trước lượt 82/82, không dùng credentials thật. Không sửa production để bỏ assertion.
+
+Log/XML/JSON ngoài Git tại C:\Users\Admin\AppData\Local\Temp\english-m06-main-merge-20261025. Docker test image dùng POM hiện hành và toàn bộ src mới, không báo source cũ như kết quả mới. .env/dependency junction/artifact nằm trong staging, không commit. Migration V1–V8 đối chiếu hash không thay; database demo và hai volume chính không được dùng để ghi test. M07 còn ở nhánh riêng.
+
+Không chạy lại script restart/recreate trong lượt tích hợp; bằng chứng script cũ ở các mục trước là lịch sử. Không coi bài kiểm tra browser route WebSocket/close chủ động là mất gói vật lý hoặc benchmark. Lỗi join đồng thời khóa tài khoản đã review riêng ở M05 còn ngoài phạm vi tích hợp này, không báo đã sửa.

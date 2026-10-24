@@ -1,6 +1,6 @@
 # Tiến độ M06 — Kết nối và phục hồi
 
-Cập nhật **23/10/2026**, nhánh `feature/m06-connection-recovery`, nền `57f2951`. M06 gốc đã commit `3956855`; bản sửa ba lỗi concurrency ngày 23/10 chưa commit/push. Trạng thái Git quyết định mốc chính xác.
+Cập nhật **25/10/2026**, nhánh `feature/m06-connection-recovery`. M06 gốc `3956855`, bản sửa concurrency `80d8f46`; tích hợp main `6f9387d` đã có M05. Trạng thái Git quyết định mốc chính xác.
 
 ## Bản sửa sau review ngày 23/10
 
@@ -36,8 +36,18 @@ Lệnh, mốc source, kết quả lượt cuối và giới hạn: [nghiệm thu
 
 ## Giới hạn và bàn giao
 
-Chưa có service worker/PWA, login offline, tải trước toàn bộ media, Redis/nhiều backend hoặc XP M05. Bản chưa commit IndexedDB vẫn có cửa sổ mất dữ liệu; storage có thể bị trình duyệt xóa. Không Web Locks thì mỗi document dùng writer mới, nhận lại bản cũ qua nút khôi phục và lease có thể phải đợi hết hạn.
+Chưa có service worker/PWA, login offline, tải trước toàn bộ media, Redis/nhiều backend. XP/giải đấu M05 đã được tích hợp từ main trong lượt 25/10. Bản chưa commit IndexedDB vẫn có cửa sổ mất dữ liệu; storage có thể bị trình duyệt xóa. Không Web Locks thì mỗi document dùng writer mới, nhận lại bản cũ qua nút khôi phục và lease có thể phải đợi hết hạn.
 
 P0 chỉ có schema IndexedDB v1: đã thử khởi tạo và record sai, chưa có migration v1→v2 thực tế. Chưa ép độc lập trường hợp blocked-upgrade, xóa IndexedDB bị policy chặn hoặc hai thiết bị vật lý; ghi rõ trong biên bản. Không coi E2E interception là benchmark hoặc kiểm tra mất gói/ổ đĩa vật lý.
 
 Người dùng review rồi quyết định commit/push/PR. Không tạo file mô tả PR riêng.
+
+## Tích hợp main có M05 — 25/10/2026
+
+- Giữ cả IndexedDB/autosave/journal/recovery M06 và màn phần thưởng/giải đấu/kết quả M05. M07 vẫn ở nhánh riêng.
+- Giải quyết năm file conflict: AGENTS, App, AttemptResult, LiveConnections và AccountSocketHandler. Không chọn bỏ toàn bộ một phía.
+- ConnectionManager dùng một socket, sau HELLO ACK đăng ký Attempt và GAMIFICATION/LEAGUE cho STUDENT; reconnect đăng ký lại và GET đối soát. Callback cũ vẫn bị fence bằng generation.
+- Backend tách subscription theo attemptId và resource, kiểm tra owner/role đúng hợp đồng, giữ heartbeat/rate limit và thu hồi phiên. Dùng ApplicationClockConfig chung, bỏ bean socketClock trùng gây backend không khởi động.
+- Thêm ba ca backend cho hai giao thức subscription cùng socket, quyền/bỏ theo dõi độc lập và hết heartbeat; hai ca manager và một E2E tích hợp reconnect thực với API/MySQL.
+- Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Kết quả và giới hạn tại [biên bản M06](../statics/results/module-6-validation.md).
+- Không thay migration V1–V8, không chạy test ghi vào demo hoặc xóa volume. Không sửa lỗi join khi account bị khóa đã được review riêng ở M05 trong lượt tích hợp này.

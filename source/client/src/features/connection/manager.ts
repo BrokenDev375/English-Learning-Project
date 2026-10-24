@@ -21,7 +21,7 @@ export class ConnectionManager {
   private pending = new Map<string, { timer: number; subscribed?: number }>();
   private resources = new Set<number>();
   private ready = new Set<number>();
-  constructor(private userId: number, private random = Math.random) {}
+  constructor(private userId: number, private random = Math.random, private student = false) {}
   start() { window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
   stop() {
     this.stopped = true; this.generation++; window.removeEventListener('online', this.wake); window.removeEventListener('focus', this.wake);
@@ -34,13 +34,13 @@ export class ConnectionManager {
   private wake = () => { recoverLearning(); if (!this.stopped && !this.socket && state !== 'auth-required') { window.clearTimeout(this.retry); this.connect(); } };
   subscribe(id: number) { this.resources.add(id); if (state === 'connected') this.send('SUBSCRIBE', id); }
   unsubscribe(id: number) { this.resources.delete(id); this.ready.delete(id); if (state === 'connected') this.send('UNSUBSCRIBE', id); }
-  private send(type: string, attemptId?: number) {
+  private send(type: string, attemptId?: number, resource?: 'GAMIFICATION' | 'LEAGUE') {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
     const id = requestId();
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
     this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined });
-    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }) }));
+    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}) }));
   }
   private connect() {
     if (this.stopped || this.socket) return;
@@ -63,13 +63,22 @@ export class ConnectionManager {
         if (state !== 'connected') {
           this.retries = 0; publish('connected');
           this.beat = window.setInterval(() => this.send('HEARTBEAT'), connectionConfig.heartbeatMs);
-          this.resources.forEach(id => this.send('SUBSCRIBE', id)); recoverLearning();
+          this.resources.forEach(id => this.send('SUBSCRIBE', id));
+          if (this.student) {
+            for (const resource of ['GAMIFICATION', 'LEAGUE'] as const) this.send('SUBSCRIBE', undefined, resource);
+            window.dispatchEvent(new Event('gamification:changed')); window.dispatchEvent(new Event('league:changed'));
+          }
+          recoverLearning();
         }
         if (command.subscribed) { this.ready.add(command.subscribed); window.dispatchEvent(new CustomEvent('attempt-invalidation', { detail: { attemptId: command.subscribed, revision: -1 } })); }
       } else if (m.type === 'ERROR' && m.requestId) {
         const command = this.pending.get(m.requestId); if (command) window.clearTimeout(command.timer); this.pending.delete(m.requestId);
       } else if (m.type === 'ATTEMPT_CHANGED' && Number.isSafeInteger(m.attemptId) && Number.isSafeInteger(m.revision) && this.ready.has(m.attemptId!)) {
         window.dispatchEvent(new CustomEvent('attempt-invalidation', { detail: { attemptId: m.attemptId, revision: m.revision } }));
+      } else if (this.student && m.type === 'GAMIFICATION_CHANGED') {
+        window.dispatchEvent(new Event('gamification:changed'));
+      } else if (this.student && (m.type === 'LEAGUE_CHANGED' || m.type === 'LEADERBOARD_CHANGED')) {
+        window.dispatchEvent(new Event('league:changed'));
       }
     };
     socket.onerror = () => socket.close();
@@ -88,8 +97,8 @@ export class ConnectionManager {
 }
 let active: ConnectionManager | null = null;
 const watched = new Map<number, number>();
-export function startConnections(userId: number) {
-  active?.stop(); const manager = new ConnectionManager(userId); active = manager;
+export function startConnections(userId: number, student = false) {
+  active?.stop(); const manager = new ConnectionManager(userId, Math.random, student); active = manager;
   watched.forEach((_, id) => manager.subscribe(id)); manager.start();
   return () => { manager.stop(); if (active === manager) active = null; };
 }

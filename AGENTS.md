@@ -34,7 +34,7 @@ Có ba vai trò:
 
 Đặc trưng của bài tập mạng nằm trong cách xử lý phiên đăng nhập, WebSocket, timeout, mất phản hồi sau commit, gửi lại request và ghi đồng thời. Chưa có bằng chứng đo tải hoặc hiệu quả học tập; không tự mô tả dự án như một hệ thống nhiều backend, offline đầy đủ hoặc ứng dụng đã nghiệm thu toàn bộ.
 
-### Mốc tiến độ cập nhật ngày 21/10/2026
+### Mốc tiến độ cập nhật ngày 22/10/2026
 
 | Module | Trạng thái thực tế |
 |---|---|
@@ -43,11 +43,14 @@ Có ba vai trò:
 | M03 — Học/luyện tập | Đã triển khai bước 0–5: dữ liệu/bộ chấm, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện |
 | M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao tại commit `9b0f1e0`; người dùng tạo PR trên web sau |
 | M04 — Ôn tập cá nhân | Đã có V5, backfill/ledger, dashboard, provider REVIEW và giao diện; xem docs/M04_PROGRESS.md và biên bản kiểm tra M04 |
-| M06 — Kết nối/phục hồi | Đã có heartbeat/presence/subscription, IndexedDB/autosave/journal và phục hồi M03/M04; source chưa commit, xem [tiến độ](docs/M06_PROGRESS.md) và [nghiệm thu](statics/results/module-6-validation.md) |
-| M05/M07 | Lần lượt: XP/giải đấu tuần và thống kê nâng cao; chưa triển khai đầy đủ |
+| M05 — Gamification/Giải đấu tuần | Hoàn tất chặng 0–6 P0: XP/cấp độ/streak/3 huy hiệu, worker/sync/receipt, UI phần thưởng/League, V8, ranking/tie/chốt/history. Hồi quy 235 backend + 4 ca bổ sung riêng, 68 browser; phục hồi/ledger/socket/backlog và workload local đạt. Demo 5176 bằng start-main.cmd; đọc docs/M05_PROGRESS.md, docs/M05_HANDOFF.md và statics/results/module-5-validation.md |
+| M06 — Kết nối/phục hồi | Đã có heartbeat/presence/subscription, IndexedDB/autosave/journal và phục hồi M03/M04; bản sửa 80d8f46 đã commit, đã tích hợp main 6f9387d, xem [tiến độ](docs/M06_PROGRESS.md) và [nghiệm thu](statics/results/module-6-validation.md) |
+| M07 | Hồ sơ/thống kê ở nhánh feature/m07-profile-statistics; chưa tích hợp vào M06 |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
-M06 trên nền `57f2951` và source chưa commit: backend **162/162**, E2E **66/66** (11 M06 + 55 hồi quy), manager harness **5/5**; script browser restart/recreate/replay/ledger/media đạt. Xem [biên bản M06](statics/results/module-6-validation.md), gồm các giới hạn còn lại. Không tự áp dụng bằng chứng này cho source thay đổi sau đó.
+Tích hợp M05–M06 ngày 25/10: Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Xem biên bản M06; không áp dụng các số lịch sử bên dưới cho bản mới.
+
+Bằng chứng M06 ban đầu trên nền `57f2951` (lịch sử, trước tích hợp M05): backend **162/162**, E2E **66/66** (11 M06 + 55 hồi quy), manager harness **5/5**; script browser restart/recreate/replay/ledger/media đạt. Xem [biên bản M06](statics/results/module-6-validation.md), gồm các giới hạn còn lại. Không tự áp dụng bằng chứng này cho source thay đổi sau đó.
 
 Seed M02 có **3 Unit, 6 Lesson, 90 Question, 13 Material**. Mỗi bài biên soạn có 5 GUIDED, 5 INDEPENDENT và 5 REVIEW_VARIANT; lượt LEARN hiện cấp 10 câu GUIDED + INDEPENDENT theo selector.
 
@@ -76,7 +79,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V5
+│   │   │   ├── db/migration/                  Flyway V1–V8
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -109,7 +112,7 @@ Trình duyệt
 
 - Compose local: trình duyệt vào **5173**, nginx trong container nghe **8080**, proxy tới service `server:8080`. Backend cũng được mở trên localhost **8080**.
 - Khi phát triển bằng Vite, `vite.config.ts` proxy `/api` và `/ws`; mặc định tới `127.0.0.1:8080`, có thể đổi bằng `API_PROXY_TARGET`.
-- Dùng HTTP cho nghiệp vụ học, quản trị và học liệu. WebSocket M06 có heartbeat deadline/presence/subscription owner và invalidation sau commit; dữ liệu chính thức vẫn GET qua HTTP. Chưa có sự kiện giải đấu.
+- Dùng HTTP cho nghiệp vụ học, quản trị và học liệu. WebSocket M06 giữ heartbeat/deadline, presence và subscription Attempt theo owner; cùng kết nối hỗ trợ invalidation GAMIFICATION/LEAGUE của M05. Reconnect đăng ký lại và GET đối soát, không cộng XP từ event.
 - Session HTTP và danh sách kết nối nằm trong RAM của một backend. Restart có thể cần đăng nhập lại; tài khoản, nội dung, nháp và kết quả đã commit nằm trong DB.
 - File thật nằm trong volume, metadata nằm trong MySQL. Không chuyển file sang lưu trực tiếp trong cột JSON hoặc trả đường dẫn lưu trữ nội bộ cho client.
 
@@ -156,6 +159,9 @@ Không serialize entity trực tiếp cho API; không để controller tự th�
 | Gửi lại request | RequestReceiptService và request_receipts |
 | Quyền file theo lượt | AttemptAssetReadGrant |
 | Ôn tập cá nhân | PersonalReviewService, ReviewRepository, PersonalReviewSelectionProvider, ReviewQuestionPool |
+| Bằng chứng thưởng ôn M05 | ReviewRewardContextRecorder, GamificationReviewContextRecorder, GamificationContextRepository; chỉ capture khi tạo REVIEW mới |
+| XP/streak/badge/worker M05 | GamificationServiceImpl, GamificationRules, GamificationRepositoryImpl, GamificationWorker, GamificationFailureTracker, GamificationEventDispatcher |
+| Giải đấu tuần M05 | LeagueServiceImpl/LeagueRepositoryImpl, LeagueRanking, LeagueLifecycle, LeagueWorker, LeagueEventDispatcher và LeagueController |
 
 Dùng `rg` tìm tên lớp; chỉ mở implementation, DTO và test của luồng đang sửa.
 
@@ -172,6 +178,7 @@ Gốc mã: `source/client/src/`.
 | `features/admin/` | Quản trị tài khoản |
 | `features/content/` | Danh mục, tác giả, preview, học liệu và LearningCatalog |
 | `features/learning/` | Giao diện làm bài, trạng thái đồng bộ, kết quả và chữa |
+| `features/gamification/` | RewardStrip/AttemptRewards/RewardsDashboard, LeagueDashboard; API đối soát XP/streak/badge/League và invalidation theo user/nhóm |
 | `components/`, `styles.css` | Thành phần và phong cách dùng chung |
 
 Trong `features/learning/`:
@@ -209,6 +216,9 @@ Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite trans
 | V3 | Topic/Objective/Unit, Asset, Material/Question/Lesson và các Version/join, request_receipts |
 | V4 | attempts, attempt_questions, attempt_answers, answer_trials, submissions, question_exposures, lesson_progress |
 | V5 | review_objective_progress, review_difficulty_evidence, review_processed_submissions |
+| V6 | Nền M05: gamification policy/claim/ledger/profile/day/badge/processed/failure và review_reward_context; đã nâng local english-learning-main tại 5176/8083 theo yêu cầu chạy thử |
+| V7 | gamification_outbox; đã áp dụng trên demo |
+| V8 | league_seasons/group_allocators/groups/members/outbox; FK xp_ledger.season_id, kết quả frozen trên membership; đã áp dụng demo, schema tiếp theo cần migration mới |
 
 Flyway quản lý schema; Hibernate giữ `ddl-auto=validate`. Không sửa migration đã áp dụng, không dùng create/update để chữa lệch schema. Thay đổi schema tiếp theo cần migration mới. SQL dưới `docs/database/planned/` là tài liệu hợp đồng, không tự chạy thay migration runtime.
 
@@ -248,7 +258,7 @@ Submit lưu final/trials/Submission/state/revision/progress/receipt **cùng mộ
 
 LEARN hoàn thành khi mọi đáp án đầy đủ và mọi GUIDED đã CHECK trước submit; không yêu cầu đúng hết. DB chỉ lưu STARTED/COMPLETED, API tổng hợp NOT_STARTED. Học lại/nộp dở không hạ COMPLETED. Tiến độ gồm bài đang công bố và lịch sử riêng; bài retire có currentPublishedVersionId=null. updateAvailable so bản công bố với bản hoàn thành gần nhất, hoặc bản lượt gần nhất nếu chưa hoàn thành.
 
-REVIEW có provider M04; khi kết quả chưa đồng bộ trả REVIEW_SYNC_REQUIRED. Bản test có thể thay provider bằng mock để kiểm tra lỗi REVIEW_NOT_READY. Chưa cộng XP.
+REVIEW có provider M04; khi kết quả chưa đồng bộ trả REVIEW_SYNC_REQUIRED. Bản test có thể thay provider bằng mock để kiểm tra lỗi REVIEW_NOT_READY. M05 xử lý thưởng sau commit Submission bằng worker/sync riêng.
 
 ### M04 — ôn tập cá nhân
 
@@ -291,6 +301,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 |---|---|
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
 | Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
+| Tiếp tục M05 | [Tiến độ](docs/M05_PROGRESS.md), [bàn giao](docs/M05_HANDOFF.md), [quyết định P0](docs/M05_DECISIONS.md), [API](source/common/M05_API.md), [nghiệm thu](statics/results/module-5-validation.md); không sửa V1–V8 đã chạy |
 | Tiếp tục M06 | [Tiến độ](docs/M06_PROGRESS.md), [kế hoạch](docs/M06_IMPLEMENTATION_PLAN.md), [API](source/common/M06_API.md), [ca thao tác](docs/M06_MANUAL_TEST_CASES.md), [nghiệm thu](statics/results/module-6-validation.md) |
 | Luật nghiệp vụ M03 | [Bàn giao M02–M03](docs/M02_M03_HANDOFF.md), mục 2, 4, 6–7; [quy tắc API](source/common/M02_M03_API.md), mục liên quan |
 | Trường/kiểu payload chính xác | Đúng schema/path trong [OpenAPI](source/common/openapi-m02-m03.json), [ví dụ](source/common/examples-m02-m03.json), [fixture](source/server/src/test/resources/contracts/m03-fixtures.json) |
@@ -319,6 +330,8 @@ Một số đoạn trong API.md còn mô tả mốc cũ. Không dùng câu “ch
 ```
 
 UI: http://localhost:5173; health backend: http://localhost:8080/api/health. Cấu hình qua .env/application.yml: nhóm DB_*, ASSET_DIRECTORY, BOOTSTRAP_ADMIN_*, DEMO_*, WS_ALLOWED_ORIGINS và SESSION_COOKIE_SECURE. Bootstrap không tự reset tài khoản đã tồn tại. Tra cứu tài khoản demo/cách tạo môi trường trong README, không sao chép mật khẩu thật vào hướng dẫn làm việc.
+
+Bản demo M05 hiện dùng **`start-main.cmd`**, project `english-learning-main`, UI **5176**, API **8083**, giữ các volume riêng của project này. Không dùng lẫn với môi trường mặc định trên. Hướng dẫn thử phần thưởng trong README.
 
 Compose có mysql_data và asset_data. Build/chạy backend mới có thể áp dụng migration còn thiếu lên DB cấu hình. Không restart demo chỉ để kiểm tra tài liệu; không down -v, truncate hoặc xóa volume để chạy test/nâng schema.
 
@@ -356,6 +369,8 @@ npm run test:e2e
 Có thể dùng Chrome cài sẵn qua PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, xem [nghiệm thu bước 5](statics/results/module-3-step5-validation.md). Trên Windows, nếu sandbox chặn tiến trình con Vite/browser, dùng quyền thực thi phù hợp; không sửa code ứng dụng để né lỗi môi trường. Nếu npm bị ép offline, xử lý tùy chọn/cache môi trường, giữ nguyên lockfile khi không đổi dependency.
 
 Runner mặc định build/chạy project **english-learning-e2e** ở **5174/8081**, volume riêng, đợi seed rồi test và dừng container. E2E có ghi dữ liệu; không trỏ E2E_BASE_URL vào demo 5173. Chỉ dùng biến này khi đã chủ động chọn một môi trường test riêng.
+
+Nghiệm thu M05: từ root chạy `node scripts/verify-m05-acceptance.mjs`, project/volume riêng **english-learning-m05-acceptance**, cổng **15177/18084**, không nhận URL/container demo. Kiểm tra backlog/restart/recreate/seed/replay/context/badge/frozen history, 6 nhóm SQL audit và workload local 20 học viên/40 socket/120 nguồn; dừng container khi xong, giữ volume. Dependency frontend phải có để dùng WebSocket test. Xem biên bản cuối, không coi workload nhỏ là SLA production. Spring test context đóng AFTER_CLASS; fixture XP không kế thừa test để nhân bản số ca.
 
 Nghiệm thu bền vững: từ `source/client`, chạy `node scripts/verify-m03-persistence.mjs`. Script tự build project **english-learning-m03-acceptance** ở **5175/8082**, tạo user test mới, kiểm tra nháp/kết quả/tiến độ/receipt/media qua restart server và force recreate cả ba container, seed chạy lại; dừng container khi xong và giữ volume riêng. Không chấp nhận URL demo. JSON/log trong `.test-state/m03-step6-*` bị ignore; xem [biên bản](statics/results/module-3-validation.md) trước khi diễn giải số hàng hoặc kết quả.
 

@@ -27,6 +27,7 @@ import vn.edu.ptit.english.security.*;
 import vn.edu.ptit.english.service.*;
 import static org.assertj.core.api.Assertions.*;
 
+@org.springframework.test.annotation.DirtiesContext(classMode=org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"app.demo.enabled=false","app.bootstrap-admin.enabled=false"}) @Testcontainers
 class CurriculumSeedTest {
     @Container static final MySQLContainer<?> MYSQL=new MySQLContainer<>("mysql:8.4").withDatabaseName("english_seed_test").withUsername("test_app").withPassword("test-password");

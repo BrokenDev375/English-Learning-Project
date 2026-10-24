@@ -44,10 +44,19 @@ public class AccountSocketHandler extends TextWebSocketHandler {
             if (!input.isObject() || !input.path("version").isIntegralNumber() || input.path("version").asInt() != 1 || !input.path("requestId").isTextual() || requestId.isBlank() || requestId.length() > 64 || !input.path("type").isTextual()) {
                 code = "INVALID_MESSAGE";
             } else if (type.equals("SUBSCRIBE") || type.equals("UNSUBSCRIBE")) {
-                var value = input.path("attemptId");
-                if (!value.isIntegralNumber() || !value.canConvertToLong() || !access.canSubscribe(value.asLong(), actor)) code = "RESOURCE_NOT_FOUND";
-                else if (type.equals("UNSUBSCRIBE")) connections.unsubscribe(raw.getId(), value.asLong());
-                else if (!connections.subscribe(raw.getId(), value.asLong())) code = "SUBSCRIPTION_LIMIT";
+                if (input.has("resource")) {
+                    if (actor.role() != vn.edu.ptit.english.enums.Role.STUDENT) code = "FORBIDDEN";
+                    else if (!input.path("resource").isTextual()
+                        || !java.util.Set.of("GAMIFICATION", "LEAGUE").contains(input.path("resource").asText())
+                        || input.size() != 4
+                        || !requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) code = "INVALID_SUBSCRIPTION";
+                    else raw.getAttributes().put(input.path("resource").asText().equals("LEAGUE") ? "leagueSubscribed" : "gamificationSubscribed", type.equals("SUBSCRIBE"));
+                } else {
+                    var value = input.path("attemptId");
+                    if (!value.isIntegralNumber() || !value.canConvertToLong() || !access.canSubscribe(value.asLong(), actor)) code = "RESOURCE_NOT_FOUND";
+                    else if (type.equals("UNSUBSCRIBE")) connections.unsubscribe(raw.getId(), value.asLong());
+                    else if (!connections.subscribe(raw.getId(), value.asLong())) code = "SUBSCRIPTION_LIMIT";
+                }
             } else if (!type.equals("HELLO") && !type.equals("HEARTBEAT")) {
                 code = "UNSUPPORTED_TYPE";
             }
