@@ -43,7 +43,8 @@ Có ba vai trò:
 | M03 — Học/luyện tập | Đã triển khai bước 0–5: dữ liệu/bộ chấm, API lượt làm/nháp/feedback/nộp/chữa/tiến độ và giao diện |
 | M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao tại commit `9b0f1e0`; người dùng tạo PR trên web sau |
 | M04 — Ôn tập cá nhân | Đã có V5, backfill/ledger, dashboard, provider REVIEW và giao diện; xem docs/M04_PROGRESS.md và biên bản kiểm tra M04 |
-| M05/M06/M07 | Lần lượt: XP/giải đấu tuần, offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
+| M07 — Hồ sơ và thống kê | Có API/giao diện cá nhân, admin và thống kê TEACHER theo Unit sở hữu (24/10), thống kê FIRST tách hỗ trợ/làm lại; xem docs/M07_PROGRESS.md |
+| M05/M06 | Chưa tích hợp các nhánh M05/M06 vào M07; XP qua interface đọc, presence hiện còn ước lượng M01, không tạo dữ liệu giả |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
 Seed M02 có **3 Unit, 6 Lesson, 90 Question, 13 Material**. Mỗi bài biên soạn có 5 GUIDED, 5 INDEPENDENT và 5 REVIEW_VARIANT; lượt LEARN hiện cấp 10 câu GUIDED + INDEPENDENT theo selector.
@@ -169,6 +170,7 @@ Gốc mã: `source/client/src/`.
 | `features/admin/` | Quản trị tài khoản |
 | `features/content/` | Danh mục, tác giả, preview, học liệu và LearningCatalog |
 | `features/learning/` | Giao diện làm bài, trạng thái đồng bộ, kết quả và chữa |
+| `features/statistics/` | Hồ sơ STUDENT, thống kê ADMIN, TeacherStatistics theo Unit và các trạng thái dữ liệu/phân trang |
 | `components/`, `styles.css` | Thành phần và phong cách dùng chung |
 
 Trong `features/learning/`:
@@ -251,6 +253,14 @@ Tổng hợp mỗi objective một lần mỗi Submission; stage tăng tối đa
 
 Xem docs/M04_IMPLEMENTATION_PLAN.md, source/common/M04_API.md và statics/results/module-4-validation.md trước khi đổi luật hoặc diễn giải kiểm thử.
 
+### M07 — hồ sơ và thống kê
+
+StatisticsController → StatisticsService/impl → StatisticsRepository/impl dùng JPQL aggregate, chỉ đọc trong transaction REPEATABLE_READ. Chỉ lấy FIRST/trial của Attempt đã có Submission; phân nhóm GUIDED, hỗ trợ, câu mới tự làm và câu cũ tự làm. Tỷ lệ lấy correct/(correct+incorrect), bỏ trống riêng, không có mẫu trả null. CORRECTION/GUIDED_RETRY không thay FIRST. Bộ lọc khoảng áp dụng submittedAt; tiến độ bài/lịch ôn là toàn lịch sử. Metadata theo phiên bản đã chốt, không phụ thuộc bản đang công bố.
+
+Không thêm schema/migration hoặc mutation. GET không sync M04; báo pendingSubmissions. Không cho TEACHER/ADMIN đọc /me, không cho STUDENT/TEACHER đọc thống kê admin, không trả đáp án hoặc PII học viên trong bảng admin. LearnerRewardsReader để M05 cung cấp dữ liệu đã commit, thiếu provider trả UNAVAILABLE/null. LiveConnections.snapshot chỉ ước lượng WebSocket đang mở tại một backend, chưa có freshness heartbeat M06. Xem docs/M07_PROGRESS.md, source/common/M07_API.md và statics/results/module-7-validation.md.
+
+TEACHER có /api/teacher/statistics (overview/units/lessons/questions/breakdown), quyền theo Unit.ownerId của principal; foreign/missing Unit cùng 404. Chỉ LEARN pin LessonVersion → Lesson → Unit; không lọc bằng chủ câu/membership hiện tại và không gán PRACTICE/REVIEW vào Unit. Chỉ metadata/tổng hợp, không learnerId/email/Attempt ID/đáp án. Metric kết quả theo period, bắt đầu/đang làm/hoàn thành toàn lịch sử. Hồi quy trong StatisticsApiTest và module-seven-teacher.spec.ts.
+
 ## 8. Quyền, transaction và độ tin cậy
 
 ### Phiên đăng nhập và quyền dữ liệu
@@ -282,6 +292,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 
 | Việc đang làm | Đọc trước |
 |---|---|
+| Tiếp tục M07 | [Tiến độ](docs/M07_PROGRESS.md), [kế hoạch](docs/M07_IMPLEMENTATION_PLAN.md), [API](source/common/M07_API.md), [kiểm tra](statics/results/module-7-validation.md) |
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
 | Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
 | Luật nghiệp vụ M03 | [Bàn giao M02–M03](docs/M02_M03_HANDOFF.md), mục 2, 4, 6–7; [quy tắc API](source/common/M02_M03_API.md), mục liên quan |

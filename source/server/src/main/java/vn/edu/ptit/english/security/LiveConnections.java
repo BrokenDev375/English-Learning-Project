@@ -21,6 +21,12 @@ public class LiveConnections implements HttpSessionListener {
         sockets.put(session.getId(), new Socket(actor.id(), httpSessionId, session));
     }
     public void detach(String id) { sockets.remove(id); }
+    public record Snapshot(long connectedAccounts, long openConnections) {}
+    /** Instantaneous local-process estimate; M06 heartbeat freshness is not inferred here. */
+    public Snapshot snapshot() {
+        var open = sockets.values().stream().filter(s -> s.session().isOpen()).toList();
+        return new Snapshot(open.stream().map(Socket::userId).distinct().count(), open.size());
+    }
     @Override public void sessionDestroyed(HttpSessionEvent event) {
         String id = event.getSession().getId();
         sessions.remove(id);

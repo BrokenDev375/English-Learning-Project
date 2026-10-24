@@ -1,5 +1,9 @@
 # English Learning
 
+M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu** cho TEACHER và **Thống kê học tập** cho ADMIN: kết quả lần đầu theo chủ đề/mục tiêu, lịch sử, bài hoàn thành, nội dung cần ôn, độ khó và câu thường sai. Giảng viên chỉ xem số tổng hợp LEARN trong Unit mình làm chủ, không xem hồ sơ từng học viên; có lọc Unit/khoảng thời gian, hiệu quả từng bài và mức dùng hỗ trợ. Xem [tiến độ](docs/M07_PROGRESS.md), [API](source/common/M07_API.md), [cách thử](docs/M07_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-7-validation.md).
+
+M07 chỉ đọc dữ liệu M01–M04, không thêm migration. Điểm thưởng/huy hiệu/Giải đấu tuần chờ dữ liệu M05; chưa có provider thì hiển thị chưa có dữ liệu. Số tài khoản kết nối là ước lượng WebSocket còn mở trong một backend, chưa phải presence heartbeat hoàn chỉnh của M06.
+
 M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.

@@ -4,7 +4,7 @@ Cập nhật: 21/10/2026. Đây là kế hoạch cho hướng đề tài mới; 
 
 Tên đề xuất: **Ứng dụng học và ôn tập tiếng Anh tích hợp gamification theo mô hình client–server.**
 
-Plan cho app tiếng Anh mới tại english-learning-project/. M01–M03 và phần P0 của M04 đã triển khai; M05–M07 cùng những quyết định ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
+Plan cho app tiếng Anh mới tại english-learning-project/. M01–M03, phần P0 của M04 và phần thống kê từ dữ liệu hiện có của M07 đã triển khai; M05–M06, tích hợp thưởng/presence đầy đủ cùng những quyết định ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
 
 Tài liệu này được sao chép từ plan ở thư mục gốc LTM; mã nguồn app mới nằm cùng thư mục dự án. Các file môn học được giữ nguyên ở INSTRUCTION.md, TOPICS.md và SUBMISSION.md.
 
@@ -386,9 +386,12 @@ Chọn phạm vi nội dung trước rồi mới lấy câu phù hợp. Không b
 
 ### M07. Hồ sơ và thống kê — P0 gọn, P1 xuất báo cáo
 
+**Bản P0 ngày 21/10/2026:** [kế hoạch](docs/M07_IMPLEMENTATION_PLAN.md), [tiến độ](docs/M07_PROGRESS.md), [API](source/common/M07_API.md), [kiểm tra](statics/results/module-7-validation.md). Đã có hồ sơ/statistics từ M01–M04. XP/streak/huy hiệu/Giải đấu tuần chờ provider M05; số online hiện chỉ là ước lượng WebSocket mở, chờ presence M06. Chưa làm export P1. Không thêm migration hoặc thay kết quả/lịch ôn.
+
 - Hồ sơ: bài đã học, độ chính xác lần đầu theo chủ đề/mục tiêu, nội dung cần ôn, lịch sử học/luyện/ôn, tổng XP, streak và huy hiệu. Hiển thị Giải đấu tuần gồm bậc, vị trí nhóm, XP tuần và lịch sử tuần.
 - Tách kết quả có hỗ trợ, tự làm và làm lại; hiển thị cỡ mẫu. Không kết luận thành thạo từ một câu.
 - Quản trị: câu hỏi nào thường sai, phân bố độ khó, lượt học/luyện/ôn, số tài khoản online hiện tại. Dữ liệu cá nhân chỉ cấp theo quyền.
+- Chốt 24/10: giảng viên có Thống kê học liệu theo Unit mình làm chủ: lượt bắt đầu/đang làm/nộp/hoàn thành, kết quả theo bài/chủ đề/mục tiêu/độ khó, câu thường sai và mức dùng gợi ý/làm lại. Chỉ lấy LEARN qua LessonVersion đã chốt thuộc Unit đó; không suy nguồn từ câu hỏi dùng chung, không cộng PRACTICE/REVIEW chưa có Unit nguồn. Không cấp hồ sơ cá nhân học viên; Unit của người khác trả 404.
 - P1: xuất dữ liệu thống kê phù hợp và màn hình xem số liệu thử nghiệm mạng; mã request/log kỹ thuật không đưa vào luồng học.
 - Không ghi số liệu hiệu quả học tập khi chưa có thực nghiệm.
 

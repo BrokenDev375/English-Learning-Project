@@ -1,0 +1,1783 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "English Learning M07",
+    "version": "1.1.0",
+    "description": "Read statistics from M01–M04. Rewards optional via LearnerRewardsReader. Presence estimates open WebSocket connections; see M07_API.md for aggregation and time semantics. Teacher statistics are scoped by Unit ownership and the pinned LEARN lesson; no cross-Unit question attribution."
+  },
+  "paths": {
+    "/api/me/statistics": {
+      "get": {
+        "operationId": "learnerStatistics",
+        "summary": "STUDENT: learnerStatistics",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearnerOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/me/statistics/breakdown": {
+      "get": {
+        "operationId": "learnerBreakdown",
+        "summary": "STUDENT: learnerBreakdown",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "groupBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TOPIC",
+                "OBJECTIVE"
+              ],
+              "default": "TOPIC"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BreakdownPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/me/statistics/lessons": {
+      "get": {
+        "operationId": "completedLessons",
+        "summary": "STUDENT: completedLessons",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/admin/statistics": {
+      "get": {
+        "operationId": "adminStatistics",
+        "summary": "ADMIN: adminStatistics",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/admin/statistics/questions": {
+      "get": {
+        "operationId": "questionStatistics",
+        "summary": "ADMIN: questionStatistics",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/teacher/statistics": {
+      "get": {
+        "operationId": "teacherStatistics",
+        "summary": "TEACHER: teacherStatistics",
+        "description": "Aggregate only LEARN attempts attributed through their pinned LessonVersion to an owned Unit. No learner identities or personal answers. See M07_API.md for period and completion semantics.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "description": "Optional owned Unit; foreign/missing Unit returns 404. Omit for all Units owned by the authenticated TEACHER.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "404": {
+            "description": "Unit does not exist or is not owned by the authenticated teacher."
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/teacher/statistics/units": {
+      "get": {
+        "operationId": "teacherOwnedUnits",
+        "summary": "TEACHER: teacherOwnedUnits",
+        "description": "Aggregate only LEARN attempts attributed through their pinned LessonVersion to an owned Unit. No learner identities or personal answers. See M07_API.md for period and completion semantics.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherUnitPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/teacher/statistics/lessons": {
+      "get": {
+        "operationId": "teacherLessonStatistics",
+        "summary": "TEACHER: teacherLessonStatistics",
+        "description": "Aggregate only LEARN attempts attributed through their pinned LessonVersion to an owned Unit. No learner identities or personal answers. See M07_API.md for period and completion semantics.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "description": "Optional owned Unit; foreign/missing Unit returns 404. Omit for all Units owned by the authenticated TEACHER.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherLessonPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "404": {
+            "description": "Unit does not exist or is not owned by the authenticated teacher."
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/teacher/statistics/questions": {
+      "get": {
+        "operationId": "teacherQuestionStatistics",
+        "summary": "TEACHER: teacherQuestionStatistics",
+        "description": "Aggregate only LEARN attempts attributed through their pinned LessonVersion to an owned Unit. No learner identities or personal answers. See M07_API.md for period and completion semantics.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "description": "Optional owned Unit; foreign/missing Unit returns 404. Omit for all Units owned by the authenticated TEACHER.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "404": {
+            "description": "Unit does not exist or is not owned by the authenticated teacher."
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/api/teacher/statistics/breakdown": {
+      "get": {
+        "operationId": "teacherStatisticsBreakdown",
+        "summary": "TEACHER: teacherStatisticsBreakdown",
+        "description": "Aggregate only LEARN attempts attributed through their pinned LessonVersion to an owned Unit. No learner identities or personal answers. See M07_API.md for period and completion semantics.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "7D",
+                "30D",
+                "90D"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "description": "Optional owned Unit; foreign/missing Unit returns 404. Omit for all Units owned by the authenticated TEACHER.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "groupBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TOPIC",
+                "OBJECTIVE"
+              ],
+              "default": "TOPIC"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only database projection; private, no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BreakdownPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED"
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "404": {
+            "description": "Unit does not exist or is not owned by the authenticated teacher."
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    },
+    "schemas": {
+      "Metric": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "total",
+          "correct",
+          "incorrect",
+          "unanswered",
+          "accuracyPercent"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "correct": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "incorrect": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "unanswered": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "accuracyPercent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Performance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "first",
+          "guided",
+          "assisted",
+          "independentNew",
+          "independentSeen",
+          "guidedRetries",
+          "corrections"
+        ],
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "guided": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "assisted": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "independentNew": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "independentSeen": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "guidedRetries": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "corrections": {
+            "$ref": "#/components/schemas/Metric"
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "submittedAttempts",
+          "activeAttempts",
+          "completedLessons",
+          "learnersWithSubmissions",
+          "lastSubmittedAt",
+          "modes"
+        ],
+        "properties": {
+          "submittedAttempts": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "activeAttempts": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "completedLessons": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "learnersWithSubmissions": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "lastSubmittedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "modes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mode",
+                "submissions"
+              ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "LEARN",
+                    "PRACTICE",
+                    "REVIEW"
+                  ]
+                },
+                "submissions": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trackedObjectives",
+          "needsReview",
+          "mistakeObjectives",
+          "pendingSubmissions",
+          "nextScheduledAt"
+        ],
+        "properties": {
+          "trackedObjectives": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "needsReview": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "mistakeObjectives": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "pendingSubmissions": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "nextScheduledAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "LeagueWeek": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "week",
+          "tier",
+          "position",
+          "xp"
+        ],
+        "properties": {
+          "week": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "xp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Rewards": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "totalXp",
+          "level",
+          "streakDays",
+          "badges",
+          "currentWeek",
+          "history"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "UNAVAILABLE"
+            ]
+          },
+          "totalXp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "streakDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "badges": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "name",
+                    "earnedAt"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "earnedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currentWeek": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeagueWeek"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LeagueWeek"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "LearnerOverview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "period",
+          "from",
+          "activity",
+          "performance",
+          "review",
+          "rewards"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "7D",
+              "30D",
+              "90D"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Performance"
+          },
+          "review": {
+            "$ref": "#/components/schemas/Review"
+          },
+          "rewards": {
+            "$ref": "#/components/schemas/Rewards"
+          }
+        }
+      },
+      "Breakdown": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "topicId",
+          "performance"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Performance"
+          }
+        }
+      },
+      "Lesson": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lessonId",
+          "lessonVersionId",
+          "title",
+          "state",
+          "lastAttemptId",
+          "completedAt",
+          "lastScorePercent"
+        ],
+        "properties": {
+          "lessonId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "lessonVersionId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETED"
+            ]
+          },
+          "lastAttemptId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastScorePercent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "AdminOverview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "period",
+          "from",
+          "activity",
+          "performance",
+          "roles",
+          "statuses",
+          "difficulties",
+          "presence"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "7D",
+              "30D",
+              "90D"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Performance"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          },
+          "difficulties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "difficulty",
+                "performance"
+              ],
+              "properties": {
+                "difficulty": {
+                  "type": "string",
+                  "enum": [
+                    "EASY",
+                    "MEDIUM",
+                    "HARD"
+                  ]
+                },
+                "performance": {
+                  "$ref": "#/components/schemas/Performance"
+                }
+              }
+            }
+          },
+          "presence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "connectedAccounts",
+              "openConnections",
+              "basis"
+            ],
+            "properties": {
+              "connectedAccounts": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              "openConnections": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "OPEN_AUTHENTICATED_SOCKETS"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "Count": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "count"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "questionId",
+          "questionVersionId",
+          "versionNo",
+          "prompt",
+          "type",
+          "difficulty",
+          "learners",
+          "first"
+        ],
+        "properties": {
+          "questionId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "questionVersionId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "versionNo": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "learners": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "first": {
+            "$ref": "#/components/schemas/Metric"
+          }
+        }
+      },
+      "BreakdownPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Breakdown"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "LessonPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Lesson"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "QuestionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "TeacherUnit": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unitId",
+          "title",
+          "stage",
+          "sortOrder"
+        ],
+        "properties": {
+          "unitId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "TeacherOverview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "period",
+          "from",
+          "unitId",
+          "units",
+          "learnersStarted",
+          "activity",
+          "performance",
+          "hintOpenedQuestions",
+          "difficulties"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "7D",
+              "30D",
+              "90D"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "unitId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "learnersStarted": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Performance"
+          },
+          "hintOpenedQuestions": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "difficulties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "difficulty",
+                "performance"
+              ],
+              "properties": {
+                "difficulty": {
+                  "type": "string",
+                  "enum": [
+                    "EASY",
+                    "MEDIUM",
+                    "HARD"
+                  ]
+                },
+                "performance": {
+                  "$ref": "#/components/schemas/Performance"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TeacherLesson": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lessonId",
+          "unitId",
+          "unitTitle",
+          "title",
+          "learnersStarted",
+          "activeAttempts",
+          "submittedAttempts",
+          "completedLearners",
+          "hintOpenedQuestions",
+          "performance"
+        ],
+        "properties": {
+          "lessonId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "unitId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "unitTitle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "learnersStarted": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "activeAttempts": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "submittedAttempts": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "completedLearners": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "hintOpenedQuestions": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "performance": {
+            "$ref": "#/components/schemas/Performance"
+          }
+        }
+      },
+      "TeacherUnitPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherUnit"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "TeacherLessonPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherLesson"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

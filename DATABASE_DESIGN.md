@@ -57,3 +57,9 @@ Schema thực thi: [V5__personal_review.sql](source/server/src/main/resources/db
 Kết quả gốc vẫn ở submissions.result_json của V4. POST sync đọc tối đa 100 kết quả chưa có ledger theo user, tổng hợp mỗi mục tiêu một lần, ghi cả ba bảng và request_receipts cùng transaction dưới actor lock. Học viên cũ được backfill khi mở Ôn tập cá nhân; GET chỉ đọc. Restart không mất ledger/lịch; gửi lại không tăng số lượt.
 
 Mốc dựa vào submittedAt của kết quả gốc, không lấy thời điểm sync để làm mới lịch. Stage tăng tối đa một lần theo ngày Việt Nam; mốc lưu UTC. Gợi ý mức không lấy câu từng gặp/GUIDED/CORRECTION làm bộ câu mới. Xem [quy tắc/API](source/common/M04_API.md).
+
+## M07 — phép chiếu chỉ đọc
+
+Thống kê TEACHER (24/10) không thêm bảng: quyền theo units.owner_id, nguồn LEARN qua attempts.lesson_version_id → lesson_versions.lesson_id → lessons.unit_id. Không nối membership câu hiện tại để suy Unit; không lẫn các lượt dùng chung câu ở Unit khác hoặc PRACTICE/REVIEW không có Unit nguồn. Kết quả dùng answer_trials FIRST đã có Submission; câu/phiên bản cũ vẫn được giữ. Hoàn thành đếm cặp user/lesson trong lesson_progress, hints đếm AttemptQuestion mở gợi ý, mọi dữ liệu trả ra là tổng hợp.
+
+M07 không có bảng hoặc migration riêng, dùng V1–V5 hiện có. StatisticsRepository dùng JPQL aggregate trên Attempt/Submission, AnswerTrial/AttemptQuestion/QuestionVersion; LessonProgress và ReviewProgress. FIRST chỉ vào thống kê sau khi có Submission, lấy đúng metadata phiên bản; GUIDED_RETRY/CORRECTION tách riêng. Không đọc toàn bộ JSON kết quả chứa đáp án để trả cho UI. GET không ghi ledger/lịch ôn. XP/league của M05 chưa được giả định tên bảng; tích hợp qua LearnerRewardsReader. Ước lượng kết nối lấy từ RAM LiveConnections, không ghi thành dữ liệu online bền vững. Xem [API M07](source/common/M07_API.md).
