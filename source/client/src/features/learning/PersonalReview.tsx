@@ -3,6 +3,7 @@ import { api, ApiError, errorMessage, requestId } from '../../api';
 import type { CatalogPage, Topic } from '../content/catalog';
 import { allPages, difficulties } from '../content/authoring';
 import type { Create } from './types';
+import { durableCall } from './storage/journal';
 
 interface ObjectiveReview {
   objectiveId: number; topicId: number; name: string; status: string; reason: string;
@@ -30,11 +31,16 @@ const recommendationNames: Record<string, string> = {
 };
 const date = (value: string) => new Date(value).toLocaleString('vi-VN');
 
-export default function PersonalReview({ start, disabled }: { start: (input: Create) => void; disabled: boolean }) {
+export default function PersonalReview({ start, disabled, userId }: { start: (input: Create) => void; disabled: boolean; userId: number }) {
   const [topics, setTopics] = useState<Topic[]>([]), [topic, setTopic] = useState(''), [kind, setKind] = useState('ALL');
   const [count, setCount] = useState(10), [page, setPage] = useState(0), [refresh, setRefresh] = useState(0);
   const [data, setData] = useState<Dashboard | null>(null), [loading, setLoading] = useState(true), [error, setError] = useState('');
   const pendingSync = useRef<string | null>(null);
+  useEffect(() => {
+    const changed = () => setRefresh(v => v + 1);
+    window.addEventListener('review-changed', changed); window.addEventListener('learning-recover', changed);
+    return () => { window.removeEventListener('review-changed', changed); window.removeEventListener('learning-recover', changed); };
+  }, []);
   useEffect(() => {
     let active = true;
     void allPages<Topic>('/api/topics').then(rows => { if (active) setTopics(rows); })
@@ -49,8 +55,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
       // Keep the same request ID when an ACK is uncertain.
       for (let batch = 0; batch < 10; batch++) {
         const syncId = pendingSync.current ?? requestId(); pendingSync.current = syncId;
-        const result = await api<{ processedSubmissions: number; remainingSubmissions: number }>(
-          '/api/me/review/sync', 'POST', { requestId: syncId });
+        const result = await durableCall<{ processedSubmissions: number; remainingSubmissions: number }>(userId, 'review-sync', { requestId: syncId });
         if (pendingSync.current === syncId) pendingSync.current = null;
         if (!active) return;
         if (result.remainingSubmissions === 0) break;

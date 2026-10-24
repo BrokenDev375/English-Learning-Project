@@ -6,12 +6,14 @@ import type { Item } from './types';
 import AnswerFields, { KeyExplanation, responseText } from './AnswerFields';
 import LearningMaterial from './LearningMaterial';
 import AttemptResult from './AttemptResult';
+import { useOnline } from '../connection/useOnline';
 
 export default function AttemptRunner({ id, userId }: { id: number; userId: number }) {
   const session = useMemo(() => sessionFor(userId, id), [userId, id]);
   const state = useSyncExternalStore(session.subscribe, session.getSnapshot);
   const { snapshot: s, draft, pending, conflict } = state;
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const online = useOnline();
   useEffect(() => { void session.load(); }, [session]);
   const disabled = state.busy || !!pending || !!conflict || state.loginRequired || state.loading;
   const answerOf = (item: Item) => draft?.answers.find(a => a.attemptQuestionId === item.attemptQuestionId)?.response ?? null;
@@ -22,10 +24,12 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
   const count = draft.answers.filter(a => answered(a.response)).length;
   const feedback = state.feedback[item.attemptQuestionId];
   const fieldsDisabled = s.state === 'SUBMITTED' || state.loginRequired || pending?.kind === 'submit';
-  function select(next: Item) { session.player({ ...draft!.playerState, currentAttemptQuestionId: next.attemptQuestionId }); }
-  return <section className="learning-space">
+  function select(next: Item) { session.player({ ...draft!.playerState, currentAttemptQuestionId: next.attemptQuestionId }); session.flushLocal(); }
+  return <section className="learning-space" onBlur={() => session.flushLocal()}>
     <div className="learning-heading"><div><span className="eyebrow">{modeNames[s.mode]} · LƯỢT #{s.attemptId}</span><h1>{s.lesson?.lesson.title ?? modeNames[s.mode]}<span>.</span></h1></div><button className="button secondary" onClick={() => navigate({ attempt: null, tab: 'history', unit: null, lesson: null })}>Về danh sách lượt</button></div>
-    <div className="learning-status" role="status">{state.busy ? 'Đang gửi và đối soát với máy chủ…' : pending ? 'Chưa nhận đủ xác nhận. Chưa thể gửi thao tác mới.' : conflict ? 'Cần đối chiếu thay đổi từ máy chủ.' : s.state === 'SUBMITTED' ? 'Đã nộp bài trên máy chủ' : session.dirty ? 'Đang sửa · Chưa lưu lên máy chủ' : 'Đã lưu trên máy chủ'}<span>Đã trả lời {count}/{s.items.length} câu</span></div>
+    <div className="learning-status" role="status">{state.busy ? 'Đang gửi và đối soát với máy chủ…' : pending ? pending.kind === 'submit' ? 'Chờ nộp · Chưa nhận đủ xác nhận.' : 'Chưa nhận đủ xác nhận. Chưa thể gửi thao tác mới.' : conflict ? 'Cần đối chiếu thay đổi từ máy chủ.' : s.state === 'SUBMITTED' ? 'Đã nộp bài trên máy chủ' : session.dirty ? state.localSaved ? 'Đã lưu tại máy · Chưa lưu lên máy chủ' : 'Đang sửa · Chưa lưu lên máy chủ' : 'Đã lưu trên máy chủ'}<span>Đã trả lời {count}/{s.items.length} câu</span></div>
+    {state.storageError && <div className="message warning" role="alert">{state.storageError} Giữ trang đang mở để tránh mất bản chưa lưu.</div>}
+    {state.copies.length > 0 && <div className="message warning"><p>Có bản nhập từ tab khác. Chỉ khôi phục nếu bạn muốn dùng bản đó.</p>{state.copies.map(copy => <button className="button secondary" key={copy.key} onClick={() => { if (window.confirm('Khôi phục bản nhập này rồi đối chiếu với máy chủ?')) void session.restoreCopy(copy.key); }}>Khôi phục bản {new Date(copy.updatedAt).toLocaleString('vi-VN')}</button>)}</div>}
     {state.error && <div className="message error" role="alert">{state.error}{pending && !state.busy && !state.loginRequired && <button className="button secondary" onClick={() => void session.retry()}>Gửi lại thao tác và đối soát</button>}</div>}
     {state.loginRequired && <div className="message warning">Phiên đã hết hạn. Câu trả lời đang nhập vẫn được giữ trong phiên trình duyệt này.<button className="button secondary" onClick={() => window.dispatchEvent(new Event('session-expired'))}>Đăng nhập lại</button></div>}
     {conflict && <div className="panel conflict-panel"><h2>Đối chiếu bài làm</h2><p>Máy chủ đang ở phiên bản {conflict.revision}{conflict.state === 'SUBMITTED' ? ' và đã nộp bài' : ''}. Câu trả lời đang nhập chưa bị ghi đè.</p>
@@ -43,13 +47,13 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
         }} />}
           <article className="panel learning-panel"><span className="eyebrow">CÂU {index + 1} · {item.practiceRole === 'GUIDED' ? 'CÓ HƯỚNG DẪN' : 'TỰ LÀM'}</span>
             <AnswerFields key={item.attemptQuestionId} question={item.question} prefix={'item-' + item.attemptQuestionId} value={response} onChange={a => session.edit(item.attemptQuestionId, a)} disabled={fieldsDisabled} />
-            {item.practiceRole === 'GUIDED' && <div className="learning-actions"><button className="button secondary" disabled={disabled || !item.hintAvailable} onClick={() => void session.mutate('hint', item.attemptQuestionId)}>{item.hintOpened ? 'Xem lại gợi ý' : 'Mở gợi ý'}</button><button className="button secondary" disabled={disabled || !complete(item.question, response)} onClick={() => void session.mutate('check', item.attemptQuestionId, response)}>Kiểm tra đáp án</button></div>}
+            {item.practiceRole === 'GUIDED' && <div className="learning-actions"><button className="button secondary" disabled={disabled || !online || !item.hintAvailable} onClick={() => void session.mutate('hint', item.attemptQuestionId)}>{item.hintOpened ? 'Xem lại gợi ý' : 'Mở gợi ý'}</button><button className="button secondary" disabled={disabled || !online || !complete(item.question, response)} onClick={() => void session.mutate('check', item.attemptQuestionId, response)}>Kiểm tra đáp án</button></div>}
             {state.hints[item.attemptQuestionId] && <div className="message warning"><strong>Gợi ý:</strong> {state.hints[item.attemptQuestionId]}</div>}
             {feedback && <div className={"message " + (feedback.data.outcome === "CORRECT" ? "success" : "warning")}><strong>{outcomeNames[feedback.data.outcome]}</strong><p>Phản hồi cho đáp án đã kiểm tra: {responseText(item.question, feedback.response)}</p><KeyExplanation question={item.question} answerKey={feedback.data.answerKey} explanation={feedback.data.explanation} /></div>}
           </article>
           <div className="learning-actions runner-pagination"><button className="button secondary" disabled={index === 0} onClick={() => select(s.items[index - 1])}>Câu trước</button><button className="button secondary" disabled={index === s.items.length - 1} onClick={() => select(s.items[index + 1])}>Câu tiếp theo</button></div>
         </div></div>
-      <div className="panel runner-save"><p className="muted">Lưu cả câu trả lời và vị trí nghe. Thay đổi chưa lưu chỉ được giữ trong bộ nhớ của phiên này.</p><div className="learning-actions"><button className="button secondary" disabled={disabled || !session.dirty} onClick={() => void session.mutate('draft')}>Lưu nháp lên máy chủ</button><button className="button primary" disabled={disabled} onClick={() => setConfirmSubmit(true)}>Nộp bài</button></div></div>
+      <div className="panel runner-save"><p className="muted">Câu trả lời và vị trí nghe được tự lưu tại máy, rồi đồng bộ khi có kết nối. Hãy kiểm tra trạng thái lưu trước khi đóng trang.</p><div className="learning-actions"><button className="button secondary" disabled={disabled || !session.dirty} onClick={() => void session.mutate('draft')}>Lưu nháp lên máy chủ</button><button className="button primary" disabled={disabled} onClick={() => setConfirmSubmit(true)}>Nộp bài</button></div></div>
       {confirmSubmit && <div className="modal-backdrop"><div className="modal" role="dialog" aria-modal="true" aria-labelledby="submit-heading" onKeyDown={e => {
         if (e.key === 'Escape') setConfirmSubmit(false);
         if (e.key === 'Tab') {

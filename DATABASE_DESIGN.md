@@ -1,5 +1,7 @@
 # Database — English Learning (M01–M04 và XP M05)
 
+M06 không thêm bảng SQL hoặc sửa V1–V5. Presence/subscription ở RAM; dữ liệu phục hồi tại thiết bị trong IndexedDB version 1 (workingDrafts, commands, leases). Đây là bản sao theo user/Attempt/writer, không thay MySQL/file volume. Xem [hợp đồng M06](source/common/M06_API.md), [nghiệm thu](statics/results/module-6-validation.md).
+
 Cập nhật M03 ngày 19/10/2026: V4 đã được dùng cho tạo/tiếp tục lượt, nháp, hint/check, nộp/kết quả/chữa và tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md), [nghiệm thu toàn module](statics/results/module-3-validation.md). Backend build mới tự áp dụng migration còn thiếu khi khởi động; giữ volume hiện có.
 
 Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Source hiện có Flyway V1–V8; V6 nền M05, V7 outbox thưởng, V8 Giải đấu tuần. Database demo `english-learning-main` được sao lưu trước khi nâng migration, giữ volume/dữ liệu. Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.

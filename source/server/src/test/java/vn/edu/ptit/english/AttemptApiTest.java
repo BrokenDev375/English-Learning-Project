@@ -161,6 +161,32 @@ class AttemptApiTest {
     String progressPath(){return "/api/me/learning-progress?unitId="+tx.execute(t->em.find(LessonEntity.class,lesson).getUnitId());}
     JsonNode progress(Client c)throws Exception{return ok(c.call("GET",progressPath(),null),200).path("items").get(0);}
 
+    @Test void socketInvalidatesOnlyCommittedOwnedMutationsAndNotReplays()throws Exception {
+        var c=new Client().login(student);var s=start(c);long attemptId=s.path("attemptId").asLong();
+        var messages=new LinkedBlockingQueue<String>();
+        var listener=new WebSocket.Listener(){
+            final StringBuilder buffer=new StringBuilder();
+            public void onOpen(WebSocket ws){ws.request(1);}
+            public CompletionStage<?> onText(WebSocket ws,CharSequence data,boolean last){buffer.append(data);if(last){messages.add(buffer.toString());buffer.setLength(0);}ws.request(1);return null;}
+        };
+        String cookie=((CookieManager)c.http.cookieHandler().orElseThrow()).getCookieStore().getCookies().stream().map(v->v.getName()+"="+v.getValue()).collect(java.util.stream.Collectors.joining("; "));
+        var ws=HttpClient.newHttpClient().newWebSocketBuilder().header("Cookie",cookie).header("Origin","http://localhost:5173").buildAsync(URI.create("ws://127.0.0.1:"+port+"/ws/events"),listener).join();
+        try {
+            assertThat(messages.poll(5,TimeUnit.SECONDS)).contains("CONNECTED");
+            ws.sendText("{\"version\":1,\"type\":\"SUBSCRIBE\",\"requestId\":\"bad\",\"attemptId\":9223372036854775806}",true).join();
+            assertThat(messages.poll(5,TimeUnit.SECONDS)).contains("RESOURCE_NOT_FOUND");
+            ws.sendText("{\"version\":1,\"type\":\"SUBSCRIBE\",\"requestId\":\"own\",\"attemptId\":"+attemptId+"}",true).join();
+            assertThat(messages.poll(5,TimeUnit.SECONDS)).contains("ACK");
+            var input=mutation(s);ok(c.call("PUT",path(s)+"/draft",input),200);
+            assertThat(messages.poll(5,TimeUnit.SECONDS)).contains("ATTEMPT_CHANGED","\"revision\":1").doesNotContain("response","answerKey");
+            ok(c.call("PUT",path(s)+"/draft",input),200);assertThat(messages.poll(300,TimeUnit.MILLISECONDS)).isNull();
+            var next=mutation(refresh(c,s));String requestId=next.path("requestId").asText();
+            tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE request_receipts ADD CONSTRAINT m06_reject_receipt CHECK (request_id <> '"+requestId+"')").executeUpdate());
+            try { error(c.call("PUT",path(s)+"/draft",next),503,"DATABASE_UNAVAILABLE"); }
+            finally { tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE request_receipts DROP CHECK m06_reject_receipt").executeUpdate()); }
+            assertThat(messages.poll(300,TimeUnit.MILLISECONDS)).isNull();assertThat(refresh(c,s).path("revision").asLong()).isEqualTo(1);
+        } finally {ws.abort();}
+    }
     @Test void guidedHintReplayAndFirstSupportAreRecordedWithoutTranscript()throws Exception {
         var c=new Client().login(student);var s=start(c);var hint=command(s);
         var h=ok(c.call("POST",itemPath(s,0)+"/hint",hint),200);assertThat(h.path("revision").asLong()).isEqualTo(1);

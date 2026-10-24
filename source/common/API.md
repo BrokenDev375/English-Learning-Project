@@ -28,7 +28,7 @@ Không tự quản lý tài khoản admin đang dùng. Không phục hồi tài 
 
 /ws/events dùng cookie đăng nhập và danh sách origin được phép. Mở kết nối trả {version:1,type:CONNECTED,userId}. Client gửi {version:1,type:HEARTBEAT,requestId:"uuid"} hoặc HELLO; server trả {version:1,type:ACK,requestId} hoặc ERROR kèm code. Message tối đa 4 KiB; mã request tối đa 64 ký tự.
 
-Khóa/xóa/đổi quyền, logout hoặc session hết đóng kết nối (1008 SESSION_REVOKED). Client kiểm tra lại /api/auth/me khi bị đóng vì quyền. Đây là nền session M01; SUBSCRIBE, presence và thông báo học tập sẽ bổ sung ở M06.
+Khóa/xóa/đổi quyền, logout hoặc session hết đóng kết nối (1008 SESSION_REVOKED). Client kiểm tra lại /api/auth/me khi bị đóng vì quyền. M06 đã bổ sung heartbeat deadline, SUBSCRIBE/UNSUBSCRIBE đúng owner, ATTEMPT_CHANGED sau commit và presence riêng; xem [hợp đồng M06](M06_API.md).
 
 ## Hợp đồng M02–M03 để triển khai
 

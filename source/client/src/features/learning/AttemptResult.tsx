@@ -5,15 +5,17 @@ import type { Answer } from './types';
 import { complete, outcomeNames } from './types';
 import AnswerFields, { KeyExplanation, responseText } from './AnswerFields';
 import LearningMaterial from './LearningMaterial';
+import { useOnline } from '../connection/useOnline';
 import { AttemptRewards } from '../gamification/Rewards';
 
 export default function AttemptResult({ session, state }: { session: AttemptSession; state: ReturnType<AttemptSession['getSnapshot']> }) {
   const result = state.result!, snapshot = state.snapshot!;
   const [selected, setSelected] = useState(0), [responses, setResponses] = useState<Record<number, Answer | null>>({});
+  const online = useOnline();
   const fact = result.items[selected], item = snapshot.items.find(i => i.attemptQuestionId === fact.attemptQuestionId)!;
   const response = Object.hasOwn(responses, item.attemptQuestionId) ? responses[item.attemptQuestionId] : fact.finalResponse;
   const feedback = state.feedback[item.attemptQuestionId];
-  const disabled = state.busy || !!state.pending || !!state.conflict || state.loginRequired || state.loading;
+  const disabled = !online || state.busy || !!state.pending || !!state.conflict || state.loginRequired || state.loading;
   const material = snapshot.materials.find(m => m.materialVersionId === item.materialVersionId);
   return <div className="attempt-result">
     <AttemptRewards key={result.submissionId} submissionId={result.submissionId} />

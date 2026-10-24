@@ -54,9 +54,9 @@ for (const keepLocal of [false, true]) test('two-tab audio ' + (keepLocal ? 'kee
   try {
     await tab.goto(page.url()); await expect(tab.locator('.question-nav button')).toHaveCount(10);
     await expect.poll(() => tab.locator('audio').evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(1, 1);
-    await seekAudio(page, 7); await save(page);
     await seekAudio(tab, 2);
-    await tab.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click();
+    // Keep a dirty local position before the remote invalidation arrives.
+    await seekAudio(page, 7); await save(page);
     await expect(tab.getByRole('heading', { name: 'Đối chiếu bài làm', exact: true })).toBeVisible();
     tab.once('dialog', dialog => dialog.accept());
     await tab.getByRole('button', { name: keepLocal ? 'Giữ bản đang nhập sau đối chiếu' : 'Dùng bản máy chủ', exact: true }).click();
@@ -141,14 +141,16 @@ test('lost draft ACK replays the original payload and cannot overwrite newer loc
   await page.locator('.answer-fields').getByRole('radio').last().check(); await expect(page.getByRole('button', { name: 'Nộp bài', exact: true })).toBeDisabled();
   // Leaving and returning in the SPA keeps the unresolved command and local edits.
   await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await page.getByRole('button', { name: 'Tiếp tục làm #' + s.attemptId, exact: true }).click();
-  await page.getByRole('button', { name: 'Gửi lại thao tác và đối soát', exact: true }).click(); await settled(page);
+  // M06 replays the durable command when the runner is reopened.
+  await expect.poll(() => calls).toBe(2); await settled(page);
   await expect(page.locator('.answer-fields').getByRole('radio').last()).toBeChecked(); await expect(page.locator('.learning-status')).toContainText('Chưa lưu lên máy chủ');
   await save(page); expect((await snapshot(page)).revision).toBe(2); expect(calls).toBe(3);
 });
 test('two tabs require explicit comparison before replacing the winning draft', async ({ page }) => {
   await student(page); const s = await start(page); const tab = await page.context().newPage(); await tab.goto(page.url()); await expect(tab.locator('.question-nav button')).toHaveCount(10);
   await page.locator('.answer-fields').getByRole('radio').first().check(); await tab.locator('.answer-fields').getByRole('radio').last().check(); await save(page);
-  await tab.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(tab.getByRole('heading', { name: 'Đối chiếu bài làm', exact: true })).toBeVisible();
+  // Socket invalidation detects the same conflict before a second save is attempted.
+  await expect(tab.getByRole('heading', { name: 'Đối chiếu bài làm', exact: true })).toBeVisible();
   await expect(tab.locator('.answer-fields').getByRole('radio').last()).toBeChecked(); expect((await snapshot(page)).revision).toBe(1);
   tab.once('dialog', dialog => dialog.accept()); await tab.getByRole('button', { name: 'Giữ bản đang nhập sau đối chiếu', exact: true }).click(); await save(tab);
   const latest = await snapshot(tab); expect(latest.attemptId).toBe(s.attemptId); expect(latest.revision).toBe(2); await tab.close();
@@ -174,7 +176,7 @@ test('401 keeps draft and command across login; 503 keeps the next command pendi
     return route.continue();
   });
   await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await page.getByRole('button', { name: 'Đăng nhập lại', exact: true }).click(); await login(page, email);
-  await expect(page.locator('.answer-fields').getByRole('radio').last()).toBeChecked(); await page.getByRole('button', { name: 'Gửi lại thao tác và đối soát', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
+  await expect(page.locator('.answer-fields').getByRole('radio').last()).toBeChecked(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
   await page.locator('.answer-fields').getByRole('radio').first().check(); await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(page.getByRole('alert')).toContainText('Chưa lưu được'); await expect(page.locator('.learning-status')).not.toContainText('Đã lưu trên máy chủ');
   await page.getByRole('button', { name: 'Gửi lại thao tác và đối soát', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ'); expect(calls).toBe(4);
 });

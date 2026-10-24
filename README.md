@@ -29,6 +29,10 @@ M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu c�
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.
 
+## M06 — kết nối và phục hồi
+
+LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave server; journal giữ request qua reload, socket có reconnect/heartbeat và presence nhiều tab. Xem [tiến độ M06](docs/M06_PROGRESS.md), [cách thử](docs/M06_MANUAL_TEST_CASES.md), [kết quả kiểm tra](statics/results/module-6-validation.md). Chưa có PWA/login offline hoặc tải trước toàn bộ audio.
+
 ## M04 — ôn tập cá nhân
 
 Đăng nhập STUDENT → Học bài → tab **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và gợi ý mức luyện. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
@@ -37,9 +41,9 @@ Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng
 
 ## M03 — học và luyện tập
 
-Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. Bấm **Lưu nháp lên máy chủ** để xác nhận lưu; đây là lưu chủ động, không autosave. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
+Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. M06 tự lưu tại máy rồi đồng bộ khi đủ điều kiện; nút **Lưu nháp lên máy chủ** gửi ngay. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
 
-Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, giao diện giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu sau đối chiếu. Bản nhập chưa lưu chỉ ở bộ nhớ phiên trang, chưa có outbox offline bền vững. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi](docs/M03_UI_SMOKE.md).
+Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, journal giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu rồi lưu rõ ràng. “Đã lưu tại máy” khác “Đã lưu trên máy chủ”; bản chưa commit IndexedDB vẫn có thể mất khi đóng tab. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi M06](docs/M06_MANUAL_TEST_CASES.md).
 
 ## M02 — biên soạn học liệu đã có thể dùng thử
 
@@ -123,7 +127,7 @@ Xem [kiểm tra M01](statics/results/module-1-validation.md), [danh mục M02](s
 
 ## Mạng, giới hạn và contribution
 
-HTTP truyền auth/API; /ws/events có xác thực cookie, giới hạn origin, HELLO/HEARTBEAT và ACK/ERROR để kiểm tra phiên và thu hồi kết nối. Presence hoàn chỉnh, đồng bộ tiến độ khi mất mạng và sự kiện Giải đấu tuần thuộc M06; chưa hoàn thành ở M01.
+HTTP truyền auth/API; `/ws/events` có cookie/origin, HELLO/HEARTBEAT/ACK, subscription owner và invalidation sau commit. M06 có presence riêng tại `/api/me/connections`; heartbeat mặc định 25 giây, liveness server 75 giây, sweep 5 giây. Cấu hình `WS_PRESENCE_TIMEOUT_MS`/`WS_SWEEP_MS` trong `.env`, Compose truyền tới backend. Socket hỏng không mặc định chặn HTTP. Sự kiện giải đấu chờ M05, dashboard tổng hợp chờ M07. Xem [hợp đồng M06](source/common/M06_API.md).
 
 Session/kết nối nằm trong RAM của một backend, restart cần đăng nhập lại; account/role/status bền vững trong DB. Chưa triển khai rate limiting đăng nhập, khôi phục mật khẩu qua email hoặc nhiều backend. Các hướng contribution của toàn dự án vẫn cần thực nghiệm theo plan.
 

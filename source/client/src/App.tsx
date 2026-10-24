@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { api, ApiError, errorMessage, resetCsrf, requestId } from './api';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { api, ApiError, errorMessage, resetCsrf } from './api';
 import type { User } from './types';
 import { roleNames } from './types';
 import { Brand, formatDate, initials } from './components/Brand';
@@ -7,9 +7,10 @@ import AuthPage from './features/auth/AuthPage';
 import AdminAccounts from './features/admin/AdminAccounts';
 import ContentWorkspace from './features/content/ContentWorkspace';
 import LearningWorkspace from './features/learning/LearningWorkspace';
+import { activateLearningUser, clearLearningSessions, hasUnsavedLearning, hasStoredUnsavedLearning, hasUnpersistedLearning, prepareLearningUser, forgetLearningUser } from './features/learning/session';
+import { startConnections, subscribeConnection, connectionSnapshot } from './features/connection/manager';
 import RewardsDashboard, { RewardStrip } from './features/gamification/Rewards';
 import LeagueDashboard from './features/gamification/League';
-import { activateLearningUser, clearLearningSessions, hasUnsavedLearning } from './features/learning/session';
 import { navigate, useRouteParam } from './navigation';
 
 export default function App() {
@@ -18,17 +19,17 @@ export default function App() {
   const [routeView] = useRouteParam('view', 'home');
   const view = ['home', 'account', 'admin', 'content', 'learning', 'rewards', 'league'].includes(routeView) ? routeView : 'home';
   const setView = (next: string, replace = false) => navigate({ view: next }, { reset: true, replace });
-  const [connected, setConnected] = useState(false); const [busy, setBusy] = useState(false);
+  const connection = useSyncExternalStore(subscribeConnection, connectionSnapshot); const connected = connection === 'connected'; const [busy, setBusy] = useState(false);
   async function restore() {
     setLoading(true); setNotice('');
-    try { setUser(await api<User>('/api/auth/me', 'GET', undefined, true)); }
+    try { const current = await api<User>('/api/auth/me', 'GET', undefined, true); await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); }
     catch (failure) { if (!(failure instanceof ApiError && failure.status === 401)) setNotice(errorMessage(failure)); }
     finally { setLoading(false); }
   }
   useEffect(() => { void restore(); }, []);
   useEffect(() => { if (user) activateLearningUser(user.id); }, [user?.id]);
   useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => { if (hasUnsavedLearning()) { event.preventDefault(); event.returnValue = ''; } };
+    const warn = (event: BeforeUnloadEvent) => { if (hasUnpersistedLearning()) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
@@ -37,40 +38,19 @@ export default function App() {
     window.addEventListener('session-expired', expired);
     return () => window.removeEventListener('session-expired', expired);
   }, []);
+  useEffect(() => { if (user) return startConnections(user.id, user.role === 'STUDENT'); }, [user?.id, user?.role]);
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false, socket: WebSocket | null = null, retry: number | undefined, beat: number | undefined, attempt = 0;
-    function connect() {
-      if (cancelled) return;
-      socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/events');
-      socket.onopen = () => {
-        attempt = 0; setConnected(true);
-        if (user?.role === 'STUDENT') for (const resource of ['GAMIFICATION', 'LEAGUE']) socket?.send(JSON.stringify({ version: 1, type: 'SUBSCRIBE', requestId: requestId(), resource }));
-        window.dispatchEvent(new Event('gamification:changed'));
-        window.dispatchEvent(new Event('league:changed'));
-        beat = window.setInterval(() => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ version: 1, type: 'HEARTBEAT', requestId: requestId() })); }, 30000);
-      };
-      socket.onclose = event => {
-        window.clearInterval(beat); if (cancelled) return; setConnected(false);
-        if (event.code === 1008) void api<User>('/api/auth/me').then(current => { if (!cancelled) setUser(current); }).catch(() => {});
-        retry = window.setTimeout(connect, Math.min(30000, 1000 * 2 ** Math.min(attempt++, 5)) + Math.random() * 500);
-      };
-      socket.onerror = () => socket?.close();
-      socket.onmessage = message => {
-        try { const event = JSON.parse(message.data); if (event.type === 'GAMIFICATION_CHANGED') window.dispatchEvent(new Event('gamification:changed')); if (['LEAGUE_CHANGED', 'LEADERBOARD_CHANGED'].includes(event.type)) window.dispatchEvent(new Event('league:changed')); } catch { /* Ignore invalid notifications; snapshots are loaded by HTTP. */ }
-      };
-    }
-    connect();
-    return () => { cancelled = true; window.clearTimeout(retry); window.clearInterval(beat); socket?.close(); setConnected(false); };
+    const changed = (event: StorageEvent) => { if (user && event.key === 'learning-purged:' + user.id && event.newValue === '1') { forgetLearningUser(); window.dispatchEvent(new Event('session-expired')); } };
+    window.addEventListener('storage', changed); return () => window.removeEventListener('storage', changed);
   }, [user?.id]);
   async function logout() {
-    if (hasUnsavedLearning() && !window.confirm('Có thay đổi hoặc thao tác học chưa được xác nhận. Đăng xuất sẽ bỏ dữ liệu chưa đồng bộ trong phiên này. Bạn vẫn muốn đăng xuất?')) return;
+    if ((hasUnsavedLearning() || (user && await hasStoredUnsavedLearning(user.id))) && !window.confirm('Có thay đổi hoặc thao tác học chưa được xác nhận. Đăng xuất sẽ bỏ dữ liệu chưa đồng bộ trong phiên này. Bạn vẫn muốn đăng xuất?')) return;
     setBusy(true);
-    try { await api('/api/auth/logout', 'POST'); clearLearningSessions(); resetCsrf(); setUser(null); setView('home', true); setNotice(''); }
+    try { await api('/api/auth/logout', 'POST'); let warning = ''; try { await clearLearningSessions(); } catch (e) { warning = errorMessage(e); } resetCsrf(); setUser(null); setView('home', true); setNotice(warning); }
     catch (failure) { setNotice(errorMessage(failure)); } finally { setBusy(false); }
   }
   if (loading) return <div className="loading-screen"><Brand /><p>Đang mở không gian học tập…</p></div>;
-  if (!user) return <AuthPage notice={notice} retry={() => void restore()} onLogin={current => { setUser(current); setNotice(''); if (view === 'home') setView(current.role === 'ADMIN' ? 'admin' : 'home', true); }} />;
+  if (!user) return <AuthPage notice={notice} retry={() => void restore()} onLogin={async current => { await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); setNotice(''); if (view === 'home') setView(current.role === 'ADMIN' ? 'admin' : 'home', true); }} />;
   return <div className="app-layout">
     <aside className="sidebar"><Brand /><span className="nav-label">KHÔNG GIAN CỦA BẠN</span>
       <nav aria-label="Điều hướng chính">

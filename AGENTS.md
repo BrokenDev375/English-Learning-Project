@@ -44,8 +44,13 @@ Có ba vai trò:
 | M03 bước 6 | Đã nghiệm thu ma trận/hồi quy, restart/recreate/seed/replay giữ dữ liệu và tài liệu bàn giao tại commit `9b0f1e0`; người dùng tạo PR trên web sau |
 | M04 — Ôn tập cá nhân | Đã có V5, backfill/ledger, dashboard, provider REVIEW và giao diện; xem docs/M04_PROGRESS.md và biên bản kiểm tra M04 |
 | M05 — Gamification/Giải đấu tuần | Hoàn tất chặng 0–6 P0: XP/cấp độ/streak/3 huy hiệu, worker/sync/receipt, UI phần thưởng/League, V8, ranking/tie/chốt/history. Hồi quy 235 backend + 4 ca bổ sung riêng, 68 browser; phục hồi/ledger/socket/backlog và workload local đạt. Demo 5176 bằng start-main.cmd; đọc docs/M05_PROGRESS.md, docs/M05_HANDOFF.md và statics/results/module-5-validation.md |
-| M06/M07 | Lần lượt: offline/phục hồi đầy đủ, thống kê nâng cao; chưa triển khai đầy đủ |
+| M06 — Kết nối/phục hồi | Đã có heartbeat/presence/subscription, IndexedDB/autosave/journal và phục hồi M03/M04; bản sửa 80d8f46 đã commit, đã tích hợp main 6f9387d, xem [tiến độ](docs/M06_PROGRESS.md) và [nghiệm thu](statics/results/module-6-validation.md) |
+| M07 | Hồ sơ/thống kê ở nhánh feature/m07-profile-statistics; chưa tích hợp vào M06 |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
+
+Tích hợp M05–M06 ngày 25/10: Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Xem biên bản M06; không áp dụng các số lịch sử bên dưới cho bản mới.
+
+Bằng chứng M06 ban đầu trên nền `57f2951` (lịch sử, trước tích hợp M05): backend **162/162**, E2E **66/66** (11 M06 + 55 hồi quy), manager harness **5/5**; script browser restart/recreate/replay/ledger/media đạt. Xem [biên bản M06](statics/results/module-6-validation.md), gồm các giới hạn còn lại. Không tự áp dụng bằng chứng này cho source thay đổi sau đó.
 
 Seed M02 có **3 Unit, 6 Lesson, 90 Question, 13 Material**. Mỗi bài biên soạn có 5 GUIDED, 5 INDEPENDENT và 5 REVIEW_VARIANT; lượt LEARN hiện cấp 10 câu GUIDED + INDEPENDENT theo selector.
 
@@ -107,7 +112,7 @@ Trình duyệt
 
 - Compose local: trình duyệt vào **5173**, nginx trong container nghe **8080**, proxy tới service `server:8080`. Backend cũng được mở trên localhost **8080**.
 - Khi phát triển bằng Vite, `vite.config.ts` proxy `/api` và `/ws`; mặc định tới `127.0.0.1:8080`, có thể đổi bằng `API_PROXY_TARGET`.
-- Dùng HTTP cho nghiệp vụ học, quản trị và học liệu. WebSocket kiểm tra phiên/heartbeat/thu hồi kết nối và invalidation M05 theo user/nhóm; client GET đối soát, không cộng XP từ event.
+- Dùng HTTP cho nghiệp vụ học, quản trị và học liệu. WebSocket M06 giữ heartbeat/deadline, presence và subscription Attempt theo owner; cùng kết nối hỗ trợ invalidation GAMIFICATION/LEAGUE của M05. Reconnect đăng ký lại và GET đối soát, không cộng XP từ event.
 - Session HTTP và danh sách kết nối nằm trong RAM của một backend. Restart có thể cần đăng nhập lại; tài khoản, nội dung, nháp và kết quả đã commit nằm trong DB.
 - File thật nằm trong volume, metadata nằm trong MySQL. Không chuyển file sang lưu trực tiếp trong cột JSON hoặc trả đường dẫn lưu trữ nội bộ cho client.
 
@@ -188,13 +193,17 @@ Trong `features/learning/`:
 - `AttemptResult.tsx`: điểm, lần đầu/khi nộp, giải thích/transcript và form chữa.
 - `session.ts`: bộ nhớ theo user/Attempt, pending command, tuần tự hóa mutation và đối soát.
 
-Hiện tại dùng **lưu nháp chủ động bằng nút**, chưa có autosave. Không báo đã lưu trước ACK. Bộ nhớ phiên trang giữ bản nhập khi chuyển màn SPA và khi cùng user đăng nhập lại; đăng xuất chủ động/đổi user xóa bộ nhớ. App giữ route học khi hết phiên và cảnh báo reload/đóng tab nếu còn thay đổi.
+M06 dùng **autosave tại máy 250 ms và server debounce 1500 ms**, vẫn có nút lưu ngay. IndexedDB tách user/Attempt/writer, giữ baseline/draft/pending/pendingAck trong một hàng nguyên tử; journal riêng cho create/review-sync, lease cho sender. Chỉ báo lưu tại máy sau transaction complete, lưu server sau ACK/GET. Snapshot/feedback phải là DTO học viên đã được cấp đúng thời điểm.
 
 Pending command giữ đúng key/payload tới khi replay và GET đối soát xong; chặn mutation tiếp theo khi kết quả chưa rõ. Generation bảo vệ bản nhập mới hơn khỏi ACK cũ. 409 cần lựa chọn rõ ràng sau so sánh, không tự tăng revision rồi ghi đè.
 
 Cập nhật 20/10: `AttemptSession.playerRestoreVersion` đánh dấu lần nhận playerState từ server khi tải bản nháp hoặc chọn **Dùng bản máy chủ**. Runner truyền mốc này cho LearningMaterial để seek audio sau khi metadata sẵn sàng. Giữ bản local hoặc nhận ACK lưu thông thường phải giữ vị trí đang nghe; không seek lại theo mỗi tick cập nhật local. Hồi quy và phạm vi kiểm tra tại [bản sửa khôi phục audio](statics/results/module-3-audio-restore-validation.md).
 
-URL/history chỉ chứa màn hình, ID và bộ lọc; không chứa đáp án hoặc nội dung học liệu. F5/deep link đọc Attempt đã có, không gọi create để chọn lại câu. Chưa có IndexedDB/localStorage/outbox: không khẳng định phần chưa commit được lưu bền vững tại máy.
+URL/history chỉ chứa màn hình, ID và bộ lọc, không chứa đáp án/học liệu. Reload xác minh auth trước hydrate, không dùng cached userId làm bằng chứng phiên hợp lệ. Web Locks hỗ trợ thì giữ writer qua reload và lane theo document; không có thì writer mới, nhận lại bản cũ có lựa chọn và lease có expiry. localStorage chỉ có marker logout, sessionStorage chỉ có writer ID; không chứa đáp án/token. Logout fence callback cũ và xóa dữ liệu riêng, record sai được cách ly, không replay URL tùy ý. Chưa có PWA/login offline/cache toàn bộ media; bản chưa commit IndexedDB vẫn có thể mất.
+
+Điểm vào M06: `features/connection/manager.ts` (clock/ACK/backoff/subscription), `storage/database.ts` (transaction/writer/lease/retention), `storage/journal.ts` (create/review sync), `session.ts` (working copy/pending). Backend: ConnectionService, LiveConnections, AccountSocketHandler và AttemptChanged AFTER_COMMIT. Không sửa luật chấm/ReviewPolicy hoặc migration V1–V5 để làm recovery.
+
+Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite transaction; create mới lưu riêng requestId/queuedAt trước khi đối soát command cũ, chỉ điều hướng bằng kết quả intent đã chọn; auth callback được fence theo generation kết nối. Hồi quy tập trung: `npm run test:connection`, `npm run test:recovery-storage` (Chrome qua PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH khi cần) và hai ca nhiều tab trong `module-six-recovery.spec.ts`. Xem tiến độ/biên bản M06 cho kết quả thực tế.
 
 ## 7. Mô hình dữ liệu và vòng đời nghiệp vụ
 
@@ -293,6 +302,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
 | Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
 | Tiếp tục M05 | [Tiến độ](docs/M05_PROGRESS.md), [bàn giao](docs/M05_HANDOFF.md), [quyết định P0](docs/M05_DECISIONS.md), [API](source/common/M05_API.md), [nghiệm thu](statics/results/module-5-validation.md); không sửa V1–V8 đã chạy |
+| Tiếp tục M06 | [Tiến độ](docs/M06_PROGRESS.md), [kế hoạch](docs/M06_IMPLEMENTATION_PLAN.md), [API](source/common/M06_API.md), [ca thao tác](docs/M06_MANUAL_TEST_CASES.md), [nghiệm thu](statics/results/module-6-validation.md) |
 | Luật nghiệp vụ M03 | [Bàn giao M02–M03](docs/M02_M03_HANDOFF.md), mục 2, 4, 6–7; [quy tắc API](source/common/M02_M03_API.md), mục liên quan |
 | Trường/kiểu payload chính xác | Đúng schema/path trong [OpenAPI](source/common/openapi-m02-m03.json), [ví dụ](source/common/examples-m02-m03.json), [fixture](source/server/src/test/resources/contracts/m03-fixtures.json) |
 | Giao diện học/phục hồi | [Hướng dẫn UI](docs/M03_UI_SMOKE.md), session.ts và test M03 |
@@ -363,6 +373,8 @@ Runner mặc định build/chạy project **english-learning-e2e** ở **5174/80
 Nghiệm thu M05: từ root chạy `node scripts/verify-m05-acceptance.mjs`, project/volume riêng **english-learning-m05-acceptance**, cổng **15177/18084**, không nhận URL/container demo. Kiểm tra backlog/restart/recreate/seed/replay/context/badge/frozen history, 6 nhóm SQL audit và workload local 20 học viên/40 socket/120 nguồn; dừng container khi xong, giữ volume. Dependency frontend phải có để dùng WebSocket test. Xem biên bản cuối, không coi workload nhỏ là SLA production. Spring test context đóng AFTER_CLASS; fixture XP không kế thừa test để nhân bản số ca.
 
 Nghiệm thu bền vững: từ `source/client`, chạy `node scripts/verify-m03-persistence.mjs`. Script tự build project **english-learning-m03-acceptance** ở **5175/8082**, tạo user test mới, kiểm tra nháp/kết quả/tiến độ/receipt/media qua restart server và force recreate cả ba container, seed chạy lại; dừng container khi xong và giữ volume riêng. Không chấp nhận URL demo. JSON/log trong `.test-state/m03-step6-*` bị ignore; xem [biên bản](statics/results/module-3-validation.md) trước khi diễn giải số hàng hoặc kết quả.
+
+M06: `node scripts/test-connection.mjs` kiểm tra manager bằng clock/RNG/transport kiểm soát; `npm run test:e2e -- module-six-recovery.spec.ts` dùng IndexedDB/browser thật; `node scripts/verify-m06-recovery.mjs` dùng project **english-learning-m06-acceptance**, **5176/8083**, kiểm tra browser journal qua restart và dữ liệu/M04 ledger/media qua recreate. Cần Chrome/Chromium theo cấu hình Playwright; log/JSON trong `.test-state/m06-*`, không dùng DB demo. Giới hạn các nhánh chưa thử ở [biên bản M06](statics/results/module-6-validation.md).
 
 ### Chọn phạm vi kiểm tra
 
