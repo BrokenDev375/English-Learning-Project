@@ -1,8 +1,10 @@
-# Database — English Learning (M01–M04)
+# Database — English Learning (M01–M04 và XP M05)
+
+M06 không thêm bảng SQL hoặc sửa V1–V5. Presence/subscription ở RAM; dữ liệu phục hồi tại thiết bị trong IndexedDB version 1 (workingDrafts, commands, leases). Đây là bản sao theo user/Attempt/writer, không thay MySQL/file volume. Xem [hợp đồng M06](source/common/M06_API.md), [nghiệm thu](statics/results/module-6-validation.md).
 
 Cập nhật M03 ngày 19/10/2026: V4 đã được dùng cho tạo/tiếp tục lượt, nháp, hint/check, nộp/kết quả/chữa và tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md), [nghiệm thu toàn module](statics/results/module-3-validation.md). Backend build mới tự áp dụng migration còn thiếu khi khởi động; giữ volume hiện có.
 
-Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Runtime có Flyway V1–V5; Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
+Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Source hiện có Flyway V1–V8; V6 nền M05, V7 outbox thưởng, V8 Giải đấu tuần. Database demo `english-learning-main` được sao lưu trước khi nâng migration, giữ volume/dữ liệu. Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
 
 | Bảng | Vai trò |
 |---|---|
@@ -58,8 +60,43 @@ Kết quả gốc vẫn ở submissions.result_json của V4. POST sync đọc t
 
 Mốc dựa vào submittedAt của kết quả gốc, không lấy thời điểm sync để làm mới lịch. Stage tăng tối đa một lần theo ngày Việt Nam; mốc lưu UTC. Gợi ý mức không lấy câu từng gặp/GUIDED/CORRECTION làm bộ câu mới. Xem [quy tắc/API](source/common/M04_API.md).
 
+## XP M05 — V6/V7
+
+V6/V7 chỉ thêm bảng mới, giữ nguyên V1–V5. Đã có ORM/repository, worker và API thưởng cho XP/streak/badge. Giải đấu tuần thêm ở V8 bên dưới. Tình trạng kiểm tra theo [tiến độ M05](docs/M05_PROGRESS.md).
+
+| Bảng | Vai trò |
+|---|---|
+| gamification_policies | Snapshot m05-p0-v1 và activatedAt/effectiveAt được lưu một lần; không đổi khi restart |
+| review_reward_context | PK attempt/objective, owner, dueAt/selectedAt/stage/cycle và eligibility; ORM/repository được nối create REVIEW |
+| gamification_processed_submissions | Terminal decision JSON mỗi Submission; không có trạng thái thành công giả cho nguồn lỗi |
+| gamification_reward_claims | Unique user/type/source và bonus user/type/objective/day; NEW_QUESTION để objective_id NULL |
+| xp_ledger | Một dòng mỗi claim, requested/awarded/leagueCounted có CHECK; league season FK chờ migration giải đấu |
+| gamification_profiles | Tổng XP BIGINT và revision, miền không âm/số nguyên JavaScript an toàn |
+| gamification_daily_stats | Khóa user/day, awarded <= cap, qualified count không âm |
+| user_badges | Unique user/badge, thời điểm trao và nguồn chứng minh |
+| gamification_processing_failures | Retry metadata cho nguồn lỗi; không thay terminal processed ledger |
+| gamification_outbox (V7) | UUID event, owner/revision/type, created/delivered; commit cùng projection rồi dispatch invalidation |
+
+Hook ReviewRewardContextRecorder chạy trong cùng transaction actor-locked của AttemptService khi tạo REVIEW mới, sau khi chọn/chốt câu. Resume/replay không capture lại. DueAt chuẩn microsecond; cycle hash không phụ thuộc lastSubmissionId. Provider không có lịch M04 thì không tạo bằng chứng giả. Mọi lỗi lưu context rollback cả Attempt/exposure/receipt.
+
+Các bảng trên đã có ORM và được dùng bởi GamificationService/worker. Claims, ledger, day/profile, badge, processed decision, outbox và receipt sync cùng transaction dưới actor lock. GET không tạo projection. Xem [bộ luật](docs/M05_DECISIONS.md) trước khi viết dữ liệu; migration tiếp theo không được sửa V6/V7 đã chạy.
+
+## Giải đấu tuần — V8
+
+| Bảng | Vai trò/ràng buộc |
+|---|---|
+| league_seasons | UNIQUE startAt, end/cutoff, OPEN/CLOSING/FINALIZED, rules JSON và policy snapshot/revision |
+| league_group_allocators | PK season/tier, khóa xếp nhóm; tạo đủ 5 tier cùng transaction tạo season |
+| league_groups | UNIQUE season/tier/groupNo, memberCount CHECK 0–25, revision và finalizedAt marker |
+| league_members | UUID public memberKey, UNIQUE season/user, FK group/season và user, joinedAt/weeklyXp; frozen result JSON trên row có sẵn |
+| league_outbox | Event riêng tư theo group hoặc user, created/delivered, không FK users để finalizer không khóa actor ngầm |
+
+V8 thêm FK xp_ledger.season_id; không sửa ledger cũ, không đưa XP đã xử lý trước join vào tuần. Member điểm tuần và từng ledger countedXp/reason được ghi cùng transaction XP. Actor → season theo thứ tự → allocator/group → member/claims/projections; finalizer season → group → member có sẵn, không quay lại actor. DynamicUpdate trên membership và outbox chỉ cập nhật cột thay đổi, tránh cập nhật lại FK không đổi.
+
+Tạo tuần hiện tại bằng worker dưới khóa policy, GET không tự tạo. Chốt từng nhóm sau cutoff trong transaction riêng; result/member và group marker cùng commit. Job tiếp tục nhóm còn thiếu rồi mới FINALIZED season. Nhóm đã chốt đủ để chính học viên tham gia tuần mới, không phải đợi nhóm khác. V8 đã áp dụng trên môi trường kiểm tra và demo `english-learning-main`; không chỉnh lại file migration khi tiếp tục.
+
 ## M07 — phép chiếu chỉ đọc
 
 Thống kê TEACHER (24/10) không thêm bảng: quyền theo units.owner_id, nguồn LEARN qua attempts.lesson_version_id → lesson_versions.lesson_id → lessons.unit_id. Không nối membership câu hiện tại để suy Unit; không lẫn các lượt dùng chung câu ở Unit khác hoặc PRACTICE/REVIEW không có Unit nguồn. Kết quả dùng answer_trials FIRST đã có Submission; câu/phiên bản cũ vẫn được giữ. Hoàn thành đếm cặp user/lesson trong lesson_progress, hints đếm AttemptQuestion mở gợi ý, mọi dữ liệu trả ra là tổng hợp.
 
-M07 không có bảng hoặc migration riêng, dùng V1–V5 hiện có. StatisticsRepository dùng JPQL aggregate trên Attempt/Submission, AnswerTrial/AttemptQuestion/QuestionVersion; LessonProgress và ReviewProgress. FIRST chỉ vào thống kê sau khi có Submission, lấy đúng metadata phiên bản; GUIDED_RETRY/CORRECTION tách riêng. Không đọc toàn bộ JSON kết quả chứa đáp án để trả cho UI. GET không ghi ledger/lịch ôn. XP/league của M05 chưa được giả định tên bảng; tích hợp qua LearnerRewardsReader. Ước lượng kết nối lấy từ RAM LiveConnections, không ghi thành dữ liệu online bền vững. Xem [API M07](source/common/M07_API.md).
+M07 không có bảng hoặc migration riêng, dùng V1–V5 hiện có. StatisticsRepository dùng JPQL aggregate trên Attempt/Submission, AnswerTrial/AttemptQuestion/QuestionVersion; LessonProgress và ReviewProgress. FIRST chỉ vào thống kê sau khi có Submission, lấy đúng metadata phiên bản; GUIDED_RETRY/CORRECTION tách riêng. Không đọc toàn bộ JSON kết quả chứa đáp án để trả cho UI. GET không ghi ledger/lịch ôn. XP/league được đọc qua M05LearnerRewardsReader và GET service M05 trên schema V6–V8 đã có; không thêm bảng thống kê. Ước lượng kết nối lấy từ RAM LiveConnections, không ghi thành dữ liệu online bền vững. Xem [API M07](source/common/M07_API.md).

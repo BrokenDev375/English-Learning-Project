@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "English Learning M07",
-    "version": "1.1.0",
-    "description": "Read statistics from M01–M04. Rewards optional via LearnerRewardsReader. Presence estimates open WebSocket connections; see M07_API.md for aggregation and time semantics. Teacher statistics are scoped by Unit ownership and the pinned LEARN lesson; no cross-Unit question attribution."
+    "version": "1.2.0",
+    "description": "Read-only statistics from M01–M06. M05LearnerRewardsReader exposes committed rewards using the authenticated principal; GET never syncs, awards, or joins. Presence counts open sockets within the M06 heartbeat window on one backend. Teacher statistics remain scoped by Unit ownership and the pinned LEARN lesson. See M07_API.md for time and aggregation semantics."
   },
   "paths": {
     "/api/me/statistics": {
@@ -1016,7 +1016,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "format": "int64"
           },
           "streakDays": {
             "anyOf": [

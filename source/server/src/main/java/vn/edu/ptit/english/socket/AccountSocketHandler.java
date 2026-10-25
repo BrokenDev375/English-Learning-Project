@@ -12,8 +12,10 @@ public class AccountSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper json;
     private final LiveConnections connections;
     private final AccountGuard guard;
-    public AccountSocketHandler(ObjectMapper json, LiveConnections connections, AccountGuard guard) {
+    private final vn.edu.ptit.english.service.ConnectionService access;
+    public AccountSocketHandler(ObjectMapper json, LiveConnections connections, AccountGuard guard, vn.edu.ptit.english.service.ConnectionService access) {
         this.json = json; this.connections = connections; this.guard = guard;
+        this.access = access;
     }
     @Override public void afterConnectionEstablished(WebSocketSession raw) throws Exception {
         var session = new ConcurrentWebSocketSessionDecorator(raw, 5000, 65536);
@@ -29,6 +31,7 @@ public class AccountSocketHandler extends TextWebSocketHandler {
         session.getAttributes().put("sender", session);
     }
     @Override protected void handleTextMessage(WebSocketSession raw, TextMessage message) throws Exception {
+        if (!connections.allowMessage(raw.getId())) return;
         var actor = (UserPrincipal) raw.getAttributes().get("actor");
         try { guard.requireCurrent(actor); }
         catch (RuntimeException ex) { raw.close(CloseStatus.POLICY_VIOLATION); return; }
@@ -38,11 +41,26 @@ public class AccountSocketHandler extends TextWebSocketHandler {
             var input = json.readTree(message.getPayload());
             requestId = input.path("requestId").asText();
             String type = input.path("type").asText();
-            if (input.path("version").asInt() != 1 || requestId.isBlank() || requestId.length() > 64) {
+            if (!input.isObject() || !input.path("version").isIntegralNumber() || input.path("version").asInt() != 1 || !input.path("requestId").isTextual() || requestId.isBlank() || requestId.length() > 64 || !input.path("type").isTextual()) {
                 code = "INVALID_MESSAGE";
+            } else if (type.equals("SUBSCRIBE") || type.equals("UNSUBSCRIBE")) {
+                if (input.has("resource")) {
+                    if (actor.role() != vn.edu.ptit.english.enums.Role.STUDENT) code = "FORBIDDEN";
+                    else if (!input.path("resource").isTextual()
+                        || !java.util.Set.of("GAMIFICATION", "LEAGUE").contains(input.path("resource").asText())
+                        || input.size() != 4
+                        || !requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) code = "INVALID_SUBSCRIPTION";
+                    else raw.getAttributes().put(input.path("resource").asText().equals("LEAGUE") ? "leagueSubscribed" : "gamificationSubscribed", type.equals("SUBSCRIBE"));
+                } else {
+                    var value = input.path("attemptId");
+                    if (!value.isIntegralNumber() || !value.canConvertToLong() || !access.canSubscribe(value.asLong(), actor)) code = "RESOURCE_NOT_FOUND";
+                    else if (type.equals("UNSUBSCRIBE")) connections.unsubscribe(raw.getId(), value.asLong());
+                    else if (!connections.subscribe(raw.getId(), value.asLong())) code = "SUBSCRIPTION_LIMIT";
+                }
             } else if (!type.equals("HELLO") && !type.equals("HEARTBEAT")) {
                 code = "UNSUPPORTED_TYPE";
             }
+            if (code == null && (type.equals("HELLO") || type.equals("HEARTBEAT"))) connections.heartbeat(raw.getId());
         } catch (Exception ex) { code = "INVALID_MESSAGE"; }
         var sender = (WebSocketSession) raw.getAttributes().get("sender");
         sender.sendMessage(new TextMessage(json.writeValueAsString(code == null
@@ -51,5 +69,8 @@ public class AccountSocketHandler extends TextWebSocketHandler {
     }
     @Override public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         connections.detach(session.getId());
+    }
+    @Override public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        connections.detach(session.getId()); session.close(CloseStatus.SERVER_ERROR);
     }
 }

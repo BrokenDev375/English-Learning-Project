@@ -3,6 +3,7 @@ import { api, ApiError, errorMessage, requestId } from '../../api';
 import type { CatalogPage, Topic } from '../content/catalog';
 import { allPages, difficulties } from '../content/authoring';
 import type { Create } from './types';
+import { durableCall } from './storage/journal';
 
 interface ObjectiveReview {
   objectiveId: number; topicId: number; name: string; status: string; reason: string;
@@ -30,11 +31,16 @@ const recommendationNames: Record<string, string> = {
 };
 const date = (value: string) => new Date(value).toLocaleString('vi-VN');
 
-export default function PersonalReview({ start, disabled }: { start: (input: Create) => void; disabled: boolean }) {
+export default function PersonalReview({ start, disabled, userId }: { start: (input: Create) => void; disabled: boolean; userId: number }) {
   const [topics, setTopics] = useState<Topic[]>([]), [topic, setTopic] = useState(''), [kind, setKind] = useState('ALL');
   const [count, setCount] = useState(10), [page, setPage] = useState(0), [refresh, setRefresh] = useState(0);
   const [data, setData] = useState<Dashboard | null>(null), [loading, setLoading] = useState(true), [error, setError] = useState('');
   const pendingSync = useRef<string | null>(null);
+  useEffect(() => {
+    const changed = () => setRefresh(v => v + 1);
+    window.addEventListener('review-changed', changed); window.addEventListener('learning-recover', changed);
+    return () => { window.removeEventListener('review-changed', changed); window.removeEventListener('learning-recover', changed); };
+  }, []);
   useEffect(() => {
     let active = true;
     void allPages<Topic>('/api/topics').then(rows => { if (active) setTopics(rows); })
@@ -49,8 +55,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
       // Keep the same request ID when an ACK is uncertain.
       for (let batch = 0; batch < 10; batch++) {
         const syncId = pendingSync.current ?? requestId(); pendingSync.current = syncId;
-        const result = await api<{ processedSubmissions: number; remainingSubmissions: number }>(
-          '/api/me/review/sync', 'POST', { requestId: syncId });
+        const result = await durableCall<{ processedSubmissions: number; remainingSubmissions: number }>(userId, 'review-sync', { requestId: syncId });
         if (pendingSync.current === syncId) pendingSync.current = null;
         if (!active) return;
         if (result.remainingSubmissions === 0) break;
@@ -75,6 +80,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
   return <section className="personal-review">
     <span className="eyebrow">LUYỆN LẠI PHẦN BẠN CẦN</span><h1>Ôn tập cá nhân<span>.</span></h1>
     <p className="muted">Từ kết quả đã nộp, ưu tiên mục tiêu còn sai hoặc đã tới mốc ôn. Câu biến thể chưa gặp được ưu tiên trước câu đã làm.</p>
+    <p className="muted" aria-label="Điều kiện thưởng ôn">Mốc ôn được chốt khi bắt đầu lượt. Mục tiêu có lịch tốt đã đến hạn có thể nhận thêm 5 XP nếu tự làm đúng đầy đủ phần được giao; tối đa một bonus/mục tiêu/ngày và dùng chung trần 200 XP. Luyện lại lỗi sai chưa tự động có bonus đến hạn.</p>
     <div className="panel learning-panel">
       <div className="filters">
         <label>Chủ đề ôn<select value={topic} disabled={disabled || loading} onChange={e => { setTopic(e.target.value); setPage(0); }}>
@@ -113,6 +119,7 @@ export default function PersonalReview({ start, disabled }: { start: (input: Cre
         <p className="muted">Lượt gần nhất: tự làm đúng {o.lastIndependentCorrect}/{o.lastIndependentAnswered} câu · {o.lastWrongCount} câu sai lần đầu.</p>
         <p className="muted">Lịch sử: {o.submissionCount} lượt · {o.assistedCount} câu có hướng dẫn/hỗ trợ · {o.unansweredCount} câu bỏ trống.</p>
         <p>Đã luyện: {date(o.lastPracticedAt)}<br />Mốc nhắc ôn: <strong>{date(o.nextReviewAt)}</strong></p>
+        {o.status === 'DUE' && o.stage > 0 && !o.hasMistakes && <p className="muted">Mục tiêu đã tới mốc: phần thưởng ôn sẽ được xét theo điều kiện chốt lúc bắt đầu, kết quả tự làm và trần XP còn lại.</p>}
         <p className="muted">Mức {difficulties[o.currentDifficulty]}: {o.availableQuestionCount} câu trong kho · {o.unseenQuestionCount} câu chưa gặp.</p>
         {!o.availableQuestionCount && <p className="message warning">Chưa có câu đang công bố phù hợp mức này. Giảng viên cần bổ sung học liệu.</p>}
         {o.availableQuestionCount > 0 && o.unseenQuestionCount === 0 && <p className="muted">Lượt ôn sẽ dùng lại câu đã gặp.</p>}

@@ -2,11 +2,40 @@
 
 M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu** cho TEACHER và **Thống kê học tập** cho ADMIN: kết quả lần đầu theo chủ đề/mục tiêu, lịch sử, bài hoàn thành, nội dung cần ôn, độ khó và câu thường sai. Giảng viên chỉ xem số tổng hợp LEARN trong Unit mình làm chủ, không xem hồ sơ từng học viên; có lọc Unit/khoảng thời gian, hiệu quả từng bài và mức dùng hỗ trợ. Xem [tiến độ](docs/M07_PROGRESS.md), [API](source/common/M07_API.md), [cách thử](docs/M07_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-7-validation.md).
 
-M07 chỉ đọc dữ liệu M01–M04, không thêm migration. Điểm thưởng/huy hiệu/Giải đấu tuần chờ dữ liệu M05; chưa có provider thì hiển thị chưa có dữ liệu. Số tài khoản kết nối là ước lượng WebSocket còn mở trong một backend, chưa phải presence heartbeat hoàn chỉnh của M06.
+M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migration. Sau tích hợp M05/M06, hồ sơ đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần từ dịch vụ M05; số kết nối chỉ tính socket còn mở trong cửa sổ heartbeat M06 trên một backend.
+
+## Demo M05 hiện tại
+
+Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.
+
+Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Ôn tập cá nhân giải thích điều kiện thưởng; giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
+
+1. Chọn bài/chủ đề chưa từng làm, tự trả lời đúng các câu độc lập rồi nộp: mỗi nguồn câu mới hợp lệ được **5 XP**, tối đa **200 XP/ngày**. Câu GUIDED, câu đã gặp, trả lời sai/thiếu hoặc chữa lại không tạo XP câu mới.
+2. Nộp đủ ít nhất `min(3, số câu độc lập được giao)` câu độc lập tự làm và đúng ít nhất một câu để ghi nhận ngày hoạt động. Streak tính theo ngày Việt Nam; làm lại câu cũ vẫn có thể giữ streak.
+3. Hoàn thành bài LEARN đủ điều kiện nhận huy hiệu bài đầu tiên. Hai huy hiệu còn lại cần ôn đúng mốc hợp lệ và chuỗi 7 ngày; giao diện hiển thị tiến độ thật, không trao sẵn để demo.
+4. Mở lại trang hoặc gửi lại cùng thao tác không cộng trùng. Nếu cập nhật chậm, đợi worker vài giây hoặc bấm **Cập nhật phần thưởng**. Hai bài nộp cũ trước lúc bật M05 hiển thị lý do không thưởng, không được hồi tố.
+
+Đã có XP/cấp độ/streak/huy hiệu, worker, outbox và cập nhật qua WebSocket. Xem [tiến độ M05](docs/M05_PROGRESS.md), [kiểm tra XP](statics/results/module-5-xp-validation.md) và [kiểm tra Giải đấu tuần](statics/results/module-5-league-validation.md).
+
+Nghiệm thu/bàn giao P0: [hướng dẫn M05](docs/M05_HANDOFF.md), [kết quả lượt cuối](statics/results/module-5-validation.md). Từ root chạy `node scripts/verify-m05-acceptance.mjs` để tái hiện backlog/restart/recreate/replay/ledger audit và workload local 20 học viên/40 socket/120 bài; cần Docker Desktop, `.env` hợp lệ và dependency frontend đã cài. Script chỉ dùng project/volume test riêng `english-learning-m05-acceptance` tại 15177/18084, dừng container khi xong và giữ volume.
+
+### Demo Giải đấu tuần
+
+Đăng nhập học viên → **Giải đấu tuần** → **Tham gia tuần này** rồi làm bài mới đủ điều kiện nhận XP. Bảng nhóm tự cập nhật, hiển thị XP tuần, thứ hạng tạm thời và dự kiến lên/giữ/xuống bậc. Điểm trước khi tham gia không được cộng ngược vào tuần. Mỗi tuần bắt đầu thứ Hai 00:00 Việt Nam; tuần sau phải chủ động tham gia lại.
+
+Để thử hai học viên, dùng hai hồ sơ trình duyệt hoặc một cửa sổ thường và một cửa sổ ẩn danh. Hai tab trong cùng hồ sơ dùng chung cookie đăng nhập. Đăng ký học viên mới nếu muốn thử câu chưa gặp; không sửa database để tạo XP giả.
+
+Nhóm tối đa 25 người cùng bậc, chỉ xét lên/xuống khi có ít nhất 10 thành viên và 5 người có XP. Nhóm nhỏ demo vẫn xếp hạng nhưng giữ bậc; không tạo người giả cho đủ số. Người bằng điểm cùng hạng, khối hòa vắt ranh giới giữ bậc. Bậc từ Đồng đến Kim Cương.
+
+Sau hết tuần có 2 phút xử lý bài nộp thuộc tuần cũ, rồi job tự chốt từng nhóm và lưu **Lịch sử tuần của bạn**. Nguồn xét quá mốc vẫn có thể nhận XP cá nhân nhưng không thay bảng tuần cũ. Không có nút đổi giờ/chốt tuần sớm trong app thật; kiểm tra biên tuần dùng Clock trong test riêng.
 
 M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.
+
+## M06 — kết nối và phục hồi
+
+LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave server; journal giữ request qua reload, socket có reconnect/heartbeat và presence nhiều tab. Xem [tiến độ M06](docs/M06_PROGRESS.md), [cách thử](docs/M06_MANUAL_TEST_CASES.md), [kết quả kiểm tra](statics/results/module-6-validation.md). Chưa có PWA/login offline hoặc tải trước toàn bộ audio.
 
 ## M04 — ôn tập cá nhân
 
@@ -16,9 +45,9 @@ Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng
 
 ## M03 — học và luyện tập
 
-Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. Bấm **Lưu nháp lên máy chủ** để xác nhận lưu; đây là lưu chủ động, không autosave. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
+Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. M06 tự lưu tại máy rồi đồng bộ khi đủ điều kiện; nút **Lưu nháp lên máy chủ** gửi ngay. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
 
-Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, giao diện giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu sau đối chiếu. Bản nhập chưa lưu chỉ ở bộ nhớ phiên trang, chưa có outbox offline bền vững. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi](docs/M03_UI_SMOKE.md).
+Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, journal giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu rồi lưu rõ ràng. “Đã lưu tại máy” khác “Đã lưu trên máy chủ”; bản chưa commit IndexedDB vẫn có thể mất khi đóng tab. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi M06](docs/M06_MANUAL_TEST_CASES.md).
 
 ## M02 — biên soạn học liệu đã có thể dùng thử
 
@@ -102,7 +131,7 @@ Xem [kiểm tra M01](statics/results/module-1-validation.md), [danh mục M02](s
 
 ## Mạng, giới hạn và contribution
 
-HTTP truyền auth/API; /ws/events có xác thực cookie, giới hạn origin, HELLO/HEARTBEAT và ACK/ERROR để kiểm tra phiên và thu hồi kết nối. Presence hoàn chỉnh, đồng bộ tiến độ khi mất mạng và sự kiện Giải đấu tuần thuộc M06; chưa hoàn thành ở M01.
+HTTP truyền auth/API; `/ws/events` có cookie/origin, HELLO/HEARTBEAT/ACK, subscription owner và invalidation sau commit. M06 có presence riêng tại `/api/me/connections`; heartbeat mặc định 25 giây, liveness server 75 giây, sweep 5 giây. Cấu hình `WS_PRESENCE_TIMEOUT_MS`/`WS_SWEEP_MS` trong `.env`, Compose truyền tới backend. Socket hỏng không mặc định chặn HTTP. Sự kiện giải đấu chờ M05, dashboard tổng hợp chờ M07. Xem [hợp đồng M06](source/common/M06_API.md).
 
 Session/kết nối nằm trong RAM của một backend, restart cần đăng nhập lại; account/role/status bền vững trong DB. Chưa triển khai rate limiting đăng nhập, khôi phục mật khẩu qua email hoặc nhiều backend. Các hướng contribution của toàn dự án vẫn cần thực nghiệm theo plan.
 

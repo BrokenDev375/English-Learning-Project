@@ -1,10 +1,10 @@
 # Kế hoạch module — ứng dụng học và ôn tập tiếng Anh có gamification và Giải đấu tuần
 
-Cập nhật: 21/10/2026. Đây là kế hoạch cho hướng đề tài mới; trạng thái triển khai tra cứu trong tiến độ và biên bản từng module. Phạm vi hiện tại gồm 7 module M01–M07, giữ Giải đấu tuần đo độ chăm học. Danh sách module được đánh lại số theo phạm vi hiện tại. Hạng thử thách solo được chuyển riêng sang M08 mở rộng, chờ người phụ trách xác nhận trước khi triển khai. Quy định unit, độ khó, seed tại M02.1/M02.2 và cấp câu tại M03.1 giữ theo trao đổi. Các mức thưởng XP và chính sách còn ghi “đề xuất” vẫn chưa chốt.
+Cập nhật: 22/10/2026. Đây là kế hoạch cho hướng đề tài mới; trạng thái triển khai tra cứu trong tiến độ và biên bản từng module. Phạm vi hiện tại gồm 7 module M01–M07, giữ Giải đấu tuần đo độ chăm học. Danh sách module được đánh lại số theo phạm vi hiện tại. Hạng thử thách solo được chuyển riêng sang M08 mở rộng, chờ người phụ trách xác nhận trước khi triển khai. Quy định unit, độ khó, seed tại M02.1/M02.2 và cấp câu tại M03.1 giữ theo trao đổi. Các đề xuất XP/League ban đầu được chốt bởi policy M05 `m05-p0-v1`; các đề xuất mở rộng ngoài policy chưa được coi là đã duyệt.
 
 Tên đề xuất: **Ứng dụng học và ôn tập tiếng Anh tích hợp gamification theo mô hình client–server.**
 
-Plan cho app tiếng Anh mới tại english-learning-project/. M01–M03, phần P0 của M04 và phần thống kê từ dữ liệu hiện có của M07 đã triển khai; M05–M06, tích hợp thưởng/presence đầy đủ cùng những quyết định ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
+Plan cho app tiếng Anh mới tại english-learning-project/. M01–M06 và hồ sơ/thống kê M07 đã triển khai, tích hợp trên nhánh M07 ngày 25/10/2026; xem tiến độ và biên bản từng module cho phạm vi kiểm tra. P1 xuất báo cáo và các quyết định mở rộng ghi “đề xuất” chưa được coi là hoàn thành. Plan IELTS cũ được lưu để đối chiếu trong docs/archive/.
 
 Tài liệu này được sao chép từ plan ở thư mục gốc LTM; mã nguồn app mới nằm cùng thư mục dự án. Các file môn học được giữ nguyên ở INSTRUCTION.md, TOPICS.md và SUBMISSION.md.
 
@@ -349,21 +349,23 @@ Chọn phạm vi nội dung trước rồi mới lấy câu phù hợp. Không b
 
 #### M05.1. XP, cấp độ hoạt động, huy hiệu và streak
 
+[M05 — triển khai, tính công bằng và nghiệm thu](docs/M05_IMPLEMENTATION_PLAN.md) cập nhật ngày 22/10/2026: đã hoàn tất chặng 0–6 P0. Có [bộ luật P0](docs/M05_DECISIONS.md), [API](source/common/M05_API.md), V6–V8, worker/sync/ledger, XP/cấp độ/streak/ba huy hiệu và Giải đấu tuần (join/allocator/ranking/tie/chốt/history/UI/socket) trên nền main `57f2951` đã có M04/V5. Xem [nghiệm thu cuối](statics/results/module-5-validation.md) và [bàn giao](docs/M05_HANDOFF.md) cho phạm vi đã kiểm tra. Luật dưới đây theo policy `m05-p0-v1`.
+
 - XP chỉ sinh từ hoạt động hợp lệ đã được server xác nhận; lưu sổ sự kiện có khóa chống trùng theo người học + nguồn hoạt động.
 - Tách tổng XP để tính cấp độ hoạt động và XP hợp lệ trong tuần để xếp Giải đấu tuần. Lặp lại request không thưởng lần hai.
-- Đề xuất thưởng cho hoàn thành bài mới, ôn đúng lịch và sửa lỗi bằng câu mới; có giới hạn với việc lặp lại bài đã thuộc. Mức thưởng, giới hạn ngày và công thức cấp độ chưa chốt.
+- Thưởng 5 XP cho FIRST câu độc lập mới, đủ/đúng, không hỗ trợ; 5 XP/mục tiêu/chu kỳ ôn đến hạn đủ điều kiện, tối đa một bonus/mục tiêu/ngày. Trần chung 200 XP/ngày; cấp độ hoạt động = 1 + floor(totalXP/100). Chữa sau nộp không tạo thưởng câu mới.
 - Huy hiệu ban đầu: hoàn thành bài đầu, ôn đúng lịch, duy trì chuỗi ngày. Chốt điều kiện có thể kiểm tra từ sự kiện đã lưu.
-- Streak: một ngày có ít nhất hoạt động đủ điều kiện được server xác nhận; nhiều bài cùng ngày chỉ tính một ngày. MVP đề xuất dùng múi giờ Asia/Ho_Chi_Minh; ngày học offline gửi muộn chưa mặc định được ghi lùi.
+- Streak: ngày Việt Nam có lượt FIRST tự làm đầy đủ ít nhất min(3, số câu độc lập được giao), có ít nhất một câu đúng; nhiều bài cùng ngày chỉ tính một ngày. Không dùng giờ client để ghi lùi ngày.
 
 #### M05.2. Giải đấu tuần — thi đua chăm học
 
 - Tên UI: **Giải đấu tuần**. Thước đo là XP hợp lệ của tuần, nhằm khuyến khích duy trì học/luyện; không dùng XP để chứng nhận trình độ tiếng Anh.
 - Các bậc: **Đồng → Bạc → Vàng → Bạch Kim → Kim Cương**.
-- Người học chủ động chọn tham gia. Mỗi bậc được chia nhiều nhóm nhỏ; mỗi người chỉ cạnh tranh trong nhóm được xếp, không xếp tất cả người cùng bậc vào một bảng khổng lồ. Ví dụ 500 người chia nhóm 25 sẽ có 20 bảng; 25 là ví dụ, kích thước và quota chưa chốt.
+- Người học chủ động tham gia mỗi tuần. Mỗi bậc chia nhóm tối đa 25 người; mỗi người chỉ cạnh tranh trong nhóm được xếp. Chỉ XP từ bài nộp sau joinedAt thuộc tuần mới được xét vào bảng.
 - Nhóm không phụ thuộc tất cả thành viên đang online. Có vùng lên hạng, giữ hạng và xuống hạng; không lọt top lên hạng vẫn có thể giữ bậc.
 - Chốt tuần đúng một lần: lưu thứ hạng, bậc tuần sau và lịch sử. Tuần mới bắt đầu điểm tuần mới từ 0; bậc được giữ/lên/xuống theo kết quả, không đưa tất cả về Đồng.
 - Việc chốt tuần giữ nguyên tổng XP, cấp độ hoạt động, huy hiệu, streak, tiến độ học tập.
-- Kích thước nhóm, suất lên/xuống, điều kiện đủ hoạt động và hòa điểm còn cần chốt. Nhóm chưa đủ người đề xuất giữ hạng, không mặc định áp dụng suất xuống của nhóm đủ.
+- Cần ít nhất 10 thành viên/5 người có XP mới xét lên/xuống; quota mỗi phía floor(20% số thành viên). Cùng XP cùng hạng; khối hòa vắt ranh giới giữ bậc. Nhóm nhỏ giữ bậc; Đồng/Kim Cương chặn ở đầu/cuối.
 - Demo có thể dùng nhóm nhỏ với tài khoản thử nghiệm được ghi rõ; không tạo người học giả để báo thành tích sử dụng. Dữ liệu đến muộn không tự sửa tuần đã chốt; áp dụng chính sách thời điểm server xác nhận.
 
 **Hoàn thành khi:** XP/streak/huy hiệu không tăng trùng khi gửi lại/reconnect; job chốt tuần chạy lại không tạo thêm kết quả; tuần mới bắt đầu XP tuần từ 0 và cập nhật bậc theo luật, giữ nguyên tổng XP và tiến độ học tập.
@@ -456,9 +458,9 @@ Hợp đồng **1.0.0 ngày 16/10/2026** đã chốt trong [bàn giao](docs/M02_
 | M02/V3 | request_receipts, topics, learning_objectives, units, assets, materials, material_versions, questions, question_versions, lessons, lesson_versions, lesson_objectives, lesson_questions | /api/topics, /api/objectives, /api/units, /api/lessons/{id}; /api/author/**; /api/assets |
 | M03/V4 | attempts, attempt_questions, attempt_answers, answer_trials, submissions, question_exposures, lesson_progress | /api/attempts/**; /api/me/learning-progress |
 | M04/V5 | review_objective_progress, review_difficulty_evidence, review_processed_submissions | /api/me/review, /api/me/review/sync; tạo REVIEW qua /api/attempts |
-| M05 trở đi — sẽ thiết kế riêng | XP/Badge/Streak/League, thống kê | API gamification/socket sự kiện hoàn thiện sau; chưa nằm trong V3–V5 |
+| M05/V6–V8 | policy/context/claim/XP ledger/profile/day/badge/processed/failure, outbox, league season/allocator/group/member/outbox | /api/me/gamification/**, /api/me/badges, /api/me/league/**; socket invalidation theo user/nhóm |
 
-Bản SQL hợp đồng gốc ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **Migration runtime V1–V5 nằm trong source/server/src/main/resources/db/migration/**; bản P0 M04 đã kiểm tra nâng V4 → V5 giữ dữ liệu. Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
+Bản SQL hợp đồng gốc ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **Migration runtime V1–V8 nằm trong source/server/src/main/resources/db/migration/**; M04 đã kiểm tra nâng V4 → V5, M05 kiểm tra nâng V5 → V8 giữ dữ liệu. Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
 
 Dữ liệu định danh/lọc/quyền ở cột quan hệ; content/answer/source/instructions và snapshot linh hoạt dùng JSON có schemaVersion. Mỗi câu có một mục tiêu chính. LessonQuestion lưu Version ID + GUIDED/INDEPENDENT/REVIEW_VARIANT + thứ tự. MaterialVersion dùng chung file qua Asset, transcript không cấp trong snapshot làm bài.
 

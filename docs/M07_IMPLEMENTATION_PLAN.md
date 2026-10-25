@@ -31,10 +31,10 @@ Phạm vi cập nhật 24/10/2026 theo yêu cầu thống kê giảng viên, nh�
 
 ## Tích hợp M05/M06
 
-- LearnerRewardsReader là interface để M05 cung cấp một bean đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần đã commit. M07 không tự tính hoặc cộng thưởng.
+- LearnerRewardsReader nhận principal gốc; M05LearnerRewardsReader đã tích hợp GET service M05 để đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần đã commit. M07 không tự tính hoặc cộng thưởng.
 - Chưa có provider: rewards.state=UNAVAILABLE, các giá trị null. UI ghi chưa có dữ liệu; không dùng số 0 hay huy hiệu giả.
-- Số kết nối quản trị hiện lấy từ LiveConnections M01: WebSocket đang mở, đếm distinct user để không nhân đôi khi có nhiều tab. Đây là ước lượng trong một backend, chưa bảo đảm độ mới heartbeat của M06 hoặc số người đang học. UI ghi rõ giới hạn.
-- Không thêm bảng/migration, không chiếm số phiên bản migration mà M05/M06 có thể dùng. Giữ nguyên V1–V5.
+- Số kết nối quản trị dùng LiveConnections M06, chỉ socket còn mở/chưa hết cửa sổ heartbeat; distinct user cho nhiều tab. Đây là snapshot RAM của một backend, không phải số người đang học hoặc presence nhiều server.
+- Không thêm bảng/migration, không chiếm số phiên bản migration mà M05/M06 có thể dùng. Giữ nguyên V1–V8 sau tích hợp M05.
 
 ## API và kiến trúc
 
@@ -50,3 +50,5 @@ Hợp đồng: [M07_API.md](../source/common/M07_API.md). Quyền xem hồ sơ h
 - Không công bố benchmark tải, hiệu quả học tập hoặc hoàn thành tích hợp M05/M06 khi chưa có bằng chứng.
 
 Xem [tiến độ](M07_PROGRESS.md), [ca thao tác](M07_MANUAL_TEST_CASES.md), [kết quả kiểm tra](../statics/results/module-7-validation.md).
+
+Tích hợp 25/10: dữ liệu thưởng toàn lịch sử, không phụ thuộc bộ lọc kết quả; tuần chưa tham gia trả null, lịch sử tối đa 5 tuần chốt, huy hiệu chỉ lấy earnedAt khác null. M07 không tự chấm/thưởng/tính hạng mới.

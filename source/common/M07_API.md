@@ -40,7 +40,7 @@ Performance chứa Metric cho first, guided, assisted, independentNew, independe
 - review: trackedObjectives, needsReview, mistakeObjectives, pendingSubmissions, nextScheduledAt. Projection M04 hiện có, độc lập bộ lọc period. needsReview gồm needsPractice hoặc đã tới mốc. nextScheduledAt là mốc sớm nhất còn ở tương lai và không cần luyện ngay. Có pendingSubmissions thì vào M04 để sync; endpoint này không ghi projection.
 - rewards: state=UNAVAILABLE khi chưa có LearnerRewardsReader, totalXp/level/streakDays/badges/currentWeek/history đều null.
 
-Provider M05 có thể trả state=AVAILABLE và dữ liệu đã commit: totalXp (long), level/streakDays (int), badges [{code,name,earnedAt}], currentWeek {week,tier,position,xp}, history cùng kiểu LeagueWeek. Giá trị chưa có vẫn nullable. M07 không diễn giải luật thưởng/chốt tuần hay tự sửa giá trị.
+M05LearnerRewardsReader đã tích hợp ngày 25/10, trả state=AVAILABLE và dữ liệu đã commit: totalXp (long), level (long như M05), streakDays (int), badges [{code,name,earnedAt}], currentWeek {week,tier,position,xp}, history cùng kiểu LeagueWeek. Chỉ huy hiệu đã nhận; currentWeek=null nếu chưa tham gia tuần hiện tại, history gồm tối đa 5 tuần đã chốt gần nhất. week là ngày bắt đầu tuần yyyy-MM-dd theo Asia/Ho_Chi_Minh; tier của lịch sử là bậc trong tuần đó. Dữ liệu là kết quả đã xử lý, không cộng phần đang pending; GET không gọi sync/process/join. M07 không diễn giải luật thưởng/chốt tuần hay tự sửa giá trị.
 
 ## Breakdown và bài hoàn thành
 
@@ -56,7 +56,7 @@ AdminOverview: generatedAt, period, from, activity, performance, roles/statuses 
 
 roles/statuses là số tài khoản hiện tại (bao gồm DELETED); activity giữ lịch sử kể cả tài khoản bị khóa/xóa. completedLessons là tổng các cặp học viên/bài COMPLETED; learnersWithSubmissions là distinct user có bài nộp trong khoảng. difficulties là phân bố câu đã gặp trong bài đã nộp, không phải toàn ngân hàng M02.
 
-presence={connectedAccounts,openConnections,basis:OPEN_AUTHENTICATED_SOCKETS}. Chỉ dựa trên WebSocket còn mở tại một backend; nhiều tab cùng user đếm một account. Snapshot lấy từ RAM nên không cùng transaction snapshot với MySQL. Chưa có độ mới heartbeat và presence nhiều server của M06.
+presence={connectedAccounts,openConnections,basis:OPEN_AUTHENTICATED_SOCKETS}. Chỉ dựa trên WebSocket còn mở tại một backend; nhiều tab cùng user đếm một account. Snapshot lấy từ RAM nên không cùng transaction snapshot với MySQL. Đã tích hợp cửa sổ heartbeat M06: socket hết liveness không được đếm, kể cả transport còn mở. Không có presence nhiều server và không suy ra số người đang học.
 
 Question item: questionId,questionVersionId,versionNo,prompt,type,difficulty,learners,first (Metric). Chỉ câu có ít nhất một FIRST sai; sắp số sai giảm dần, questionVersionId tăng dần để phân trang ổn định trên một snapshot. learners đếm distinct user có FIRST trên phiên bản đó trong bài đã nộp trong khoảng, kể cả người trả lời đúng/bỏ trống. Không chứa người nào đã trả lời gì, answerKey, explanation hoặc transcript. Câu ít mẫu không mặc định là câu kém chất lượng.
 
@@ -79,7 +79,9 @@ Question item: questionId,questionVersionId,versionNo,prompt,type,difficulty,lea
 - 403 FORBIDDEN: sai vai trò.
 - 404 NOT_FOUND: Unit không tồn tại hoặc không thuộc giảng viên.
 - 503 DATABASE_UNAVAILABLE: giữ màn hình lỗi, thử tải lại; không giả thành số 0.
-- Không có mutation để gửi lại, không có migration mới; vẫn dùng V1–V5.
+- Không có mutation để gửi lại, không có migration mới; đọc schema V1–V8 hiện có sau tích hợp M05.
 - P1 xuất báo cáo và thống kê thử nghiệm mạng chưa triển khai.
 
 Schema máy đọc: [openapi-m07.json](openapi-m07.json). Nguồn: [M02/M03](M02_M03_API.md), [M04](M04_API.md).
+
+Tích hợp main 20652a7 vào M07 ngày 25/10/2026. LearnerRewardsReader giữ principal để dịch vụ M05 kiểm tra quyền phiên hiện hành; không nhận userId khác từ query. Giao diện hồ sơ có liên kết sang phần thưởng và bảng tuần.

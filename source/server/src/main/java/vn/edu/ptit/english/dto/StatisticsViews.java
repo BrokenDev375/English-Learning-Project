@@ -23,7 +23,7 @@ public final class StatisticsViews {
                          long pendingSubmissions, Instant nextScheduledAt) {}
     public record Badge(String code, String name, Instant earnedAt) {}
     public record LeagueWeek(String week, String tier, Integer position, Long xp) {}
-    public record Rewards(String state, Long totalXp, Integer level, Integer streakDays,
+    public record Rewards(String state, Long totalXp, Long level, Integer streakDays,
                           List<Badge> badges, LeagueWeek currentWeek, List<LeagueWeek> history) {
         public static Rewards unavailable() { return new Rewards("UNAVAILABLE", null, null, null, null, null, null); }
     }

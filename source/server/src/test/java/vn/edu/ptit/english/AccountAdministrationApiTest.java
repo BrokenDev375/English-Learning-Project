@@ -22,6 +22,7 @@ import vn.edu.ptit.english.repository.*;
 import vn.edu.ptit.english.security.*;
 import static org.assertj.core.api.Assertions.*;
 
+@org.springframework.test.annotation.DirtiesContext(classMode=org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"app.demo.enabled=false", "app.bootstrap-admin.enabled=false"})
 @Testcontainers
@@ -179,6 +180,20 @@ class AccountAdministrationApiTest {
             closed.complete(code); return null;
         }
         @Override public void onError(WebSocket socket, Throwable error) { closed.completeExceptionally(error); }
+    }
+    @Test void ownPresenceIsPrivateAndCountsRemainingAuthenticatedTabs() throws Exception {
+        assertThat(new Client().send("GET","/api/me/connections",null).statusCode()).isEqualTo(401);
+        var c=new Client().login(learner);var first=new SocketListener();var second=new SocketListener();
+        var a=c.socket(first,"http://localhost:5173");var b=c.socket(second,"http://localhost:5173");
+        try {
+            first.received.get(5,TimeUnit.SECONDS);second.received.get(5,TimeUnit.SECONDS);
+            var presence=c.send("GET","/api/me/connections",null);
+            assertThat(body(presence).path("activeConnectionCount").asInt()).isEqualTo(2);
+            assertThat(presence.body()).doesNotContain("sessionId","socketId","email");
+            assertThat(body(new Client().login(author).send("GET","/api/me/connections",null)).path("online").asBoolean()).isFalse();
+            a.sendClose(WebSocket.NORMAL_CLOSURE,"test").join();first.closed.get(5,TimeUnit.SECONDS);
+            org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted(()->assertThat(body(c.send("GET","/api/me/connections",null)).path("activeConnectionCount").asInt()).isEqualTo(1));
+        } finally {a.abort();b.abort();}
     }
     @Test void lockClosesAuthenticatedSocketAndUntrustedOriginIsRejected() throws Exception {
         var client = new Client().login(learner); var listener = new SocketListener();

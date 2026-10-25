@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { Snapshot } from '../src/features/learning/types';
+import type { Answer, Snapshot } from '../src/features/learning/types';
 
 const password = 'StatsBrowser@12345';
 const env = Object.fromEntries(readFileSync(resolve(process.cwd(), '../../.env'), 'utf8').split(/\r?\n/)
@@ -39,7 +39,7 @@ async function submitBlank(page: Page) {
 }
 test('student profile shows honest empty values and persists route on reload', async ({ page }) => {
   await register(page); await profile(page);
-  await expect(page.getByText('Chưa có dữ liệu điểm kinh nghiệm, chuỗi ngày học, huy hiệu và Giải đấu tuần.', { exact: true })).toBeVisible();
+  await expect(page.getByText('0 XP · Cấp 1 · Chuỗi 0 ngày', { exact: true })).toBeVisible();
   await expect(page.getByText('Chưa có bài hoàn thành. Bạn có thể bắt đầu từ Khám phá bài học.', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('heading', { name: 'Hồ sơ học tập.' })).toBeVisible();
   await expect(page.getByRole('status')).toHaveCount(0);
@@ -47,6 +47,33 @@ test('student profile shows honest empty values and persists route on reload', a
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   mkdirSync(resolve(process.cwd(), '../../.test-state'), { recursive: true });
   await page.screenshot({ path: resolve(process.cwd(), '../../.test-state/m07-profile-mobile.png'), fullPage: true });
+});
+
+test('profile reconciles committed XP and current league with M05 without awarding again on refresh', async ({ page }) => {
+  await register(page);
+  await post(page, '/api/me/league/join', { requestId: crypto.randomUUID() });
+  const units = await (await page.request.get('/api/units?size=50')).json();
+  const snapshot: Snapshot = await post(page, '/api/attempts', { requestId: crypto.randomUUID(), mode: 'PRACTICE', topicId: units.items[0].topicId, difficulty: 'EASY', count: 3 });
+  type Seed = { lessons: { questions: { data: { prompt: string; answerKey: { correctOptionId: string; blanks: { blankId: string; acceptedAnswers: string[] }[]; pairs: { leftId: string; rightId: string }[] } } }[] }[] };
+  const bank = (JSON.parse(readFileSync(resolve(process.cwd(), '../server/src/main/resources/demo/curriculum-v1.json'), 'utf8')) as Seed).lessons.flatMap(l => l.questions);
+  const answers = snapshot.items.map(item => {
+    const key = bank.find(question => question.data.prompt === item.question.prompt)!.data.answerKey;
+    const response: Answer = item.question.type === 'SINGLE_CHOICE' ? { type: 'SINGLE_CHOICE', optionId: key.correctOptionId }
+      : item.question.type === 'FILL_BLANK' ? { type: 'FILL_BLANK', values: key.blanks.map(blank => ({ blankId: blank.blankId, value: blank.acceptedAnswers[0] })) }
+      : { type: 'MATCHING', pairs: key.pairs };
+    return { attemptQuestionId: item.attemptQuestionId, response };
+  });
+  await post(page, `/api/attempts/${snapshot.attemptId}/submit`, { requestId: crypto.randomUUID(), baseRevision: snapshot.revision, playerState: snapshot.playerState, answers });
+  await expect.poll(async () => (await (await page.request.get('/api/me/gamification')).json()).totalXp, { timeout: 20000 }).toBe(15);
+  await profile(page);
+  const value = await (await page.request.get('/api/me/statistics')).json();
+  const league = await (await page.request.get('/api/me/league')).json();
+  expect(value.rewards.totalXp).toBe(15);
+  expect(value.rewards.currentWeek.xp).toBe(league.membership.weeklyXp);
+  expect(value.rewards.currentWeek.position).toBe(league.membership.rank);
+  await expect(page.getByText('15 XP · Cấp 1 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByText('15 XP · Cấp 1 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
+  expect((await (await page.request.get('/api/me/gamification')).json()).totalXp).toBe(15);
 });
 test('profile reads submitted work and links to review and immutable results', async ({ page }) => {
   await register(page); const snapshot = await submitBlank(page); await profile(page);

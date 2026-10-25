@@ -29,7 +29,7 @@ import static vn.edu.ptit.english.enums.AttemptEnums.*;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"app.demo.enabled=false", "app.bootstrap-admin.enabled=false"})
+    properties = {"app.demo.enabled=false", "app.bootstrap-admin.enabled=false", "app.gamification.worker-enabled=false"})
 @Testcontainers
 class StatisticsApiTest {
     @Container static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.4").withDatabaseName("m07_statistics_test");
@@ -151,8 +151,8 @@ class StatisticsApiTest {
         var value = c.read("/api/me/statistics");
         assertThat(value.path("activity").path("submittedAttempts").asLong()).isZero();
         assertThat(value.path("performance").path("first").path("accuracyPercent").isNull()).isTrue();
-        assertThat(value.path("rewards").path("state").asText()).isEqualTo("UNAVAILABLE");
-        assertThat(value.path("rewards").path("totalXp").isNull()).isTrue();
+        assertThat(value.path("rewards").path("state").asText()).isEqualTo("AVAILABLE");
+        assertThat(value.path("rewards").path("totalXp").asLong()).isZero();
         assertThat(c.read("/api/me/statistics/breakdown").path("totalElements").asInt()).isZero();
         assertThat(c.read("/api/me/statistics/lessons").path("totalElements").asInt()).isZero();
         Long after = tx.execute(s -> em.createQuery("select count(p.id) from ReviewProgressEntity p", Long.class).getSingleResult());

@@ -31,4 +31,10 @@ public class AccountGuard {
         return new ApiException(HttpStatus.UNAUTHORIZED, "SESSION_REVOKED",
             "Phiên đăng nhập đã bị thu hồi. Vui lòng đăng nhập lại.");
     }
+    /** Background consumer: ID comes from committed submissions, never from an HTTP body. */
+    public java.util.Optional<UserPrincipal> lockStudentForWorker(long userId) {
+        return entities.lockById(userId).map(u->u.record())
+            .filter(u->u.status()==vn.edu.ptit.english.enums.AccountStatus.ACTIVE&&u.role()==vn.edu.ptit.english.enums.Role.STUDENT)
+            .map(UserPrincipal::from);
+    }
 }

@@ -1,6 +1,6 @@
 # Tiến độ M07 — Hồ sơ và thống kê
 
-Cập nhật 24/10/2026. Nhánh feature/m07-profile-statistics, nền main tại 57f2951. Chưa commit/push; M07 được khôi phục từ bản stash đã giữ trước khi sửa M06.
+Cập nhật 25/10/2026. Nhánh feature/m07-profile-statistics; M07 gốc 85399a4, đã tích hợp main 20652a7 đã có M05/M06.
 
 ## Thống kê giảng viên — 24/10
 
@@ -29,6 +29,13 @@ Cập nhật 24/10/2026. Nhánh feature/m07-profile-statistics, nền main tại
 - [x] Xem ảnh mobile hồ sơ/admin và kiểm tra không tràn ngang ở 390×844; kiểm tra liên kết Markdown và JSON OpenAPI.
 - [x] Áp dụng vào thư mục dự án, build/chạy local chuẩn 5173/8080; Chrome mở Hồ sơ học tập, GET API 200, không có page error. Số bản ghi cũ giữ nguyên; Flyway vẫn V5. Đã dừng môi trường test riêng.
 
-Không thêm migration, giữ V1–V5. Chưa làm xuất báo cáo P1, phân quyền giảng viên xem hồ sơ học viên, hiệu quả học tập hoặc benchmark tải. Không tự thực hiện M05/M06. Hồ sơ không thay đổi dữ liệu học/nộp/ôn.
+Không thêm migration, giữ V1–V5. Chưa làm xuất báo cáo P1, phân quyền giảng viên xem hồ sơ học viên, hiệu quả học tập hoặc benchmark tải. M05/M06 đã được đưa vào từ main; không thay luật thưởng hoặc phục hồi. Hồ sơ không thay đổi dữ liệu học/nộp/ôn.
 
 Xem [kế hoạch](M07_IMPLEMENTATION_PLAN.md), [API](../source/common/M07_API.md), [ca thao tác](M07_MANUAL_TEST_CASES.md) và [kiểm tra](../statics/results/module-7-validation.md).
+
+## Tích hợp main M05/M06 — 25/10
+
+- Giữ đầy đủ điều hướng hồ sơ, thống kê TEACHER/ADMIN và phần thưởng/League cùng cơ chế lưu nháp/phục hồi M06. Quyền giảng viên tiếp tục theo Unit.ownerId.
+- M05LearnerRewardsReader tái sử dụng GET service M05 với principal gốc: tổng XP/cấp độ/streak, chỉ huy hiệu đã nhận, tuần hiện tại nếu đã tham gia và tối đa 5 tuần chốt gần nhất. GET hồ sơ không sync, thưởng, tạo tuần hoặc join; hỗ trợ level kiểu long như M05.
+- Snapshot kết nối quản trị chỉ đếm socket mở trong cửa sổ heartbeat M06, nhiều tab tính một tài khoản. Không đếm kết nối hết liveness và không suy ra số người đang làm bài.
+- Backend: 265/266 ở lượt đầy đủ, lỗi duy nhất do tên bảng trong fixture mới; sửa fixture rồi cả 3/3 ca tích hợp thưởng qua. Tổng cộng **266 ca backend khác nhau đã qua qua các lượt**, không phải một lượt 266/266 duy nhất. Browser **91/91 PASS** trong một lượt, **4.7 phút**. Build TypeScript/Vite và manager **9/9 PASS**. Chi tiết tại biên bản M07. Không thay migration V1–V8, không ghi test vào demo.

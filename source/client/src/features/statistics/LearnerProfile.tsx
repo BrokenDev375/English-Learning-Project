@@ -36,6 +36,8 @@ function RewardPanel({ data }: { data: Rewards }) {
     <p>{data.totalXp ?? '—'} XP · Cấp {data.level ?? '—'} · Chuỗi {data.streakDays ?? '—'} ngày</p>
     <ul>{data.badges?.map(b => <li key={b.code}>{b.name} · {date(b.earnedAt)}</li>)}</ul>
     {data.currentWeek && <p>Tuần {data.currentWeek.week} · {data.currentWeek.tier} · Vị trí {data.currentWeek.position ?? '—'} · {data.currentWeek.xp ?? '—'} XP</p>}
+    <p className="muted">Thành tích từ các bài đã được xử lý phần thưởng. Bài vừa nộp có thể cần một lúc để cập nhật.</p>
+    <div className="material-actions"><button className="button secondary" onClick={() => navigate({ view: 'rewards' }, { reset: true })}>Xem phần thưởng →</button><button className="button secondary" onClick={() => navigate({ view: 'league' }, { reset: true })}>Xem bảng tuần →</button></div>
     {!!data.history?.length && <details><summary>Lịch sử Giải đấu tuần</summary><ul>{data.history.map(w => <li key={w.week}>{w.week}: {w.tier} · Vị trí {w.position ?? '—'} · {w.xp ?? '—'} XP</li>)}</ul></details>}
   </>}</section>;
 }

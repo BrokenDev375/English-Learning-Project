@@ -2,6 +2,8 @@ package vn.edu.ptit.english.service.impl;
 
 import java.math.*;
 import java.time.Instant;
+import java.time.Clock;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,9 +29,11 @@ public class AttemptCompletionServiceImpl implements AttemptCompletionService {
     private final PublishedContentReader content;
     private final AnswerGrader grader;
     private final AttemptDraftValidator validator;
+    private final Clock clock;
     public AttemptCompletionServiceImpl(AttemptRepository attempts,RequestReceiptService receipts,AccountGuard accounts,
-        PublishedContentReader content,AnswerGrader grader,AttemptDraftValidator validator) {
+        PublishedContentReader content,AnswerGrader grader,AttemptDraftValidator validator,Clock clock) {
         this.attempts=attempts; this.receipts=receipts; this.accounts=accounts; this.content=content; this.grader=grader; this.validator=validator;
+        this.clock=clock;
     }
     private void student(UserPrincipal actor,long attemptId) {
         if(actor.role()!=Role.STUDENT)throw new ApiException(HttpStatus.FORBIDDEN,"FORBIDDEN","Chỉ học viên được sử dụng lượt làm.");
@@ -97,7 +101,7 @@ public class AttemptCompletionServiceImpl implements AttemptCompletionService {
         return receipts.execute(actor,input.requestId(),"POST /api/attempts/"+attemptId+"/submit",input,200,()-> {
             var attempt=locked(attemptId,input.baseRevision(),State.IN_PROGRESS,actor);
             var items=attempts.items(attemptId); var responses=validator.validate(items,input);
-            Instant now=Instant.now(); var facts=new ArrayList<ResultItem>(); var materials=new LinkedHashMap<Long,MaterialFeedback>();
+            Instant now=clock.instant().truncatedTo(ChronoUnit.MICROS); var facts=new ArrayList<ResultItem>(); var materials=new LinkedHashMap<Long,MaterialFeedback>();
             int answered=0,correct=0,freshAnswered=0,freshCorrect=0;
             boolean completed=attempt.getMode()==Mode.LEARN;
             for(var item:items) {

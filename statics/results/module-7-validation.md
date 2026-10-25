@@ -59,3 +59,21 @@ Cuối log full suite có chẩn đoán Surefire phải dừng fork JVM sau 30 g
 Môi trường browser test riêng đã dừng sau kiểm tra, volume giữ nguyên.
 
 Áp dụng có kiểm tra hash trước/sau đủ 30 file M07 (gồm bản nền và hai file teacher mới), không ghi đè thay đổi ngoài phạm vi. Demo chỉ chạy smoke đọc thống kê: trước/sau users=7, lessons=6, questions=90, materials=13, assets=7, attempts=1, submissions=0, review_objective_progress=0, review_processed_submissions=0, flyway_schema_history=5. Đây là kiểm tra số lượng/luồng đọc, không khẳng định mọi byte DB không đổi. runtime-before.json, runtime-after.json và runtime-teacher.png giữ trong thư mục artifact ngoài Git. Stash M07 gốc vẫn được giữ; toàn bộ M07 hiện chưa commit/push.
+
+## Tích hợp main M05/M06 vào M07 — 25/10/2026
+
+Nguồn: M07 85399a4 và main 20652a7 đã có M05/M06 (M06 merge a6a7168). Giải quyết bảy file conflict AGENTS, DATABASE_DESIGN, plan tổng, README, App, SecurityConfig và LiveConnections. Giữ M07 theo từng vai trò/Unit, các màn M05 và cơ chế M06. Không sửa migration, luật chấm/thưởng/chốt tuần hoặc recovery.
+
+Backend: 265/266 ở lượt đầy đủ, lỗi duy nhất do tên bảng trong fixture mới; sửa fixture rồi cả 3/3 ca tích hợp thưởng qua. Tổng cộng **266 ca backend khác nhau đã qua qua các lượt**, không phải một lượt 266/266 duy nhất. Browser **91/91 PASS** trong một lượt, **4.7 phút**. Build TypeScript/Vite và manager **9/9 PASS**.
+
+Ba ca StatisticsRewardsIntegrationTest dùng API HTTP/session/CSRF thật và MySQL Testcontainers: đọc pending không tự xử lý, đối chiếu XP/level/streak từ M05, không viết thêm ledger/receipt khi GET lặp, không đọc chéo user; tuần hiện tại và lịch sử chốt khớp API League, GET không join; huy hiệu chỉ lấy loại đã nhận. Fixture đối chiếu ban đầu gõ sai gamification_days (đúng: gamification_daily_stats), rồi dùng user_id với request_receipts (đúng: actor_id). Đã sửa riêng fixture và chạy lại nhóm 3/3; production không đổi để bỏ assertion. 15/15 StatisticsApiTest gồm quyền Unit và 2/2 StatisticsPresenceTest qua trong full suite.
+
+M05LearnerRewardsReader gọi GET service M05 bằng principal gốc, toàn transaction chỉ đọc. Level dùng long như M05; history tối đa 5 tuần chốt, currentWeek null khi chưa tham gia, không giả huy hiệu. Snapshot admin chỉ tính socket mở/chưa hết heartbeat; ca clock mô phỏng chứng minh socket hết liveness không được đếm dù transport vẫn mở. Đây vẫn là số kết nối một backend, không phải số người đang học.
+
+Browser dùng Compose project english-learning-m07-main-e2e, cổng 15181/18091, Chrome và backend/MySQL thật. 91 ca gồm 82 hồi quy M01–M06, 8 M07 trước và 1 ca mới đối chiếu XP/hạng tuần sau nộp bài thật, refresh không thưởng lại. Cả 3 ca teacher về quyền Unit, chia sẻ câu, điều hướng/mobile/lỗi mạng đều qua. Image build source tích hợp mới, production TypeScript/Vite 67 modules. E2E riêng đã dừng, giữ volume; không ghi test vào demo.
+
+Docker ban đầu tắt, đã khởi động nền; hai lệnh đầu không chạy được test do engine vắng, không phải failure nghiệp vụ. Backend dùng test image Java 17 với POM/src hiện hành bind read-only, mvn -B -ntp clean test. Lượt focused compile lại source sau sửa fixture. Log/XML/JSON ngoài Git: C:\Users\Admin\AppData\Local\Temp\english-m07-main-merge-20261025 (backend-full.log, backend-reports, backend-focused.log, backend-focused-reports, e2e-full.log/json, compose-build.log, test-stop.log).
+
+Nội dung migration V1–V8 đối chiếu bằng nhau sau chuẩn hóa CRLF/LF (Git archive LF, checkout Windows CRLF), không sửa checksum hoặc Flyway history. Không thêm dependency/migration; OpenAPI M07 1.2.0 có 10 path và 39 local ref hợp lệ. Môi trường demo không rebuild hoặc nâng schema trong lượt này.
+
+Không chạy lại script restart/recreate, benchmark tải hoặc thử hai thiết bị vật lý trong lượt tích hợp. P1 export chưa làm. Lỗi M05 join đồng thời khóa tài khoản đã review trước vẫn ngoài phạm vi; không báo đã sửa. Các số 165/173 ở phần trước là bằng chứng lịch sử trước tích hợp.

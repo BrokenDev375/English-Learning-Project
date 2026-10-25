@@ -13,7 +13,9 @@ M03 đã nối V4/model/repository/DTO/grader với API và giao diện học. T
 
 Mutation lấy actor lock → receipt/replay → khóa/refresh Attempt → kiểm tra state/revision → validate → ghi nghiệp vụ và receipt → commit. Submit lưu final/trials/Submission/progress/receipt cùng transaction; lỗi cuối transaction rollback toàn bộ. GET result đọc JSON đã lưu, không chấm lại; CORRECTION không thay final/điểm/tiến độ. Không serialize entity hoặc PublishedContentReader nội bộ sang client.
 
-Frontend `features/learning/` gọi HTTP API có cookie/CSRF hiện hành, dùng manual save và replay/GET đối soát. WebSocket vẫn phục vụ phiên/heartbeat/thu hồi kết nối, chưa đồng bộ toàn bộ tiến độ. Session/kết nối ở RAM một backend; nháp/kết quả trong MySQL, file trong volume.
+Frontend `features/learning/` gọi HTTP API có cookie/CSRF hiện hành; M06 bổ sung autosave, IndexedDB/journal và replay/GET đối soát. Session/kết nối ở RAM một backend; nháp/kết quả trong MySQL, file trong volume.
+
+M06: `ConnectionController → ConnectionService/impl` trả presence của chính user; `AccountSocketHandler → LiveConnections` theo dõi liveness/subscription và thu hồi phiên. `SocketRuntimeConfig` cấp clock/scheduler. `AttemptRepositoryImpl.save(AttemptEntity)` phát `AttemptChanged` trong transaction; listener AFTER_COMMIT mới gửi invalidation cho owner đã subscribe. Replay/GET không save aggregate; rollback không phát. Event chỉ có ID/revision, không thay HTTP snapshot hoặc ledger M04. Xem [hợp đồng](../source/common/M06_API.md), [nghiệm thu](../statics/results/module-6-validation.md).
 
 M02 bước 1 bổ sung AuthorCatalogController → CatalogService/impl → CatalogRepository/impl → JPA cho Topic/Objective/Unit, cùng RequestReceiptService dùng chung. Theo dõi phạm vi hiện tại ở [tiến độ M02](M02_PROGRESS.md). Mô tả M01 bên dưới vẫn áp dụng cho nền tài khoản.
 

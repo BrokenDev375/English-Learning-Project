@@ -64,7 +64,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override public LearnerOverview learner(String period, UserPrincipal actor) {
         require(Role.STUDENT, actor); Instant now = Instant.now(), from = since(period, now);
         var reader = rewards.getIfAvailable();
-        var reward = reader == null ? Rewards.unavailable() : Objects.requireNonNull(reader.read(actor.id()));
+        var reward = reader == null ? Rewards.unavailable() : Objects.requireNonNull(reader.read(actor));
         return new LearnerOverview(now, period, from, repository.activity(actor.id(), from, now),
             performance(repository.performance(actor.id(), from, now, null, null)), repository.review(actor.id(), now), reward);
     }
