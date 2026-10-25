@@ -101,6 +101,12 @@ public class LiveConnections implements HttpSessionListener {
             }
         });
     }
+    public record Snapshot(long connectedAccounts, long openConnections) {}
+    /** Read-only local snapshot of open authenticated sockets within the heartbeat window. */
+    public Snapshot snapshot() {
+        var open = sockets.values().stream().filter(s -> s.session.isOpen() && clock.millis() - s.lastSeen < timeout).toList();
+        return new Snapshot(open.stream().map(s -> s.userId).distinct().count(), open.size());
+    }
     @Override public void sessionDestroyed(HttpSessionEvent event) {
         String id = event.getSession().getId();
         sessions.remove(id);

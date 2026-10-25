@@ -1,5 +1,9 @@
 # English Learning
 
+M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu** cho TEACHER và **Thống kê học tập** cho ADMIN: kết quả lần đầu theo chủ đề/mục tiêu, lịch sử, bài hoàn thành, nội dung cần ôn, độ khó và câu thường sai. Giảng viên chỉ xem số tổng hợp LEARN trong Unit mình làm chủ, không xem hồ sơ từng học viên; có lọc Unit/khoảng thời gian, hiệu quả từng bài và mức dùng hỗ trợ. Xem [tiến độ](docs/M07_PROGRESS.md), [API](source/common/M07_API.md), [cách thử](docs/M07_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-7-validation.md).
+
+M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migration. Sau tích hợp M05/M06, hồ sơ đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần từ dịch vụ M05; số kết nối chỉ tính socket còn mở trong cửa sổ heartbeat M06 trên một backend.
+
 ## Demo M05 hiện tại
 
 Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.

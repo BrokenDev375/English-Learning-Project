@@ -34,7 +34,7 @@ Có ba vai trò:
 
 Đặc trưng của bài tập mạng nằm trong cách xử lý phiên đăng nhập, WebSocket, timeout, mất phản hồi sau commit, gửi lại request và ghi đồng thời. Chưa có bằng chứng đo tải hoặc hiệu quả học tập; không tự mô tả dự án như một hệ thống nhiều backend, offline đầy đủ hoặc ứng dụng đã nghiệm thu toàn bộ.
 
-### Mốc tiến độ cập nhật ngày 22/10/2026
+### Mốc tiến độ cập nhật ngày 25/10/2026
 
 | Module | Trạng thái thực tế |
 |---|---|
@@ -45,10 +45,12 @@ Có ba vai trò:
 | M04 — Ôn tập cá nhân | Đã có V5, backfill/ledger, dashboard, provider REVIEW và giao diện; xem docs/M04_PROGRESS.md và biên bản kiểm tra M04 |
 | M05 — Gamification/Giải đấu tuần | Hoàn tất chặng 0–6 P0: XP/cấp độ/streak/3 huy hiệu, worker/sync/receipt, UI phần thưởng/League, V8, ranking/tie/chốt/history. Hồi quy 235 backend + 4 ca bổ sung riêng, 68 browser; phục hồi/ledger/socket/backlog và workload local đạt. Demo 5176 bằng start-main.cmd; đọc docs/M05_PROGRESS.md, docs/M05_HANDOFF.md và statics/results/module-5-validation.md |
 | M06 — Kết nối/phục hồi | Đã có heartbeat/presence/subscription, IndexedDB/autosave/journal và phục hồi M03/M04; bản sửa 80d8f46 đã commit, đã tích hợp main 6f9387d, xem [tiến độ](docs/M06_PROGRESS.md) và [nghiệm thu](statics/results/module-6-validation.md) |
-| M07 | Hồ sơ/thống kê ở nhánh feature/m07-profile-statistics; chưa tích hợp vào M06 |
+| M07 — Hồ sơ và thống kê | API/UI STUDENT, TEACHER theo Unit sở hữu và ADMIN; đã tích hợp main 20652a7 với XP/League M05 và heartbeat M06. Xem docs/M07_PROGRESS.md và statics/results/module-7-validation.md |
 | M08 | Thử thách cá nhân đang hoãn; không tự đưa vào phạm vi hiện tại |
 
-Tích hợp M05–M06 ngày 25/10: Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Xem biên bản M06; không áp dụng các số lịch sử bên dưới cho bản mới.
+Tích hợp M07 ngày 25/10: Backend: 265/266 ở lượt đầy đủ, lỗi duy nhất do tên bảng trong fixture mới; sửa fixture rồi cả 3/3 ca tích hợp thưởng qua. Tổng cộng **266 ca backend khác nhau đã qua qua các lượt**, không phải một lượt 266/266 duy nhất. Browser **91/91 PASS** trong một lượt, **4.7 phút**. Build TypeScript/Vite và manager **9/9 PASS**. M05LearnerRewardsReader tái sử dụng GET service M05 với principal gốc, không thưởng/sync/join trên GET; snapshot quản trị lọc heartbeat hết hạn.
+
+Tích hợp M05–M06 ngày 25/10 (bằng chứng trước M07): Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Xem biên bản M06; không áp dụng các số lịch sử bên dưới cho bản mới.
 
 Bằng chứng M06 ban đầu trên nền `57f2951` (lịch sử, trước tích hợp M05): backend **162/162**, E2E **66/66** (11 M06 + 55 hồi quy), manager harness **5/5**; script browser restart/recreate/replay/ledger/media đạt. Xem [biên bản M06](statics/results/module-6-validation.md), gồm các giới hạn còn lại. Không tự áp dụng bằng chứng này cho source thay đổi sau đó.
 
@@ -179,6 +181,7 @@ Gốc mã: `source/client/src/`.
 | `features/content/` | Danh mục, tác giả, preview, học liệu và LearningCatalog |
 | `features/learning/` | Giao diện làm bài, trạng thái đồng bộ, kết quả và chữa |
 | `features/gamification/` | RewardStrip/AttemptRewards/RewardsDashboard, LeagueDashboard; API đối soát XP/streak/badge/League và invalidation theo user/nhóm |
+| `features/statistics/` | Hồ sơ STUDENT, thống kê ADMIN, TeacherStatistics theo Unit và các trạng thái dữ liệu/phân trang |
 | `components/`, `styles.css` | Thành phần và phong cách dùng chung |
 
 Trong `features/learning/`:
@@ -268,6 +271,14 @@ Tổng hợp mỗi objective một lần mỗi Submission; stage tăng tối đa
 
 Xem docs/M04_IMPLEMENTATION_PLAN.md, source/common/M04_API.md và statics/results/module-4-validation.md trước khi đổi luật hoặc diễn giải kiểm thử.
 
+### M07 — hồ sơ và thống kê
+
+StatisticsController → StatisticsService/impl → StatisticsRepository/impl dùng JPQL aggregate, chỉ đọc trong transaction REPEATABLE_READ. Chỉ lấy FIRST/trial của Attempt đã có Submission; phân nhóm GUIDED, hỗ trợ, câu mới tự làm và câu cũ tự làm. Tỷ lệ lấy correct/(correct+incorrect), bỏ trống riêng, không có mẫu trả null. CORRECTION/GUIDED_RETRY không thay FIRST. Bộ lọc khoảng áp dụng submittedAt; tiến độ bài/lịch ôn là toàn lịch sử. Metadata theo phiên bản đã chốt, không phụ thuộc bản đang công bố.
+
+Không thêm schema/migration hoặc mutation. GET không sync M04; báo pendingSubmissions. Không cho TEACHER/ADMIN đọc /me, không cho STUDENT/TEACHER đọc thống kê admin, không trả đáp án hoặc PII học viên trong bảng admin. M05LearnerRewardsReader tái sử dụng GET service M05 với principal gốc để đọc thưởng đã xử lý, không sync/process/join. LiveConnections.snapshot chỉ đếm socket mở trong cửa sổ heartbeat M06, distinct user cho nhiều tab, tại một backend. Xem docs/M07_PROGRESS.md, source/common/M07_API.md và statics/results/module-7-validation.md.
+
+TEACHER có /api/teacher/statistics (overview/units/lessons/questions/breakdown), quyền theo Unit.ownerId của principal; foreign/missing Unit cùng 404. Chỉ LEARN pin LessonVersion → Lesson → Unit; không lọc bằng chủ câu/membership hiện tại và không gán PRACTICE/REVIEW vào Unit. Chỉ metadata/tổng hợp, không learnerId/email/Attempt ID/đáp án. Metric kết quả theo period, bắt đầu/đang làm/hoàn thành toàn lịch sử. Hồi quy trong StatisticsApiTest và module-seven-teacher.spec.ts.
+
 ## 8. Quyền, transaction và độ tin cậy
 
 ### Phiên đăng nhập và quyền dữ liệu
@@ -299,6 +310,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 
 | Việc đang làm | Đọc trước |
 |---|---|
+| Tiếp tục M07 | [Tiến độ](docs/M07_PROGRESS.md), [kế hoạch](docs/M07_IMPLEMENTATION_PLAN.md), [API](source/common/M07_API.md), [kiểm tra](statics/results/module-7-validation.md) |
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
 | Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
 | Tiếp tục M05 | [Tiến độ](docs/M05_PROGRESS.md), [bàn giao](docs/M05_HANDOFF.md), [quyết định P0](docs/M05_DECISIONS.md), [API](source/common/M05_API.md), [nghiệm thu](statics/results/module-5-validation.md); không sửa V1–V8 đã chạy |
