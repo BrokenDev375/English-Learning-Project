@@ -101,7 +101,7 @@ Phần mở rộng: **M08. Hạng thử thách solo — để sau, chờ xác nh
 - Tổ chức lộ trình → unit theo chủ đề/mục tiêu và chặng nội dung → bài học nhỏ → câu hỏi. Mỗi unit có thứ tự trong lộ trình; cùng một chủ đề có thể có unit ở chặng sau với yêu cầu cao hơn. Tham khảo chi tiết M02.1.
 - Soạn bài ngắn gồm từ/cấu trúc, giải thích, ví dụ, câu có hướng dẫn, câu tự làm và câu vận dụng mới. Nội dung và đáp án được duyệt trước công bố. Quy mô demo tại M02.2.
 - Ngân hàng câu hỏi có type, chủ đề, mục tiêu chính, độ khó nội bộ EASY/MEDIUM/HARD, yêu cầu, nội dung, đáp án, giải thích và nguồn. Người biên soạn gắn độ khó theo ngữ liệu, cấu trúc, bước suy luận và phương án gây nhầm; mức gợi ý/hỗ trợ lưu riêng.
-- Ba dạng P0: SINGLE_CHOICE, FILL_BLANK, MATCHING. Hai dạng P1: MULTIPLE_CHOICE, WORD_ORDER. Đọc/nghe là tài liệu đi kèm, không tạo bản sao kiểu câu hỏi cho mỗi kỹ năng.
+- Ba dạng P0 gốc: SINGLE_CHOICE, FILL_BLANK, MATCHING. Mở rộng 25/10 đã triển khai sắp xếp từ với mã ORDERING; WORD_ORDER là tên ý tưởng cũ, không là alias API. MULTIPLE_CHOICE tiếp tục là P1. Đọc/nghe là tài liệu đi kèm, không tạo bản sao kiểu câu hỏi cho mỗi kỹ năng.
 - Material lưu đoạn đọc hoặc tham chiếu audio/ảnh; transcript, đáp án và giải thích có chính sách mở riêng.
 - Audio/ảnh thật nằm trong kho file/volume asset_data; Asset metadata ở MySQL. M02 bước 2 đã bổ sung API upload/đọc file có phân quyền và kiểm tra loại/kích thước; giới hạn P0 chốt 5 MiB/file, PNG/JPEG và MP3/WAV/OGG.
 - Bài/câu đã công bố có phiên bản bất biến. Sửa tạo phiên bản mới; bài đang làm giữ đúng phiên bản được cấp.
@@ -399,6 +399,10 @@ Chọn phạm vi nội dung trước rồi mới lấy câu phù hợp. Không b
 
 **Hoàn thành khi:** người học xem đúng lịch sử của mình, admin xem tổng hợp có nguồn dữ liệu; số liệu khớp kết quả/bản ghi thực tế.
 
+### Mở rộng trải nghiệm học — 25/10
+
+Đã triển khai Unit thành vòng học, trang chủ cá nhân ưu tiên lượt đang làm/ôn/bài tiếp theo, ghép cặp bằng thẻ và dạng ORDERING có biên soạn/xuất bản/chấm/lưu nháp/chữa. Vòng hoàn thành theo các bài đang công bố; tất cả vòng công bố đều mở. Không bổ sung lịch thi, điểm/hạng solo, khóa vòng hay luật XP. Xem [tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md) và [kiểm tra](statics/results/learning-journey-validation.md).
+
 ### M08. Hạng thử thách solo — mở rộng để sau, chờ xác nhận
 
 **Trạng thái:** giữ lại phương án đã trao đổi để có thể phát triển tiếp; chưa triển khai cho tới khi người phụ trách xác nhận thêm. M08 không nằm trong 7 module chính hoặc điều kiện bàn giao hiện tại. Phần dưới là thiết kế tham khảo, chưa yêu cầu thêm migration, API, UI, seed hay kiểm thử solo vào M01–M07.
@@ -460,11 +464,11 @@ Hợp đồng **1.0.0 ngày 16/10/2026** đã chốt trong [bàn giao](docs/M02_
 | M04/V5 | review_objective_progress, review_difficulty_evidence, review_processed_submissions | /api/me/review, /api/me/review/sync; tạo REVIEW qua /api/attempts |
 | M05/V6–V8 | policy/context/claim/XP ledger/profile/day/badge/processed/failure, outbox, league season/allocator/group/member/outbox | /api/me/gamification/**, /api/me/badges, /api/me/league/**; socket invalidation theo user/nhóm |
 
-Bản SQL hợp đồng gốc ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **Migration runtime V1–V8 nằm trong source/server/src/main/resources/db/migration/**; M04 đã kiểm tra nâng V4 → V5, M05 kiểm tra nâng V5 → V8 giữ dữ liệu. Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
+Bản SQL hợp đồng gốc ở [V3](docs/database/planned/V3__learning_content.sql) và [V4](docs/database/planned/V4__learning_attempts.sql). **Migration runtime V1–V9 nằm trong source/server/src/main/resources/db/migration/**; M04 đã kiểm tra nâng V4 → V5, M05 kiểm tra nâng V5 → V8 giữ dữ liệu. Giữ migration đã chạy và ddl-auto=validate. M02 giao nền trước để M03 có FK/DTO/service đọc nội dung.
 
 Dữ liệu định danh/lọc/quyền ở cột quan hệ; content/answer/source/instructions và snapshot linh hoạt dùng JSON có schemaVersion. Mỗi câu có một mục tiêu chính. LessonQuestion lưu Version ID + GUIDED/INDEPENDENT/REVIEW_VARIANT + thứ tự. MaterialVersion dùng chung file qua Asset, transcript không cấp trong snapshot làm bài.
 
-P0 chốt SINGLE_CHOICE, FILL_BLANK, MATCHING. Chọn nhiều và sắp xếp từ là P1, chưa nhận ở API/schema P0. Question có originKey giữ qua copy/sửa version để theo dõi đã gặp. Published version bất biến; Attempt giữ đúng bộ và thứ tự đã cấp.
+P0 gốc chốt SINGLE_CHOICE, FILL_BLANK, MATCHING. Mở rộng 25/10 thêm ORDERING qua V9 và hợp đồng M02/M03; chọn nhiều tiếp tục là P1. Question có originKey giữ qua copy/sửa version để theo dõi đã gặp. Published version bất biến; Attempt giữ đúng bộ và thứ tự đã cấp.
 
 Không có API STUDENT tải toàn bộ ngân hàng kèm khóa đáp án. Học viên nhận PublicQuestion/PublicMaterial qua Attempt; hint/check chỉ cho GUIDED, transcript sau nộp. Nháp không tạo trial; submit gửi full snapshot, chốt một Submission bất biến và giữ riêng FIRST.
 

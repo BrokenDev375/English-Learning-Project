@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SubmissionReview from './SubmissionReview';
 import { navigate } from '../../navigation';
 import type { AttemptSession } from './session';
 import type { Answer } from './types';
@@ -16,11 +17,13 @@ export default function AttemptResult({ session, state }: { session: AttemptSess
   const response = Object.hasOwn(responses, item.attemptQuestionId) ? responses[item.attemptQuestionId] : fact.finalResponse;
   const feedback = state.feedback[item.attemptQuestionId];
   const disabled = !online || state.busy || !!state.pending || !!state.conflict || state.loginRequired || state.loading;
+  const completionEligible = result.items.length > 0 && result.items.every(item => item.finalResponseComplete);
   const material = snapshot.materials.find(m => m.materialVersionId === item.materialVersionId);
   return <div className="attempt-result">
     <AttemptRewards key={result.submissionId} submissionId={result.submissionId} />
     <div className="material-actions"><button className="button secondary" onClick={() => navigate({ attempt: null, tab: 'review', unit: null, lesson: null })}>Xem nội dung cần ôn</button></div>
-    <div className="panel result-score"><div><span className="eyebrow">KẾT QUẢ ĐÃ NỘP</span><strong>{result.scorePercent.toFixed(2)}<small>/100</small></strong><p>{result.correctCount}/{result.totalQuestions} câu đúng · {result.unansweredCount} câu chưa trả lời</p></div><div><h2>{result.mode === 'LEARN' ? result.lessonCompleted ? 'Đã hoàn thành bài học' : 'Bài học chưa hoàn thành' : 'Đã hoàn tất lượt luyện tập'}</h2><p className="muted">Nộp lúc {new Date(result.submittedAt).toLocaleString('vi-VN')}. Điểm và câu trả lời khi nộp được giữ nguyên sau khi chữa.</p>{result.mode === 'LEARN' && !result.lessonCompleted && <p className="muted">Để hoàn thành bài, bắt đầu lượt học mới, trả lời đủ mọi câu và kiểm tra từng câu hướng dẫn trước khi nộp.</p>}</div></div>
+    <div className="panel result-score"><div><span className="eyebrow">KẾT QUẢ ĐÃ NỘP</span><strong>{result.scorePercent.toFixed(2)}<small>/100</small></strong><p>{result.correctCount}/{result.totalQuestions} câu đúng · {result.unansweredCount} câu chưa trả lời</p></div><div><h2>{result.mode === 'LEARN' ? result.lessonCompleted ? 'Đã hoàn thành bài học' : completionEligible ? 'Đã trả lời đủ câu hỏi' : 'Bài học chưa hoàn thành' : 'Đã hoàn tất lượt luyện tập'}</h2><p className="muted">Nộp lúc {new Date(result.submittedAt).toLocaleString('vi-VN')}. Điểm và câu trả lời khi nộp được giữ nguyên sau khi chữa.</p>{result.mode === 'LEARN' && !result.lessonCompleted && !completionEligible && <p className="muted">Để hoàn thành bài, bắt đầu lượt học mới, trả lời đầy đủ mọi câu rồi nộp bài. Kiểm tra từng câu hướng dẫn trước khi nộp là tùy chọn.</p>}</div></div>
+    <SubmissionReview result={result} snapshot={snapshot} session={session} disabled={disabled} />
     <div className="panel table-wrap"><table><caption className="sr-only">Kết quả lần đầu và khi nộp của từng câu</caption><thead><tr><th>Câu</th><th>Lần đầu</th><th>Khi nộp</th><th>Hỗ trợ ở lần đầu</th></tr></thead><tbody>{result.items.map((f, n) => <tr key={f.attemptQuestionId}><td><button className="link-button" onClick={() => setSelected(n)} aria-label={'Xem và chữa câu ' + (n + 1)}>Câu {n + 1}</button></td><td>{outcomeNames[f.firstOutcome]}{!f.firstResponseComplete && ' · chưa đủ'}</td><td>{outcomeNames[f.finalOutcome]}{!f.finalResponseComplete && ' · chưa đủ'}</td><td>{f.firstSupportUsed ? 'Có sử dụng' : 'Không sử dụng'}</td></tr>)}</tbody></table></div>
     <div className="runner-layout"><nav className="panel question-nav" aria-label="Chọn câu chữa bài">{result.items.map((f, n) => <button key={f.attemptQuestionId} aria-label={'Chữa câu ' + (n + 1)} aria-current={selected === n ? 'step' : undefined} className={selected === n ? 'current' : ''} onClick={() => setSelected(n)}>{n + 1}</button>)}</nav><div className="runner-main">
       {material && <LearningMaterial key={material.materialVersionId} material={material} />}

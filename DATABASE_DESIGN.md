@@ -4,7 +4,7 @@ M06 không thêm bảng SQL hoặc sửa V1–V5. Presence/subscription ở RAM;
 
 Cập nhật M03 ngày 19/10/2026: V4 đã được dùng cho tạo/tiếp tục lượt, nháp, hint/check, nộp/kết quả/chữa và tiến độ. Xem [tiến độ M03](docs/M03_PROGRESS.md), [nghiệm thu toàn module](statics/results/module-3-validation.md). Backend build mới tự áp dụng migration còn thiếu khi khởi động; giữ volume hiện có.
 
-Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Source hiện có Flyway V1–V8; V6 nền M05, V7 outbox thưởng, V8 Giải đấu tuần. Database demo `english-learning-main` được sao lưu trước khi nâng migration, giữ volume/dữ liệu. Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
+Nguồn schema chính: `source/server/src/main/resources/db/migration/`. Source hiện có Flyway V1–V9; V9 mở rộng CHECK loại câu cho ORDERING; V6 nền M05, V7 outbox thưởng, V8 Giải đấu tuần. Database demo `english-learning-main` được sao lưu trước khi nâng migration, giữ volume/dữ liệu. Hibernate validate khi khởi động. Không sửa migration đã áp dụng hoặc dùng `ddl-auto=create/update` để chữa lệch schema.
 
 | Bảng | Vai trò |
 |---|---|
@@ -100,3 +100,9 @@ Tạo tuần hiện tại bằng worker dưới khóa policy, GET không tự t�
 Thống kê TEACHER (24/10) không thêm bảng: quyền theo units.owner_id, nguồn LEARN qua attempts.lesson_version_id → lesson_versions.lesson_id → lessons.unit_id. Không nối membership câu hiện tại để suy Unit; không lẫn các lượt dùng chung câu ở Unit khác hoặc PRACTICE/REVIEW không có Unit nguồn. Kết quả dùng answer_trials FIRST đã có Submission; câu/phiên bản cũ vẫn được giữ. Hoàn thành đếm cặp user/lesson trong lesson_progress, hints đếm AttemptQuestion mở gợi ý, mọi dữ liệu trả ra là tổng hợp.
 
 M07 không có bảng hoặc migration riêng, dùng V1–V5 hiện có. StatisticsRepository dùng JPQL aggregate trên Attempt/Submission, AnswerTrial/AttemptQuestion/QuestionVersion; LessonProgress và ReviewProgress. FIRST chỉ vào thống kê sau khi có Submission, lấy đúng metadata phiên bản; GUIDED_RETRY/CORRECTION tách riêng. Không đọc toàn bộ JSON kết quả chứa đáp án để trả cho UI. GET không ghi ledger/lịch ôn. XP/league được đọc qua M05LearnerRewardsReader và GET service M05 trên schema V6–V8 đã có; không thêm bảng thống kê. Ước lượng kết nối lấy từ RAM LiveConnections, không ghi thành dữ liệu online bền vững. Xem [API M07](source/common/M07_API.md).
+
+## Vòng học và ORDERING — 25/10
+
+Vòng học dùng Unit/Lesson hiện có. Tiến độ vòng được tổng hợp chỉ đọc từ các Lesson đang công bố và lesson_progress của principal; không thêm bảng điểm hoặc trạng thái vòng. Thêm một bài công bố có thể tăng mẫu số, retire một bài loại bài đó khỏi mẫu số; không xóa lịch sử riêng của học viên.
+
+V9 chỉ DROP/ADD CHECK ck_question_versions_type để nhận ORDERING, giữ nguyên V1–V8. QuestionVersion.content_json chứa tokens [{id,text}], answer_json chứa acceptedOrders [[id,...]]. AttemptAnswer lưu {type:ORDERING,tokenIds:[...]}; display_json.optionIds giữ hoán vị thẻ. Các bảng Attempt/Trial/Submission/receipt/XP hiện có tiếp tục được dùng, không đổi luật thưởng hoặc nội dung Submission cũ. DB demo chưa được migrate trong lượt triển khai này.

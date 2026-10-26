@@ -50,7 +50,7 @@ public class AttemptServiceImpl implements AttemptService {
                 var key=new QuestionExposureKey(actor.id(),q.originKey());
                 var previous=attempts.exposure(key,true); int seen=previous.map(QuestionExposureEntity::getSeenCount).orElse(0);
                 var options=new ArrayList<String>(); var right=new ArrayList<String>();
-                q.data().content().path("options").forEach(o->options.add(o.path("id").asText()));
+                q.data().content().path(q.data().type().equals("ORDERING")?"tokens":"options").forEach(o->options.add(o.path("id").asText()));
                 q.data().content().path("rightItems").forEach(o->right.add(o.path("id").asText()));
                 Collections.shuffle(options); Collections.shuffle(right);
                 var item=attempts.save(new AttemptQuestionEntity(attempt.getId(),q.versionId(),selected.slot(),q.originKey(),selected.role(),position++,new Display(options,right),seen));

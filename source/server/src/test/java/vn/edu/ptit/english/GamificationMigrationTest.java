@@ -18,7 +18,7 @@ class GamificationMigrationTest {
                 s.executeUpdate("INSERT INTO submissions(attempt_id,submitted_revision,total_questions,answered_count,correct_count,unanswered_count,independent_fresh_answered_count,independent_fresh_correct_count,score_percent,lesson_completed,result_json) VALUES(1,1,1,1,1,0,1,1,100,FALSE,JSON_OBJECT('factsSchemaVersion',1,'preserved',true))");
                 s.executeUpdate("INSERT INTO review_objective_progress(user_id,objective_id,stage,needs_practice,last_practiced_at,next_review_at,last_submission_id) VALUES(1,1,2,0,'2026-10-20 12:00:00','2026-10-23 12:00:00',1)");
             }
-            var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();
+            var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).target("8").load();
             assertThat(flyway.migrate().migrationsExecuted).isEqualTo(3); flyway.validate();
             String activated;
             try(var connection=mysql.createConnection("");var s=connection.createStatement()) {

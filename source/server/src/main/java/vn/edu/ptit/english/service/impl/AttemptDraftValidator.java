@@ -49,6 +49,7 @@ public class AttemptDraftValidator {
         if(answer==null) return false;
         if(answer instanceof SingleAnswer a) return a.optionId()!=null;
         if(answer instanceof FillAnswer a) return a.values().stream().anyMatch(v->!v.value().isBlank());
+        if(answer instanceof OrderingAnswer a) return !a.tokenIds().isEmpty();
         return !((MatchingAnswer)answer).pairs().isEmpty();
     }
 }

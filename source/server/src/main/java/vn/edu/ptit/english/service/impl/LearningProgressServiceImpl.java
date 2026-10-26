@@ -1,6 +1,8 @@
 package vn.edu.ptit.english.service.impl;
 
-import java.util.Objects;
+import java.util.*;
+import vn.edu.ptit.english.dto.AttemptViews.RoundProgress;
+import vn.edu.ptit.english.repository.ContentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
@@ -19,7 +21,23 @@ import static vn.edu.ptit.english.dto.AuthoringRequests.id;
 public class LearningProgressServiceImpl implements LearningProgressService {
     private final AttemptRepository attempts;
     private final AccountGuard accounts;
-    public LearningProgressServiceImpl(AttemptRepository attempts,AccountGuard accounts){this.attempts=attempts;this.accounts=accounts;}
+    private final RoundJourneyReader journey;
+    private final ContentRepository content;
+    public LearningProgressServiceImpl(AttemptRepository attempts,AccountGuard accounts,RoundJourneyReader journey,ContentRepository content){this.content=content;this.attempts=attempts;this.accounts=accounts;this.journey=journey;}
+    @Override @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
+    public CatalogPage<RoundProgress> rounds(String q,Long topicId,int page,int size,UserPrincipal actor) {
+        if(actor.role()!=Role.STUDENT)throw new ApiException(HttpStatus.FORBIDDEN,"FORBIDDEN","Chỉ học viên được xem vòng học cá nhân.");
+        accounts.requireCurrent(actor);if(topicId!=null)id(topicId);
+        if(q.length()>100||page<0||size<1||size>50)throw new ApiException(HttpStatus.BAD_REQUEST,"VALIDATION_FAILED","Bộ lọc hoặc phân trang không hợp lệ.");
+        var all=new HashMap<Long,RoundProgress>();journey.read(actor.id()).forEach(r->all.put(r.unit().id(),r));
+        return CatalogPage.from(content.publicUnits(q,topicId,page,size).map(u->all.get(u.getId())));
+    }
+    @Override @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
+    public RoundProgress round(long unitId,UserPrincipal actor) {
+        if(actor.role()!=Role.STUDENT)throw new ApiException(HttpStatus.FORBIDDEN,"FORBIDDEN","Chỉ học viên được xem vòng học cá nhân.");
+        accounts.requireCurrent(actor);id(unitId);return journey.find(actor.id(),unitId);
+    }
+
     @Override @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
     public CatalogPage<LessonProgress> list(Long unitId,int page,int size,UserPrincipal actor) {
         if(actor.role()!=Role.STUDENT)throw new ApiException(HttpStatus.FORBIDDEN,"FORBIDDEN","Chỉ học viên được xem tiến độ cá nhân.");

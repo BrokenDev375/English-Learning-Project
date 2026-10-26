@@ -2,14 +2,14 @@ import { api, ApiError } from '../../api';
 import type { CatalogPage, Objective, Topic, Unit } from './catalog';
 import type { MaterialContent, Source } from './materials';
 export type BankKind = 'questions' | 'lessons';
-export const questionTypes = { SINGLE_CHOICE: 'Chọn một đáp án', FILL_BLANK: 'Điền chỗ trống', MATCHING: 'Ghép cặp' };
+export const questionTypes = { SINGLE_CHOICE: 'Chọn một đáp án', FILL_BLANK: 'Điền chỗ trống', MATCHING: 'Ghép cặp', ORDERING: 'Sắp xếp từ thành câu' };
 export const practiceRoles = { GUIDED: 'Có hướng dẫn', INDEPENDENT: 'Tự làm', REVIEW_VARIANT: 'Biến thể ôn tập' };
 export const difficulties = { EASY: 'Dễ', MEDIUM: 'Vừa', HARD: 'Khó' };
 export interface Option { id: string; text: string }
 export type Part = { kind: 'TEXT'; text: string } | { kind: 'BLANK'; blankId: string };
 export interface Blank { blankId: string; acceptedAnswers: string[] }
 export interface Pair { leftId: string; rightId: string }
-export interface QuestionData { type: keyof typeof questionTypes; topicId: number; objectiveId: number; difficulty: keyof typeof difficulties; prompt: string; explanation: string; hint: string | null; materialVersionId: number | null; source: Source; content: { options?: Option[]; parts?: Part[]; leftItems?: Option[]; rightItems?: Option[] }; answerKey: { correctOptionId?: string | null; blanks?: Blank[]; caseSensitive?: boolean; normalizeWhitespace?: boolean; pairs?: Pair[] } }
+export interface QuestionData { type: keyof typeof questionTypes; topicId: number; objectiveId: number; difficulty: keyof typeof difficulties; prompt: string; explanation: string; hint: string | null; materialVersionId: number | null; source: Source; content: { options?: Option[]; parts?: Part[]; leftItems?: Option[]; rightItems?: Option[]; tokens?: Option[] }; answerKey: { correctOptionId?: string | null; blanks?: Blank[]; caseSensitive?: boolean; normalizeWhitespace?: boolean; pairs?: Pair[]; acceptedOrders?: string[][] } }
 export type Instruction = { kind: 'TEXT'; text: string } | { kind: 'EXAMPLE'; text: string; translation: string | null };
 export interface Slot { questionVersionId: number; practiceRole: keyof typeof practiceRoles; position: number }
 export interface LessonData { title: string; description: string; instructions: Instruction[]; objectiveIds: number[]; questions: Slot[] }

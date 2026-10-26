@@ -22,6 +22,8 @@ public interface AttemptRepository {
     Optional<LessonProgressEntity> progress(LessonProgressKey id,boolean lock);
     Page<LessonProgressEntity> progress(long userId,Long unitId,int page,int size);
     Page<LessonEntity> progressLessons(long userId,Long unitId,int page,int size);
+    List<LessonEntity> publishedRoundLessons(Collection<Long> unitIds);
+    List<LessonProgressEntity> roundProgress(long userId,Collection<Long> unitIds);
     AttemptEntity save(AttemptEntity value);
     AttemptQuestionEntity save(AttemptQuestionEntity value);
     AttemptAnswerEntity save(AttemptAnswerEntity value);

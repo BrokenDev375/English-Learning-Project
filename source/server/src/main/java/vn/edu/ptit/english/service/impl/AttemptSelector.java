@@ -17,17 +17,19 @@ import vn.edu.ptit.english.service.PublishedContentReader.*;
 public class AttemptSelector {
     public record Selected(PublishedQuestion question,PracticeRole role,Long slot) {}
     public record Selection(Long lessonVersionId,List<Selected> questions) {}
+    private final RoundJourneyReader journey;
     private final PublishedContentReader content;
     private final ContentRepository roots;
     private final AttemptRepository attempts;
     private final ObjectProvider<ReviewSelectionProvider> review;
-    public AttemptSelector(PublishedContentReader content,ContentRepository roots,AttemptRepository attempts,ObjectProvider<ReviewSelectionProvider> review) {
+    public AttemptSelector(PublishedContentReader content,ContentRepository roots,AttemptRepository attempts,ObjectProvider<ReviewSelectionProvider> review,RoundJourneyReader journey) {
+        this.journey=journey;
         this.content=content; this.roots=roots; this.attempts=attempts; this.review=review;
     }
     public Selection select(Create input,long userId) {
         if(input.mode()==Mode.LEARN) {
             var root=roots.lesson(input.lessonId(),true).orElseThrow(AuthoringAccess::missing); roots.refresh(root);
-            var lesson=content.activeLesson(input.lessonId()); var selected=new ArrayList<Selected>();
+            var lesson=content.activeLesson(input.lessonId()); journey.requireOpen(userId,lesson.unitId()); var selected=new ArrayList<Selected>();
             lesson.questions().stream().filter(s->!s.practiceRole().equals("REVIEW_VARIANT"))
                 .sorted(Comparator.comparingInt((vn.edu.ptit.english.dto.AuthoringData.Slot s)->s.practiceRole().equals("GUIDED")?0:1).thenComparingInt(s->s.position()))
                 .forEach(s->selected.add(new Selected(content.questionVersion(s.questionVersionId()),PracticeRole.valueOf(s.practiceRole()),

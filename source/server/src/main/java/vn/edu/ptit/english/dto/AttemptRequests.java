@@ -101,6 +101,14 @@ public final class AttemptRequests {
                     }
                     return new FillAnswer(values);
                 }
+                case "ORDERING" -> {
+                    fields(n,path,"type","tokenIds");var ids=new ArrayList<String>();var seen=new HashSet<String>();
+                    for(var token:array(n,"tokenIds",20,path+".tokenIds")) {
+                        if(!token.isTextual()||token.asText().isEmpty()||token.asText().length()>40||!seen.add(token.asText()))throw invalid(path+".tokenIds","Mã từ thiếu, trùng hoặc không hợp lệ.");
+                        ids.add(token.asText());
+                    }
+                    return new OrderingAnswer(ids);
+                }
                 case "MATCHING" -> {
                     fields(n,path,"type","pairs"); var pairs=new ArrayList<Pair>(); var left=new HashSet<String>(); var right=new HashSet<String>(); int i=0;
                     for(var v:array(n,"pairs",6,path+".pairs")) {

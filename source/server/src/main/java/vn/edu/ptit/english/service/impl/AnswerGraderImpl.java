@@ -35,6 +35,17 @@ public class AnswerGraderImpl implements AnswerGrader {
             }
             return graded(complete,correct);
         }
+        if(response instanceof OrderingAnswer a) {
+            if(a.tokenIds().isEmpty())return new Grade(Outcome.UNANSWERED,false);
+            var words=new HashMap<String,String>();q.content().path("tokens").forEach(t->words.put(t.path("id").asText(),Normalizer.normalize(t.path("text").asText(),Normalizer.Form.NFC)));
+            boolean complete=a.tokenIds().size()==words.size(),correct=false;
+            var actual=a.tokenIds().stream().map(words::get).toList();
+            for(var order:q.answerKey().path("acceptedOrders")) {
+                var expected=new ArrayList<String>();order.forEach(t->expected.add(words.get(t.asText())));
+                if(complete&&actual.equals(expected)){correct=true;break;}
+            }
+            return graded(complete,correct);
+        }
         var pairs=((MatchingAnswer)response).pairs();
         if(pairs.isEmpty()) return new Grade(Outcome.UNANSWERED,false);
         var expected=new HashMap<String,String>(); q.answerKey().path("pairs").forEach(p -> expected.put(p.path("leftId").asText(),p.path("rightId").asText()));

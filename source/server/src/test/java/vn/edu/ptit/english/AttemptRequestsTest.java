@@ -28,6 +28,8 @@ class AttemptRequestsTest {
                 case "Result" -> json.treeToValue(n,AttemptViews.Result.class);
                 case "DraftAck" -> json.treeToValue(n,AttemptViews.DraftAck.class);
                 case "LessonProgress" -> json.treeToValue(n,AttemptViews.LessonProgress.class);
+                case "Answer" -> AttemptRequests.answer(n,false,"response");
+                case "PublicQuestion" -> json.treeToValue(n,AttemptViews.PublicQuestion.class);
                 default -> throw new AssertionError("Untested fixture schema: "+schema);
             };
             JSONAssert.assertEquals(fixture.path("name").asText(),n.toString(),json.writeValueAsString(dto),true);

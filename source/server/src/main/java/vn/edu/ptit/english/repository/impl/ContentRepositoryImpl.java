@@ -68,5 +68,6 @@ public class ContentRepositoryImpl implements ContentRepository {
         exists.select(lesson.get("id")).where(p.toArray(Predicate[]::new));var result=new ArrayList<Predicate>();result.add(cb.exists(exists));if(!q.isBlank())result.add(like(cb,root.get(kind.equals("unit")?"title":"name"),q));if(topic!=null)result.add(cb.equal(root.get("topicId"),topic));return cb.and(result.toArray(Predicate[]::new));};}
     public Page<TopicEntity> publicTopics(String q,int page,int size){return topics.findAll(visible(q,null,"topic"),PageRequest.of(page,size,Sort.by("id")));}
     public Page<ObjectiveEntity> publicObjectives(String q,Long topic,int page,int size){return objectives.findAll(visible(q,topic,"objective"),PageRequest.of(page,size,Sort.by("id")));}
+    public List<UnitEntity> allPublicUnits(){return units.findAll(visible("",null,"unit"),Sort.by("stage","sortOrder","id"));}
     public Page<UnitEntity> publicUnits(String q,Long topic,int page,int size){return units.findAll(visible(q,topic,"unit"),PageRequest.of(page,size,Sort.by("stage","sortOrder","id")));}
 }

@@ -4,20 +4,20 @@ Từ root, mở Docker Desktop rồi chạy `start.cmd` để build/chạy mã m
 
 ## Học một bài
 
-1. Chọn **Khám phá bài học** → Unit → **Xem giới thiệu**. Trang tóm tắt số câu, câu có hướng dẫn/tự làm và trạng thái hoàn thành. Nút chính là **Bắt đầu học** khi mới học, **Tiếp tục làm** khi còn lượt dở hoặc **Học lại** khi đã nộp. Bài từng hoàn thành vẫn hiện **Tiếp tục làm** nếu đang học lại dở. **Xem kết quả gần nhất** mở lần nộp mới nhất của đúng bài, kể cả đang có lượt mới chưa nộp. Server quyết định tạo/tiếp tục, giữ cố định phiên bản và bộ câu của lượt.
-2. Dùng các nút số hoặc **Câu trước/Câu tiếp theo**. Có ba dạng: chọn một đáp án, điền từng ô (tối đa 200 ký tự/ô), ghép cặp theo ID ổn định. Mỗi mục bên phải chỉ được ghép một lần; chọn lại mục đang được dùng sẽ bỏ cặp trước. **Xóa câu trả lời** đưa câu về chưa trả lời.
+1. Chọn **Vào chơi** → vòng đang mở → chọn bài. Trang tóm tắt số câu, câu có hướng dẫn/tự làm và trạng thái hoàn thành. Nút chính là **Bắt đầu chơi** khi mới học, **Tiếp tục làm** khi còn lượt dở hoặc **Chơi lại bài** khi đã nộp. Bài từng hoàn thành vẫn hiện **Tiếp tục làm** nếu đang học lại dở. **Xem kết quả gần nhất** mở lần nộp mới nhất của đúng bài, kể cả đang có lượt mới chưa nộp. Server quyết định tạo/tiếp tục, giữ cố định phiên bản và bộ câu của lượt.
+2. Dùng các nút số hoặc **Câu trước/Câu tiếp theo**. Có bốn dạng: chọn một đáp án, điền từng ô (tối đa 200 ký tự/ô), ghép cặp theo ID ổn định và sắp xếp từ thành câu. Mỗi mục bên phải chỉ được ghép một lần; chọn lại mục đang được dùng sẽ bỏ cặp trước. **Xóa câu trả lời** đưa câu về chưa trả lời.
 3. Đọc đoạn văn, xem ảnh hoặc nghe audio đi kèm. Audio dùng chung giữa các câu của cùng học liệu; vị trí nghe là số giây tuyệt đối, giới hạn theo đoạn nghe và thời lượng thực của file.
 4. Chỉ câu **Có hướng dẫn** có **Mở gợi ý** và **Kiểm tra đáp án**. Kiểm tra cần trả lời đủ; hiện đáp án/giải thích cho câu đó, chưa hiện transcript chung audio. Mở lại hint không tăng thêm lần hỗ trợ. Khi sửa sau một lần kiểm tra, phản hồi cũ ghi rõ nó áp dụng cho đáp án đã kiểm tra.
 5. M06 tự lưu toàn bộ đáp án/câu đang xem/vị trí nghe tại máy, rồi autosave server khi đủ điều kiện. Nút **Lưu nháp lên máy chủ** gửi ngay. **Đã lưu tại máy** không đồng nghĩa **Đã lưu trên máy chủ**. Reload xác minh auth trước khi nhận lại local draft hoặc pending để đối soát; xem [phục hồi M06](M06_MANUAL_TEST_CASES.md).
-6. Bấm **Nộp bài** và đọc xác nhận số câu chưa đủ/chưa kiểm tra. Có thể nộp sớm. Submit gửi toàn bộ bản nhập mới nhất, kể cả chưa bấm lưu nháp. Bài LEARN hoàn thành khi mọi câu đủ đáp án và mọi câu hướng dẫn đã kiểm tra; không cần đúng hết.
+6. Bấm **Nộp bài** và đọc xác nhận số câu chưa đủ. Có thể nộp sớm. Submit gửi toàn bộ bản nhập mới nhất, kể cả chưa bấm lưu nháp. Bài LEARN hoàn thành khi nộp đủ đáp án; không cần kiểm tra từng câu hướng dẫn hoặc đúng hết. Sau nộp, xem toàn bộ lời giải rồi bấm Xác nhận hoàn thành bài học để về vòng. Bài cũ đủ đáp án vẫn xác nhận được ngay.
 7. Trang kết quả giữ điểm, câu trả lời lần đầu/khi nộp, dấu hỗ trợ, đáp án, giải thích và transcript. Chọn câu, nhập lại đáp án và bấm **Kiểm tra bài chữa**. Chữa bài không đổi điểm, đáp án khi nộp hoặc tiến độ đã chốt.
-8. **Về danh sách lượt** mở lịch sử. Tab **Khám phá bài học** hiển thị trạng thái hoàn thành trong từng Unit, và báo khi có phiên bản bài mới.
+8. **Về danh sách lượt** mở lịch sử. Tab **Chơi theo vòng** hiển thị trạng thái hoàn thành trong từng Unit, và báo khi có phiên bản bài mới.
 
 ## Luyện tập và lịch sử
 
-- Tab **Luyện tập theo chủ đề**: chọn Topic, độ khó và 1–10 câu. Nếu số câu phù hợp ít hơn yêu cầu, server cấp số thực có. Runner, lưu, nộp và chữa dùng chung với LEARN; PRACTICE không đánh dấu hoàn thành Lesson.
+- Không có mục tạo Luyện tự chọn trên giao diện. Dùng **Chơi lại bài**/**Chơi lại vòng** trong bản đồ để làm lại; **Ôn tập cá nhân** chọn nội dung theo kết quả. Lượt PRACTICE cũ vẫn mở từ lịch sử/URL và phục hồi thao tác chưa nhận ACK; không đánh dấu hoàn thành Lesson.
 - Tab **Lượt làm của tôi**: lọc chế độ/trạng thái, phân trang, tiếp tục lượt đang làm hoặc xem kết quả lượt đã nộp. F5/back/forward/deep link dùng Attempt ID có sẵn, không POST tạo lượt để thay bộ câu.
-- REVIEW được tạo từ tab **Ôn tập cá nhân** M04, dùng chung runner và cơ chế phục hồi M06. Chưa có XP M05.
+- REVIEW được tạo từ tab **Ôn tập cá nhân** M04, dùng chung runner và cơ chế phục hồi M06. Điều kiện XP M05 được giữ theo các luật thưởng hiện hành.
 
 ## Khi kết nối hoặc phiên đăng nhập gặp lỗi
 

@@ -4,6 +4,7 @@ import type { CatalogPage, Topic } from '../content/catalog';
 import { allPages, difficulties } from '../content/authoring';
 import type { Create } from './types';
 import { durableCall } from './storage/journal';
+import { navigate } from '../../navigation';
 
 interface ObjectiveReview {
   objectiveId: number; topicId: number; name: string; status: string; reason: string;
@@ -21,13 +22,6 @@ interface Dashboard {
 const statusNames: Record<string, string> = {
   NEEDS_PRACTICE: 'Cần luyện thêm', NEEDS_INDEPENDENT_WORK: 'Cần tự làm thêm',
   NO_EVIDENCE: 'Chưa đủ dữ liệu', DUE: 'Đến mốc ôn', SCHEDULED: 'Đã có mốc ôn',
-};
-const recommendationNames: Record<string, string> = {
-  KEEP_PRACTICING: 'Tiếp tục luyện mức hiện tại.',
-  NOT_ENOUGH_DATA: 'Chưa đủ dữ liệu từ các bộ câu mới để đề xuất mức cao hơn.',
-  NOT_ENOUGH_NEW_QUESTIONS: 'Chưa đủ câu mới để đánh giá hoặc luyện mức cao hơn. Cần bổ sung học liệu.',
-  HIGHEST_DEMO_LEVEL: 'Đang ở mức khó cao nhất của ngân hàng demo.',
-  TRY_NEXT_DIFFICULTY: 'Có thể thử mức khó tiếp theo trong Luyện tập theo chủ đề.',
 };
 const date = (value: string) => new Date(value).toLocaleString('vi-VN');
 
@@ -79,8 +73,12 @@ export default function PersonalReview({ start, disabled, userId }: { start: (in
   }
   return <section className="personal-review">
     <span className="eyebrow">LUYỆN LẠI PHẦN BẠN CẦN</span><h1>Ôn tập cá nhân<span>.</span></h1>
-    <p className="muted">Từ kết quả đã nộp, ưu tiên mục tiêu còn sai hoặc đã tới mốc ôn. Câu biến thể chưa gặp được ưu tiên trước câu đã làm.</p>
+    <p className="muted">Tập trung vào kiến thức còn sai hoặc đã đến hạn ôn từ những bài bạn đã nộp. Hệ thống ưu tiên câu hỏi khác cùng kiến thức để kiểm tra mức độ hiểu bài; ôn tập không tính vượt vòng.</p>
     <p className="muted" aria-label="Điều kiện thưởng ôn">Mốc ôn được chốt khi bắt đầu lượt. Mục tiêu có lịch tốt đã đến hạn có thể nhận thêm 5 XP nếu tự làm đúng đầy đủ phần được giao; tối đa một bonus/mục tiêu/ngày và dùng chung trần 200 XP. Luyện lại lỗi sai chưa tự động có bonus đến hạn.</p>
+    <div className="panel review-guide" aria-label="Cách ôn tập cá nhân">
+      <h2>Ôn đúng phần bạn cần</h2>
+      <ol><li><strong>Làm bài và nộp kết quả</strong><span>Chơi theo vòng hoặc chơi lại bài đã học.</span></li><li><strong>Xem kiến thức cần ôn</strong><span>Mỗi nội dung bên dưới có lý do và mốc ôn riêng.</span></li><li><strong>Thử câu hỏi cùng kiến thức</strong><span>Ưu tiên câu biến thể chưa gặp; dùng lại câu cũ khi cần.</span></li></ol>
+    </div>
     <div className="panel learning-panel">
       <div className="filters">
         <label>Chủ đề ôn<select value={topic} disabled={disabled || loading} onChange={e => { setTopic(e.target.value); setPage(0); }}>
@@ -93,7 +91,7 @@ export default function PersonalReview({ start, disabled, userId }: { start: (in
           onChange={e => setCount(Number(e.target.value))} /></label>
         <button className="button secondary" disabled={disabled || loading} onClick={() => setRefresh(v => v + 1)}>Cập nhật nội dung ôn</button>
       </div>
-      <p className="muted">Có thể nhận ít câu hơn yêu cầu khi kho chưa đủ. Luyện lại câu đã gặp giúp củng cố kiến thức; gợi ý tăng độ khó chỉ dùng kết quả tự làm trên câu mới.</p>
+      <p className="muted">Số câu có thể ít hơn yêu cầu nếu chưa đủ câu phù hợp. Lượt ôn tập trung vào kiến thức được chọn, không bắt làm lại toàn bộ bài hoặc vòng.</p>
       {error && <div className="message error" role="alert">{error}<button className="link-button" disabled={loading} onClick={() => setRefresh(v => v + 1)}>Thử tải lại nội dung ôn</button></div>}
       {loading && <p role="status">Đang cập nhật kết quả và nội dung ôn…</p>}
       {data && <>
@@ -111,11 +109,12 @@ export default function PersonalReview({ start, disabled, userId }: { start: (in
     </div>
     {data && (!data.objectives.items.length ? <div className="panel learning-panel">
       <h2>{data.totalObjectives ? 'Chưa có nội dung phù hợp bộ lọc' : 'Chưa có kết quả để chọn bài ôn'}</h2>
-      <p className="muted">{data.totalObjectives ? 'Bạn có thể xem tất cả mục tiêu hoặc chọn chủ đề khác.' : 'Học một bài hoặc luyện tập theo chủ đề rồi nộp bài. Kết quả của bạn sẽ được dùng để chọn nội dung ôn.'}</p>
+      <p className="muted">{data.totalObjectives ? 'Bạn có thể xem tất cả mục tiêu hoặc chọn chủ đề khác.' : 'Vào chơi một bài rồi nộp kết quả. Hệ thống sẽ xác định kiến thức cần ôn và chọn câu phù hợp cho bạn.'}</p>
+      {!data.totalObjectives && <button className="button primary" onClick={() => navigate({ view: 'learning', tab: 'catalog' }, { reset: true })}>Vào chơi để có bài ôn →</button>}
     </div> : <>
       <div className="review-objectives">{data.objectives.items.map(o => <article className="panel learning-panel review-objective" key={o.objectiveId}>
         <div className="review-objective-heading"><h2>{o.name}</h2><span className={'review-state' + (o.needsReview ? ' review-state-due' : '')}>{statusNames[o.status] ?? o.status}</span></div>
-        <p>{o.reason}</p>
+        <p className="review-reason"><strong>{o.needsReview || o.hasMistakes ? 'Vì sao cần ôn?' : 'Tình trạng của bạn'}</strong><span>{o.reason}</span></p>
         <p className="muted">Lượt gần nhất: tự làm đúng {o.lastIndependentCorrect}/{o.lastIndependentAnswered} câu · {o.lastWrongCount} câu sai lần đầu.</p>
         <p className="muted">Lịch sử: {o.submissionCount} lượt · {o.assistedCount} câu có hướng dẫn/hỗ trợ · {o.unansweredCount} câu bỏ trống.</p>
         <p>Đã luyện: {date(o.lastPracticedAt)}<br />Mốc nhắc ôn: <strong>{date(o.nextReviewAt)}</strong></p>
@@ -123,10 +122,7 @@ export default function PersonalReview({ start, disabled, userId }: { start: (in
         <p className="muted">Mức {difficulties[o.currentDifficulty]}: {o.availableQuestionCount} câu trong kho · {o.unseenQuestionCount} câu chưa gặp.</p>
         {!o.availableQuestionCount && <p className="message warning">Chưa có câu đang công bố phù hợp mức này. Giảng viên cần bổ sung học liệu.</p>}
         {o.availableQuestionCount > 0 && o.unseenQuestionCount === 0 && <p className="muted">Lượt ôn sẽ dùng lại câu đã gặp.</p>}
-        <div className="review-recommendation"><strong>Gợi ý mức luyện: {difficulties[o.recommendedDifficulty]}</strong>
-          <p>{recommendationNames[o.recommendationReason] ?? o.recommendationReason}</p>
-          <p className="muted">{o.freshSetCount} bộ đủ câu mới · tự làm đúng {o.freshCorrectCount}/{o.freshAnsweredCount} câu mới. Đây là gợi ý luyện tập nội bộ.</p>
-        </div>
+
       </article>)}</div>
       <div className="pagination"><span>{data.objectives.totalElements} mục tiêu</span><div>
         <button className="button secondary" disabled={disabled || loading || page === 0} onClick={() => setPage(v => v - 1)}>Trang ôn trước</button>

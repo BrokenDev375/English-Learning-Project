@@ -108,7 +108,6 @@ public class AttemptCompletionServiceImpl implements AttemptCompletionService {
                 var question=content.questionVersion(item.getQuestionVersionId()).data();
                 Answer response=responses.get(item.getId()); answer(item.getId(),response);
                 var grade=grader.grade(question,response); var history=attempts.trials(item.getId());
-                boolean checked=history.stream().anyMatch(t->t.getSource()==TrialSource.CHECK);
                 var first=history.stream().filter(t->t.getKind()==TrialKind.FIRST).findFirst().orElseGet(()->
                     attempts.save(new AnswerTrialEntity(item.getId(),1,TrialKind.FIRST,TrialSource.SUBMIT,response,
                         grade.outcome(),grade.responseComplete(),supported(item))));
@@ -118,7 +117,7 @@ public class AttemptCompletionServiceImpl implements AttemptCompletionService {
                     &&AttemptDraftValidator.answered(first.getResponse())) {
                     freshAnswered++; if(first.getOutcome()==Outcome.CORRECT)freshCorrect++;
                 }
-                completed&=grade.responseComplete()&&(item.getPracticeRole()!=PracticeRole.GUIDED||checked);
+                completed&=grade.responseComplete();
                 facts.add(new ResultItem(item.getId(),item.getQuestionVersionId(),item.getOriginKey(),question.objectiveId(),
                     item.getPracticeRole(),item.isWasSeenBefore(),first.getResponse(),first.getOutcome(),first.isResponseComplete(),first.isSupportUsed(),
                     response,grade.outcome(),grade.responseComplete(),question.answerKey(),question.explanation(),question.materialVersionId()));
@@ -138,6 +137,26 @@ public class AttemptCompletionServiceImpl implements AttemptCompletionService {
                 progress.recordSubmission(attemptId,attempt.getLessonVersionId(),score,completed,now); attempts.save(progress);
             }
             return submission.getResult();
+        });
+    }
+    @Override public RequestReceiptService.Result complete(long attemptId,Hint input,UserPrincipal actor) {
+        student(actor,attemptId);
+        return receipts.execute(actor,input.requestId(),"POST /api/attempts/"+attemptId+"/complete",input,200,()->{
+            var attempt=attempts.attempt(attemptId,actor.id(),true).orElseThrow(AuthoringAccess::missing);
+            if(attempt.getState()!=State.SUBMITTED)throw conflict("RESULT_NOT_READY");
+            if(attempt.getMode()!=Mode.LEARN)throw conflict("LESSON_COMPLETION_NOT_AVAILABLE");
+            var result=attempts.submission(attemptId).orElseThrow(AuthoringAccess::missing).getResult();
+            if(result.items().isEmpty()||!result.items().stream().allMatch(ResultItem::finalResponseComplete))
+                throw new ApiException(HttpStatus.BAD_REQUEST,"LESSON_INCOMPLETE","Bài nộp chưa có đầy đủ đáp án. Bạn có thể học lại để hoàn thành bài.");
+            long lesson=content.lessonVersion(attempt.getLessonVersionId()).lessonId();
+            var progress=attempts.progress(new LessonProgressKey(actor.id(),lesson),true).orElse(null);
+            if(progress==null||progress.getState()!=ProgressState.COMPLETED) {
+                if(attempt.getRevision()!=input.baseRevision())throw conflict("REVISION_CONFLICT");
+                if(progress==null){progress=new LessonProgressEntity(actor.id(),lesson,attemptId);progress.recordSubmission(attemptId,attempt.getLessonVersionId(),result.scorePercent(),false,result.submittedAt());}
+                progress.confirmCompletion(attempt.getLessonVersionId(),clock.instant().truncatedTo(ChronoUnit.MICROS));
+                attempts.save(progress);attempt.changed();attempts.save(attempt);
+            }
+            return new LessonCompletionAck(input.requestId(),attemptId,attempt.getRevision(),lesson,true);
         });
     }
     @Override @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)

@@ -56,6 +56,8 @@ class PersonalReviewApiTest {
         tx = new TransactionTemplate(transactions); lessonIds.clear();
         String hash = passwords.encode("TestPass@123"), prefix = UUID.randomUUID().toString();
         tx.executeWithoutResult(s -> {
+            // Keep the published journey isolated from earlier test fixtures.
+            em.createQuery("select l from LessonEntity l where l.retiredAt is null",LessonEntity.class).getResultList().forEach(LessonEntity::retire);
             alice = users.create(prefix + "a@test.local", hash, "Alice", Role.STUDENT);
             bob = users.create(prefix + "b@test.local", hash, "Bob", Role.STUDENT);
             teacher = users.create(prefix + "t@test.local", hash, "Teacher", Role.TEACHER);

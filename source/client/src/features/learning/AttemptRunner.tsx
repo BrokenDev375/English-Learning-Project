@@ -62,7 +62,7 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
         }
-      }}><h2 id="submit-heading">Nộp bài này?</h2><p>Đã nhập {count}/{s.items.length} câu. {s.items.filter(i => !complete(i.question, answerOf(i))).length} câu chưa đầy đủ. {s.items.filter(i => i.practiceRole === 'GUIDED' && !i.feedbackOpened).length} câu hướng dẫn chưa kiểm tra.</p><p>Bạn vẫn có thể nộp sớm. Điểm nộp sẽ được giữ nguyên khi chữa bài; hoàn thành bài yêu cầu đủ đáp án và kiểm tra mọi câu hướng dẫn.</p><div className="modal-actions"><button autoFocus className="button secondary" onClick={() => setConfirmSubmit(false)}>Tiếp tục làm</button><button className="button primary" disabled={disabled} onClick={() => { setConfirmSubmit(false); void session.mutate('submit'); }}>Xác nhận nộp bài</button></div></div></div>}
+      }}><h2 id="submit-heading">Nộp bài này?</h2><p>Đã nhập {count}/{s.items.length} câu. {s.items.filter(i => !complete(i.question, answerOf(i))).length} câu chưa đầy đủ.</p><p>Bạn vẫn có thể nộp sớm. Điểm nộp sẽ được giữ nguyên khi chữa bài; trả lời đủ mọi câu là điều kiện hoàn thành bài, không bắt buộc kiểm tra từng câu hướng dẫn.</p><div className="modal-actions"><button autoFocus className="button secondary" onClick={() => setConfirmSubmit(false)}>Tiếp tục làm</button><button className="button primary" disabled={disabled} onClick={() => { setConfirmSubmit(false); void session.mutate('submit'); }}>Xác nhận nộp bài</button></div></div></div>}
     </>}
   </section>;
 }

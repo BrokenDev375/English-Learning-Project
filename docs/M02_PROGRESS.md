@@ -95,3 +95,7 @@ Cập nhật 18/10: đã ngừng cấp 11 bài fixture từng sót trong 6 Unit 
 M02 hoàn thành phạm vi biên soạn và cung cấp học liệu. M03 sẽ triển khai bắt đầu lượt làm, trả câu an toàn, lưu câu trả lời, chấm bài và tiến độ. Hiện học viên xem được Unit/giới thiệu/hướng dẫn; preview của giáo viên không sinh điểm hoặc lịch sử làm bài.
 
 Kết quả chạy kiểm tra được ghi riêng tại [bước 1](../statics/results/module-2-catalog-validation.md), [bước 2](../statics/results/module-2-materials-validation.md), [bước 3](../statics/results/module-2-authoring-validation.md) và [bước 4](../statics/results/module-2-seed-validation.md).
+
+## Mở rộng vòng học và tương tác — 25/10/2026
+
+Thêm ORDERING xuyên suốt biên soạn/xem trước/xuất bản; V9 mở rộng CHECK loại câu, giữ nguyên V1–V8 và seed 90 câu. Unit được trình bày thành vòng học ở khu vực STUDENT. Xem [tiến độ chung](LEARNING_JOURNEY_PROGRESS.md) và [biên bản kiểm tra](../statics/results/learning-journey-validation.md). Các số kiểm thử ở phần trước thuộc mốc lịch sử, không thay kết quả của lượt mới.

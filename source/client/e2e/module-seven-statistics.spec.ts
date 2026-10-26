@@ -40,7 +40,7 @@ async function submitBlank(page: Page) {
 test('student profile shows honest empty values and persists route on reload', async ({ page }) => {
   await register(page); await profile(page);
   await expect(page.getByText('0 XP · Cấp 1 · Chuỗi 0 ngày', { exact: true })).toBeVisible();
-  await expect(page.getByText('Chưa có bài hoàn thành. Bạn có thể bắt đầu từ Khám phá bài học.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Chưa có bài hoàn thành. Mở Vào chơi để bắt đầu vòng đầu tiên.', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('heading', { name: 'Hồ sơ học tập.' })).toBeVisible();
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });

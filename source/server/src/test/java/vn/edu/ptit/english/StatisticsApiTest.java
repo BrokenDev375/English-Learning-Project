@@ -51,6 +51,8 @@ class StatisticsApiTest {
     @BeforeEach void fixture() {
         tx = new TransactionTemplate(transactions); questions.clear();
         tx.executeWithoutResult(status -> {
+            // Keep the published journey isolated from earlier test fixtures.
+            em.createQuery("select l from LessonEntity l where l.retiredAt is null",LessonEntity.class).getResultList().forEach(LessonEntity::retire);
             String prefix = UUID.randomUUID().toString(), hash = passwords.encode("StatsTest@12345");
             alice = users.create(prefix + "a@test.local", hash, "Alice M07", Role.STUDENT);
             bob = users.create(prefix + "b@test.local", hash, "Bob M07", Role.STUDENT);

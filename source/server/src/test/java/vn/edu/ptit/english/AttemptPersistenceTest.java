@@ -83,15 +83,15 @@ class AttemptPersistenceTest {
         assertThat(users.findByEmail("v3-preserved@test.local")).isPresent();
         tx.executeWithoutResult(s -> {
             assertThat(((Number)em.createNativeQuery("SELECT COUNT(*) FROM topics WHERE code='v3-preserved'").getSingleResult()).intValue()).isEqualTo(1);
-            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("8");
+            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("9");
         });
     }
     @Test void emptyDatabaseMigratesThroughCurrentVersion() {
         try(var fresh=new MySQLContainer<>("mysql:8.4")) {
             fresh.start();
             var flyway=Flyway.configure().dataSource(fresh.getJdbcUrl(),fresh.getUsername(),fresh.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(8);
-            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("8");
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(9);
+            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("9");
             flyway.validate();
         }
     }
@@ -131,7 +131,7 @@ class AttemptPersistenceTest {
     }
     @Test void polymorphicAnswerJsonAndSqlNullRoundTrip() {
         long id=tx.execute(s->{var a=attempt();var i=item(a);repo.save(new AttemptAnswerEntity(i.getId(),null));return i.getId();});
-        for(Answer answer:Arrays.asList(null,new SingleAnswer(null),new FillAnswer(List.of(new BlankValue("x","partial"))),new MatchingAnswer(List.of(new Pair("l","r"))))) {
+        for(Answer answer:Arrays.asList(null,new SingleAnswer(null),new FillAnswer(List.of(new BlankValue("x","partial"))),new MatchingAnswer(List.of(new Pair("l","r"))),new OrderingAnswer(List.of("w2","w1")))) {
             tx.executeWithoutResult(s->{var row=repo.answers(List.of(id)).get(0); row.update(answer); repo.save(row);});
             tx.executeWithoutResult(s->{em.clear();assertThat(repo.answers(List.of(id)).get(0).getResponse()).isEqualTo(answer);});
         }

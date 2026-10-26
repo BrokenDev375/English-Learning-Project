@@ -22,9 +22,9 @@ const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b
 function fromSnapshot(s: Snapshot): Draft { return { answers: s.items.map(i => ({ attemptQuestionId: i.attemptQuestionId, response: i.response })), playerState: s.playerState }; }
 interface WorkingRow extends Row { attemptId: number; writerId: string; generation: number; updatedAt: number; manualSaveRequired?: boolean; state: Pick<SessionState, 'snapshot' | 'draft' | 'result' | 'pending' | 'pendingAck' | 'conflict' | 'hints' | 'feedback'> }
 function validOperation(op: Operation, id: number) {
-  return ['draft', 'hint', 'check', 'submit', 'retry'].includes(op.kind) && typeof op.body?.requestId === 'string' && Number.isSafeInteger(op.body.baseRevision) && op.body.baseRevision >= 0
+  return ['draft', 'hint', 'check', 'submit', 'retry', 'complete'].includes(op.kind) && typeof op.body?.requestId === 'string' && Number.isSafeInteger(op.body.baseRevision) && op.body.baseRevision >= 0
     && op.path === attemptPath(id) + (op.itemId === undefined ? '/' + op.kind : '/items/' + op.itemId + '/' + op.kind)
-    && ((op.kind === 'draft' || op.kind === 'submit') ? op.itemId === undefined : Number.isSafeInteger(op.itemId) && op.itemId! > 0);
+    && ((op.kind === 'draft' || op.kind === 'submit' || op.kind === 'complete') ? op.itemId === undefined : Number.isSafeInteger(op.itemId) && op.itemId! > 0);
 }
 
 /** Persisted per user/Attempt/writer. Commands remain immutable through replay and reconciliation. */
@@ -148,13 +148,13 @@ export class AttemptSession {
     if (kind === 'check' || kind === 'retry') body.response = clone(response ?? null);
     const path = attemptPath(this.id) + (itemId === undefined ? '/' + kind : '/items/' + itemId + '/' + kind);
     const op: Operation = { kind, path, body, generation: this.generation, itemId };
-    this.update({ pending: op, localSaved: false }); await this.send(op);
+    this.update({ pending: op, localSaved: false }); return this.send(op);
   }
   retry = async () => { if (this.current() && this.value.pending && !this.value.busy) await this.send(this.value.pending); };
   private async send(op: Operation) {
     if (!validOperation(op, this.id)) { this.failure(new Error('Thao tác tại máy không hợp lệ.')); return; }
     this.update({ busy: true, error: '', loginRequired: false });
-    let ack: Ack | undefined;
+    let ack: Ack | undefined, completed: Ack | undefined;
     try {
       await this.persist();
       if (!navigator.onLine) throw new ApiError(0, 'OFFLINE', op.kind === 'submit' ? 'Chờ nộp khi có mạng. Yêu cầu đã lưu tại máy.' : 'Đã lưu tại máy, chờ kết nối để đồng bộ.');
@@ -179,6 +179,8 @@ export class AttemptSession {
       }
       await this.persist();
       if (op.kind === 'submit' && s.state === 'SUBMITTED') void syncReviewAfterSubmission(this.userId).catch(() => {});
+      if (op.kind === 'complete') window.dispatchEvent(new Event('learning-progress-changed'));
+      completed = ack;
       });
     } catch (e) {
       // Once ACK is known, a failed reconciliation still retries the exact operation, then GET.
@@ -187,6 +189,7 @@ export class AttemptSession {
       } else if (!ack && e instanceof ApiError && e.status >= 400 && e.status < 500 && e.status !== 401) this.update({ pending: null });
       this.failure(e);
     } finally { this.update({ busy: false }); if (!this.value.pending && !this.value.conflict && this.dirty) this.schedule(); }
+    return completed;
   }
   private failure(e: unknown) {
     if (e instanceof ApiError && (e.status === 403 || (e.status === 404 && e.code !== 'HINT_NOT_AVAILABLE'))) this.update({ snapshot: null, draft: null, result: null, hints: {}, feedback: {} }, false);

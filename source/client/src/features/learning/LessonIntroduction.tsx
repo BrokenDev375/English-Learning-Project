@@ -8,7 +8,7 @@ import { listAttempts, readAttempt } from './api';
 import type { Progress } from './types';
 
 export interface Introduction {
-  lesson: { id: number; lessonVersionId: number; title: string; description: string; questionCounts: { guided: number; independent: number; reviewVariant: number } };
+  lesson: { id: number; unitId: number; lessonVersionId: number; title: string; description: string; questionCounts: { guided: number; independent: number; reviewVariant: number } };
   instructions: Instruction[];
   objectives: Objective[];
 }
@@ -62,21 +62,21 @@ export default function LessonIntroduction({ intro, progress, progressReady, stu
   const loading = student && (!progressReady || !current || current.loading);
   const total = intro.lesson.questionCounts.guided + intro.lesson.questionCounts.independent;
   const instructions = intro.instructions.filter(block => block.kind !== 'TEXT' || normalized(block.text) !== normalized(intro.lesson.description));
-  const label = loading ? 'Đang kiểm tra lượt học…' : current?.active ? 'Tiếp tục làm' : current?.latestResult || progress?.state === 'COMPLETED' ? 'Học lại' : 'Bắt đầu học';
+  const label = loading ? 'Đang kiểm tra lượt học…' : current?.active ? 'Tiếp tục làm' : current?.latestResult || progress?.state === 'COMPLETED' ? 'Chơi lại bài' : 'Bắt đầu chơi';
   return <div className="panel lesson-introduction">
     <div className="lesson-intro-overview"><p className="lesson-description">{intro.lesson.description}</p>
       <div className="lesson-facts" aria-label="Thông tin lượt học"><span>{total} câu</span><span>{intro.lesson.questionCounts.guided} câu có hướng dẫn</span><span>{intro.lesson.questionCounts.independent} câu tự làm</span></div>
       {progress && <div className="lesson-state"><span className={'lesson-state-badge ' + progress.state.toLowerCase()}><span aria-hidden="true">{progress.state === 'COMPLETED' ? '✓' : progress.state === 'STARTED' ? '◷' : '○'}</span><span>{progress.state === 'COMPLETED' ? 'Đã hoàn thành bài học' : progress.state === 'STARTED' ? 'Đã bắt đầu · Chưa hoàn thành' : 'Chưa bắt đầu'}</span></span>{progress.updateAvailable && <span className="lesson-update">Có phiên bản bài học mới</span>}</div>}
     </div>
     <div className="lesson-intro-section"><h2>Bạn sẽ học gì?</h2><ul>{intro.objectives.map(o => <li key={o.id}>{o.name}</li>)}</ul></div>
-    <div className="lesson-intro-section"><h2>Cách học</h2><p>Đọc, nghe hoặc xem học liệu đi kèm rồi trả lời {total} câu hỏi. Bạn có thể mở gợi ý và kiểm tra đáp án ở {intro.lesson.questionCounts.guided} câu có hướng dẫn.</p><Instructions lesson={{ instructions }} /></div>
+    <div className="lesson-intro-section"><h2>Cách chơi</h2><p>Đọc, nghe hoặc xem học liệu đi kèm rồi trả lời {total} câu hỏi. Bạn có thể mở gợi ý và kiểm tra đáp án ở {intro.lesson.questionCounts.guided} câu có hướng dẫn. Kiểm tra trước khi nộp là tùy chọn. Nộp đủ đáp án để hoàn thành bài; sau đó xem lời giải và xác nhận về vòng học.</p><Instructions lesson={{ instructions }} /></div>
     {current?.error && <div className="message error" role="alert">{current.error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Tải lại trạng thái lượt học</button></div>}
     {student && !progressReady && <p className="muted" role="status">Đang tải tiến độ… <button className="link-button" onClick={retryProgress}>Tải lại tiến độ</button></p>}
     {!student && <p className="muted">Giáo viên và quản trị viên xem giới thiệu tại đây; xem trước câu hỏi trong mục quản lý học liệu.</p>}
     <div className="lesson-intro-actions">
       {student && <button className="button primary" disabled={disabled || loading || !!current?.error} onClick={() => start(lessonId)}>{label}</button>}
       {student && current?.latestResult && <button className="button secondary" disabled={disabled} onClick={() => navigate({ attempt: String(current.latestResult) })}>Xem kết quả gần nhất</button>}
-      <button className="button secondary lesson-back" onClick={() => returnTo({ lesson: null })}>Về danh sách bài trong Unit</button>
+      <button className="button secondary lesson-back" onClick={() => returnTo({ lesson: null })}>{student ? 'Về danh sách bài trong vòng' : 'Về danh sách bài trong Unit'}</button>
     </div>
   </div>;
 }

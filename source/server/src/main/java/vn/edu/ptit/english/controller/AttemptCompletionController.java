@@ -32,6 +32,9 @@ public class AttemptCompletionController {
     @PostMapping("/submit") public ResponseEntity<?> submit(@PathVariable long id,@RequestBody JsonNode body,@AuthenticationPrincipal UserPrincipal actor) {
         return response(service.submit(id,AttemptRequests.mutation(body),actor));
     }
+    @PostMapping("/complete") public ResponseEntity<?> complete(@PathVariable long id,@RequestBody JsonNode body,@AuthenticationPrincipal UserPrincipal actor) {
+        return response(service.complete(id,AttemptRequests.hint(body),actor));
+    }
     @GetMapping("/result") public ResponseEntity<?> result(@PathVariable long id,@AuthenticationPrincipal UserPrincipal actor) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore().cachePrivate()).body(service.result(id,actor));
     }

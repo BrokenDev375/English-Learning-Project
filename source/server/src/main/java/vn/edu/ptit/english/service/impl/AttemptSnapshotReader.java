@@ -32,6 +32,7 @@ public class AttemptSnapshotReader {
             var q=content.questionVersion(item.getQuestionVersionId()).data();
             ObjectNode display=(ObjectNode)q.content().deepCopy();
             if(q.type().equals("SINGLE_CHOICE")) reorder(display,"options",item.getDisplay().optionIds());
+            if(q.type().equals("ORDERING")) reorder(display,"tokens",item.getDisplay().optionIds());
             if(q.type().equals("MATCHING")) reorder(display,"rightItems",item.getDisplay().rightItemIds());
             if(q.materialVersionId()!=null) materials.computeIfAbsent(q.materialVersionId(),this::material);
             boolean guided=item.getPracticeRole()==PracticeRole.GUIDED;

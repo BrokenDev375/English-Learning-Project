@@ -23,6 +23,10 @@ public class LessonProgressEntity {
     public Long getLastCompletedVersionId(){return lastCompletedVersionId;} public Instant getCompletedAt(){return completedAt;}
     public BigDecimal getLastScorePercent(){return lastScorePercent;} public Instant getUpdatedAt(){return updatedAt;}
     public void started(long attempt){lastAttemptId=attempt;}
+    public boolean confirmCompletion(long version,Instant time) {
+        if(state==ProgressState.COMPLETED)return false;
+        state=ProgressState.COMPLETED;lastCompletedVersionId=version;completedAt=time;return true;
+    }
     public void recordSubmission(long attempt,long version,BigDecimal score,boolean completed,Instant time) {
         lastAttemptId=attempt; lastScorePercent=score;
         if(completed){state=ProgressState.COMPLETED; lastCompletedVersionId=version; completedAt=time;}

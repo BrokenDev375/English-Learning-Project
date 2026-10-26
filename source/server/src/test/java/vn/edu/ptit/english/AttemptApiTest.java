@@ -68,6 +68,8 @@ class AttemptApiTest {
         tx=new TransactionTemplate(transactions); questionVersions.clear(); prefix=UUID.randomUUID().toString();
         String hash=passwords.encode("TestPass@123");
         tx.executeWithoutResult(s->{
+            // Keep the published journey isolated from earlier test fixtures.
+            em.createQuery("select l from LessonEntity l where l.retiredAt is null",LessonEntity.class).getResultList().forEach(LessonEntity::retire);
             student=users.create(prefix+"s@test.local",hash,"Student",Role.STUDENT);
             other=users.create(prefix+"o@test.local",hash,"Other",Role.STUDENT);
             teacher=users.create(prefix+"t@test.local",hash,"Teacher",Role.TEACHER);
@@ -142,6 +144,7 @@ class AttemptApiTest {
         return switch(item.path("question").path("type").asText()) {
             case "SINGLE_CHOICE" -> node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"b\"}");
             case "FILL_BLANK" -> node("{\"type\":\"FILL_BLANK\",\"values\":[{\"blankId\":\"x\",\"value\":\"hello\"},{\"blankId\":\"y\",\"value\":\"world\"}]}");
+            case "ORDERING" -> node("{\"type\":\"ORDERING\",\"tokenIds\":[\"w1\",\"w2\",\"w3\"]}");
             default -> node("{\"type\":\"MATCHING\",\"pairs\":[{\"leftId\":\"l1\",\"rightId\":\"r1\"},{\"leftId\":\"l2\",\"rightId\":\"r2\"}]}");
         };
     }
@@ -244,8 +247,8 @@ class AttemptApiTest {
         tx.executeWithoutResult(t->{var stored=attempts.submission(s.path("attemptId").asLong()).orElseThrow();assertThat(stored.getResult().submissionId()).isEqualTo(stored.getId());assertThat(stored.getScorePercent()).isEqualByComparingTo("10.00");
             for(var item:s.path("items")){var history=attempts.trials(item.path("attemptQuestionId").asLong());assertThat(history).hasSize(1);assertThat(history.get(0).getSource()).isEqualTo(TrialSource.SUBMIT);}});
     }
-    @Test void completeAnswersRequireGuidedChecksButDoNotRequireCorrectness()throws Exception {
-        var c=new Client().login(student);var first=start(c);var unchecked=ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);assertThat(unchecked.path("lessonCompleted").asBoolean()).isFalse();
+    @Test void completeAnswersNeedNoGuidedChecksAndDoNotRequireCorrectness()throws Exception {
+        var c=new Client().login(student);var first=start(c);var unchecked=ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);assertThat(unchecked.path("lessonCompleted").asBoolean()).isTrue();assertThat(progress(c).path("state").asText()).isEqualTo("COMPLETED");
         var s=checkedGuided(c,start(c));var m=fullAnswers(s);response(m,0,"{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"a\"}");
         var result=ok(c.call("POST",path(s)+"/submit",m),200);assertThat(result.path("lessonCompleted").asBoolean()).isTrue();assertThat(result.path("correctCount").asInt()).isEqualTo(9);
         assertThat(result.path("independentFreshAnsweredCount").asInt()).isZero();assertThat(progress(c).path("state").asText()).isEqualTo("COMPLETED");
@@ -555,5 +558,136 @@ class AttemptApiTest {
         assertThat(after.path("lessonVersionId")).isNotEqualTo(before.path("lessonVersionId"));assertThat(after.path("items").get(0).path("question").path("prompt").asText()).isEqualTo("Updated prompt");
         ok(c.call("GET","/api/assets/"+newAsset,null),404);assertThat(newer.call("GET","/api/assets/"+newAsset,null).statusCode()).isEqualTo(200);
         ok(c.call("PUT",path(before)+"/draft",mutation(before)),200);
+    }
+
+    @Test void roundsArePrivateAndTrackOnlyCurrentlyPublishedLessons()throws Exception {
+        var c=new Client().login(student);String url="/api/me/rounds?topicId="+topic;
+        var first=ok(c.call("GET",url,null),200).path("items").get(0);assertThat(first.path("totalLessons").asInt()).isEqualTo(1);assertThat(first.path("state").asText()).isEqualTo("NOT_STARTED");
+        var snap=start(c);assertThat(ok(c.call("GET",url,null),200).path("items").get(0).path("state").asText()).isEqualTo("IN_PROGRESS");
+        var otherClient=new Client().login(other);assertThat(ok(otherClient.call("GET",url,null),200).path("items").get(0).path("startedLessons").asInt()).isZero();
+        snap=checkedGuided(c,snap);ok(c.call("POST",path(snap)+"/submit",fullAnswers(snap)),200);
+        var completed=ok(c.call("GET",url,null),200).path("items").get(0);assertThat(completed.path("completedLessons").asInt()).isEqualTo(1);assertThat(completed.path("state").asText()).isEqualTo("COMPLETED");assertThat(completed.path("nextLessonId").isNull()).isTrue();
+        start(c);assertThat(ok(c.call("GET",url,null),200).path("items").get(0).path("completedLessons").asInt()).isEqualTo(1);
+        long second=tx.execute(t->{var old=em.find(LessonEntity.class,lesson);var l=new LessonEntity(teacher.id(),old.getUnitId(),1);em.persist(l);em.flush();var v=new LessonVersionEntity(l.getId(),1,old.getPublished().data());em.persist(v);em.flush();l.initialDraft(v);l.publish();return l.getId();});
+        var expanded=ok(c.call("GET",url,null),200).path("items").get(0);assertThat(expanded.path("totalLessons").asInt()).isEqualTo(2);assertThat(expanded.path("nextLessonId").asLong()).isEqualTo(second);assertThat(expanded.path("state").asText()).isEqualTo("IN_PROGRESS");
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,second).retire());assertThat(ok(c.call("GET",url,null),200).path("items").get(0).path("state").asText()).isEqualTo("COMPLETED");
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());assertThat(ok(c.call("GET",url,null),200).path("items")).isEmpty();
+    }
+    long addRoundLesson(long unitId,int order) {
+        var source=em.find(LessonEntity.class,lesson);
+        var l=new LessonEntity(teacher.id(),unitId,order);em.persist(l);em.flush();
+        var v=new LessonVersionEntity(l.getId(),1,source.getPublished().data());em.persist(v);em.flush();l.initialDraft(v);l.publish();return l.getId();
+    }
+    long[] laterRound() {
+        return tx.execute(t->{var u=new UnitEntity(teacher.id(),topic,"Later round","",2,0);em.persist(u);em.flush();return new long[]{u.getId(),addRoundLesson(u.getId(),0)};});
+    }
+    @Test void locksUseTheWholeJourneyBeforeFilteringAndBlockDirectCreateUntilAllLessonsComplete()throws Exception {
+        var next=laterRound();var c=new Client().login(student);
+        long firstUnit=tx.execute(t->em.find(LessonEntity.class,lesson).getUnitId());
+        long extra=tx.execute(t->addRoundLesson(firstUnit,1));
+        var locked=ok(c.call("GET","/api/me/rounds/"+next[0],null),200);
+        assertThat(locked.path("number").asInt()).isEqualTo(2);assertThat(locked.path("locked").asBoolean()).isTrue();
+        assertThat(locked.path("prerequisiteUnitId").asLong()).isEqualTo(firstUnit);
+        for(String query:List.of("q=Later","topicId="+topic+"&q=Later","page=1&size=1")) {
+            var filtered=ok(c.call("GET","/api/me/rounds?"+query,null),200).path("items").get(0);
+            assertThat(filtered.path("locked").asBoolean()).isTrue();assertThat(filtered.path("number").asInt()).isEqualTo(2);
+        }
+        var create=Map.of("requestId",key(),"mode","LEARN","lessonId",next[1]);
+        error(c.call("POST","/api/attempts",create),409,"ROUND_LOCKED");
+        assertThat(ok(c.call("GET","/api/attempts",null),200).path("totalElements").asInt()).isZero();
+        var first=start(c);ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);
+        assertThat(ok(c.call("GET","/api/me/rounds/"+next[0],null),200).path("locked").asBoolean()).isTrue();
+        var second=ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","LEARN","lessonId",extra)),201);
+        ok(c.call("POST",path(second)+"/submit",fullAnswers(second)),200);
+        assertThat(ok(c.call("GET","/api/me/rounds/"+next[0],null),200).path("locked").asBoolean()).isFalse();
+        ok(c.call("POST","/api/attempts",create),201);
+        assertThat(ok(c.call("GET","/api/me/rounds/"+next[0],null),200).path("state").asText()).isEqualTo("IN_PROGRESS");
+        assertThat(ok(new Client().login(other).call("GET","/api/me/rounds/"+next[0],null),200).path("locked").asBoolean()).isTrue();
+    }
+    @Test void oldActiveAttemptsCanResumeAndCompletedLaterRoundsCanReplayDespiteAnEarlierGap()throws Exception {
+        var next=laterRound();var c=new Client().login(student);
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());
+        var input=Map.of("requestId",key(),"mode","LEARN","lessonId",next[1]);var active=ok(c.call("POST","/api/attempts",input),201);
+        tx.executeWithoutResult(t->em.createNativeQuery("UPDATE lessons SET retired_at=NULL WHERE id=:id").setParameter("id",lesson).executeUpdate());
+        assertThat(ok(c.call("GET","/api/me/rounds/"+next[0],null),200).path("locked").asBoolean()).isTrue();
+        var resumed=ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","LEARN","lessonId",next[1])),200);
+        assertThat(resumed.path("attemptId")).isEqualTo(active.path("attemptId"));
+        ok(c.call("POST",path(active)+"/submit",fullAnswers(active)),200);
+        var completed=ok(c.call("GET","/api/me/rounds/"+next[0],null),200);
+        assertThat(completed.path("locked").asBoolean()).isFalse();assertThat(completed.path("state").asText()).isEqualTo("COMPLETED");
+        ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","LEARN","lessonId",next[1])),201);
+        assertThat(ok(c.call("GET","/api/me/rounds",null),200).path("items").get(0).path("locked").asBoolean()).isFalse();
+    }
+    @Test void retiringTheEarlierRoundUnlocksTheNextAndRoundDetailIsPrivate()throws Exception {
+        var next=laterRound();var c=new Client().login(student);String url="/api/me/rounds/"+next[0];
+        ok(new Client().call("GET",url,null),401);
+        for(var user:List.of(teacher,admin))ok(new Client().login(user).call("GET",url,null),403);
+        ok(c.call("GET","/api/me/rounds/0",null),400);ok(c.call("GET","/api/me/rounds/999999",null),404);
+        assertThat(c.call("GET",url,null).headers().firstValue("Cache-Control").orElse("")).contains("private","no-store");
+        tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());
+        var unlocked=ok(c.call("GET",url,null),200);assertThat(unlocked.path("number").asInt()).isEqualTo(1);assertThat(unlocked.path("locked").asBoolean()).isFalse();
+        ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","LEARN","lessonId",next[1])),201);
+    }
+    @Test void roundReadsRejectOtherRolesAndInvalidFilters()throws Exception {
+        ok(new Client().call("GET","/api/me/rounds",null),401);
+        for(var user:List.of(teacher,admin))ok(new Client().login(user).call("GET","/api/me/rounds",null),403);
+        var c=new Client().login(student);
+        for(String query:List.of("size=51","page=-1","topicId=0","q="+"x".repeat(101)))ok(c.call("GET","/api/me/rounds?"+query,null),400);
+        assertThat(ok(c.call("GET","/api/me/rounds?topicId="+topic+"&q=absent",null),200).path("items")).isEmpty();
+    }
+    @Test void orderingIsPinnedRecoverableReplayableAndGradedThroughTheRealAttemptApi()throws Exception {
+        tx.executeWithoutResult(t->{
+            var old=em.find(QuestionVersionEntity.class,questionVersions.get(0));var d=old.data();var root=em.find(QuestionEntity.class,old.getQuestionId());
+            var data=new Question("ORDERING",d.topicId(),d.objectiveId(),d.difficulty(),"Arrange the words",node("{\"tokens\":[{\"id\":\"w1\",\"text\":\"She\"},{\"id\":\"w2\",\"text\":\"likes\"},{\"id\":\"w3\",\"text\":\"music\"}]}"),node("{\"acceptedOrders\":[[\"w1\",\"w2\",\"w3\"]]}"),d.explanation(),d.hint(),d.materialVersionId(),d.source());
+            var qv=new QuestionVersionEntity(root.getId(),2,data);em.persist(qv);em.flush();root.startDraft(qv);root.publish();
+            var lessonRoot=em.find(LessonEntity.class,lesson);var previous=lessonRoot.getPublished().data();
+            var slots=previous.questions().stream().map(slot->slot.questionVersionId()==old.getId()?new Slot(qv.getId(),slot.practiceRole(),slot.position()):slot).toList();
+            var lv=new LessonVersionEntity(lesson,2,new Lesson(previous.title(),previous.description(),previous.instructions(),previous.objectiveIds(),slots));em.persist(lv);em.flush();lessonRoot.startDraft(lv);lessonRoot.publish();
+        });
+        var c=new Client().login(student);var snap=start(c);assertThat(snap.path("items").get(0).path("question").path("type").asText()).isEqualTo("ORDERING");assertThat(snap.toString()).doesNotContain("acceptedOrders","SECRET_");
+        var invalid=mutation(snap);response(invalid,0,"{\"type\":\"ORDERING\",\"tokenIds\":[\"w1\",\"foreign\"]}");error(c.call("PUT",path(snap)+"/draft",invalid),400,"INVALID_ANSWER");
+        var draft=mutation(snap);response(draft,0,"{\"type\":\"ORDERING\",\"tokenIds\":[\"w1\",\"w2\"]}");ok(c.call("PUT",path(snap)+"/draft",draft),200);
+        assertThat(c.call("PUT",path(snap)+"/draft",draft).headers().firstValue("Idempotent-Replayed")).contains("true");
+        var restored=refresh(c,snap);assertThat(restored.path("items").get(0).path("response").path("tokenIds")).hasSize(2);assertThat(restored.path("items").get(0).path("question").path("content")).isEqualTo(snap.path("items").get(0).path("question").path("content"));
+        restored=checkedGuided(c,restored);var submit=fullAnswers(restored);var result=ok(c.call("POST",path(snap)+"/submit",submit),200);
+        assertThat(result.path("scorePercent").asDouble()).isEqualTo(100);assertThat(result.path("items").get(0).path("answerKey").path("acceptedOrders")).hasSize(1);
+        assertThat(ok(c.call("POST",path(snap)+"/submit",submit),200)).isEqualTo(result);assertThat(refresh(c,snap).toString()).doesNotContain("acceptedOrders");
+    }
+
+    void simulateLegacyUncheckedSubmission(JsonNode snap) {
+        tx.executeWithoutResult(t->{
+            em.createNativeQuery("UPDATE submissions SET lesson_completed=FALSE,result_json=JSON_SET(result_json,'$.lessonCompleted',CAST('false' AS JSON)) WHERE attempt_id=:attempt").setParameter("attempt",snap.path("attemptId").asLong()).executeUpdate();
+            em.createNativeQuery("UPDATE lesson_progress SET state='STARTED',completed_at=NULL,last_completed_version_id=NULL WHERE user_id=:user AND lesson_id=:lesson").setParameter("user",student.id()).setParameter("lesson",lesson).executeUpdate();
+        });
+    }
+    @Test void confirmLegacyFullResultUpdatesProgressWithoutRewritingFactsOrReplacingANewerActiveAttempt()throws Exception {
+        var c=new Client().login(student);var first=start(c);ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);simulateLegacyUncheckedSubmission(first);
+        var immutable=ok(c.call("GET",path(first)+"/result",null),200);assertThat(immutable.path("lessonCompleted").asBoolean()).isFalse();
+        var newer=start(c);var old=refresh(c,first);var request=command(old);
+        var ack=ok(c.call("POST",path(first)+"/complete",request),200);assertThat(ack.path("lessonCompleted").asBoolean()).isTrue();
+        var p=progress(c);assertThat(p.path("state").asText()).isEqualTo("COMPLETED");assertThat(p.path("lastAttemptId")).isEqualTo(newer.path("attemptId"));assertThat(p.path("lastCompletedVersionId")).isEqualTo(first.path("lessonVersionId"));
+        assertThat(ok(c.call("GET",path(first)+"/result",null),200)).isEqualTo(immutable);
+        var replay=c.call("POST",path(first)+"/complete",request);assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");assertThat(ok(replay,200)).isEqualTo(ack);
+        var repeated=ok(c.call("POST",path(first)+"/complete",command(old)),200);assertThat(repeated.path("revision")).isEqualTo(ack.path("revision"));assertThat(progress(c).path("completedAt")).isEqualTo(p.path("completedAt"));
+        ok(new Client().login(other).call("POST",path(first)+"/complete",command(old)),404);
+        for(var u:List.of(teacher,admin))ok(new Client().login(u).call("POST",path(first)+"/complete",command(old)),403);
+        c.csrf=null;ok(c.call("POST",path(first)+"/complete",command(old)),403);
+    }
+    @Test void confirmRejectsActivePracticeAndIncompleteSubmissionEvenAfterCorrection()throws Exception {
+        var c=new Client().login(student);var snap=start(c);error(c.call("POST",path(snap)+"/complete",command(snap)),409,"RESULT_NOT_READY");
+        ok(c.call("POST",path(snap)+"/submit",mutation(snap)),200);var original=ok(c.call("GET",path(snap)+"/result",null),200);snap=refresh(c,snap);
+        var correction=command(snap);correction.set("response",correctAnswer(snap.path("items").get(0)));ok(c.call("POST",itemPath(snap,0)+"/retry",correction),200);snap=refresh(c,snap);
+        error(c.call("POST",path(snap)+"/complete",command(snap)),400,"LESSON_INCOMPLETE");assertThat(progress(c).path("state").asText()).isEqualTo("STARTED");assertThat(ok(c.call("GET",path(snap)+"/result",null),200)).isEqualTo(original);
+        var practiceSnap=ok(c.call("POST","/api/attempts",practice(1)),201);ok(c.call("POST",path(practiceSnap)+"/submit",fullAnswers(practiceSnap)),200);practiceSnap=refresh(c,practiceSnap);
+        error(c.call("POST",path(practiceSnap)+"/complete",command(practiceSnap)),409,"LESSON_COMPLETION_NOT_AVAILABLE");
+    }
+    @Test void confirmReceiptFailureRollsBackProgressAndRevisionAndTheSameRequestCanRecover()throws Exception {
+        var c=new Client().login(student);var snap=start(c);ok(c.call("POST",path(snap)+"/submit",fullAnswers(snap)),200);simulateLegacyUncheckedSubmission(snap);snap=refresh(c,snap);
+        var request=command(snap);String rejected=request.path("requestId").asText();
+        tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE request_receipts ADD CONSTRAINT reject_completion_receipt CHECK (request_id <> '"+rejected+"')").executeUpdate());
+        try{error(c.call("POST",path(snap)+"/complete",request),503,"DATABASE_UNAVAILABLE");}
+        finally{tx.executeWithoutResult(t->em.createNativeQuery("ALTER TABLE request_receipts DROP CHECK reject_completion_receipt").executeUpdate());}
+        assertThat(progress(c).path("state").asText()).isEqualTo("STARTED");assertThat(refresh(c,snap).path("revision")).isEqualTo(snap.path("revision"));
+        ok(c.call("POST",path(snap)+"/complete",request),200);assertThat(progress(c).path("state").asText()).isEqualTo("COMPLETED");
     }
 }

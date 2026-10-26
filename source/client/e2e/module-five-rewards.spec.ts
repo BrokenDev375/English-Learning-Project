@@ -55,7 +55,7 @@ test('home shows the daily cap and links to server-timed league and review rewar
   await expect(page.getByLabel('Thời gian còn lại của tuần')).toContainText('Còn');
   await page.evaluate(() => { Date.now = () => 0; });
   await expect(page.getByLabel('Thời gian còn lại của tuần')).toContainText('Còn');
-  await page.getByRole('button', { name: 'Khám phá bài học', exact: true }).click();
+  await page.getByRole('button', { name: 'Vào chơi', exact: true }).click();
   await page.getByRole('tab', { name: 'Ôn tập cá nhân', exact: true }).click();
   await expect(page.getByLabel('Điều kiện thưởng ôn')).toContainText('5 XP');
   await page.setViewportSize({ width: 390, height: 844 });
