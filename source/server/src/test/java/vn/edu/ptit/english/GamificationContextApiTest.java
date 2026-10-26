@@ -28,7 +28,7 @@ class GamificationContextApiTest extends PersonalReviewApiTest {
         var before=tx.execute(t->rewards.contexts(id,alice.id()));
         assertThat(before).hasSize(1); var context=before.get(0);
         assertThat(context.isEligible()).isTrue(); assertThat(context.getDueAt()).isEqualTo(due);
-        assertThat(context.getPolicyVersion()).isEqualTo("m05-p0-v1");
+        assertThat(context.getPolicyVersion()).isEqualTo("m05-p0-v2");
         ok(c.call("POST","/api/attempts",command),201);
         assertThat(ok(c.call("POST","/api/attempts",review("DUE",5)),200).path("attemptId").asLong()).isEqualTo(id);
         tx.executeWithoutResult(t->{

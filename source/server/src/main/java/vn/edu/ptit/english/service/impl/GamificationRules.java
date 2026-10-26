@@ -9,7 +9,7 @@ import vn.edu.ptit.english.enums.AttemptEnums.*;
 /** Pure P0 rules. FIRST facts, not final answers or client-provided scores. */
 public final class GamificationRules {
     private GamificationRules() {}
-    public static final String VERSION="m05-p0-v1";
+    public static final String LEGACY_VERSION="m05-p0-v1",VERSION="m05-p0-v2";
     public static final ZoneId ZONE=ZoneId.of("Asia/Ho_Chi_Minh");
     public static final int REWARD=5,CAP=200;
     public static boolean independentComplete(ResultItem item) {

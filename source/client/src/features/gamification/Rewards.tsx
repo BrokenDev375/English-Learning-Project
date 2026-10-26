@@ -46,7 +46,7 @@ function Stats({ value }: { value: Summary }) {
   const progress = Math.max(0, Math.min(100, (value.totalXp - value.levelFloorXp) / Math.max(1, value.nextLevelAtXp - value.levelFloorXp) * 100));
   return <div className="reward-stats">
     <article className="panel reward-level"><span className="eyebrow">CẤP ĐỘ HOẠT ĐỘNG</span><div className="reward-number">{value.activityLevel}<span>{value.totalXp.toLocaleString('vi-VN')} XP tích lũy</span></div>
-      <progress aria-label="Tiến độ cấp độ hoạt động" value={progress} max={100} /><small>Còn {Math.max(0, value.nextLevelAtXp - value.totalXp)} XP đến cấp tiếp theo</small></article>
+      <progress aria-label="Tiến độ cấp độ hoạt động" value={progress} max={100} /><small>Còn {Math.max(0, value.nextLevelAtXp - value.totalXp)} XP đến cấp tiếp theo</small><small>Mỗi {value.nextLevelAtXp - value.levelFloorXp} XP tăng 1 cấp</small></article>
     <article className="panel"><span className="eyebrow">CHUỖI NGÀY HỌC</span><div className="reward-number">{value.streak.current}<span>ngày liên tiếp</span></div><small>Kỷ lục: {value.streak.best} ngày · {value.day.isActive ? 'Hôm nay đã có hoạt động hợp lệ' : 'Học thêm hôm nay để giữ chuỗi'}</small></article>
     <article className="panel"><span className="eyebrow">XP HÔM NAY</span><div className="reward-number">{value.day.awardedXp}<span>/ {value.day.capXp} XP</span></div><progress aria-label="Giới hạn XP hôm nay" value={value.day.awardedXp} max={value.day.capXp} /><small>Ngày học theo giờ Việt Nam</small></article>
   </div>;

@@ -2,6 +2,8 @@
 
 Ngày 21/10/2026. Policy: **m05-p0-v1**. Người dùng đã yêu cầu bắt đầu triển khai từng chặng sau khi review kế hoạch. Dùng bộ mặc định trong tài liệu này làm baseline P0; không hỏi lại quyền triển khai ở mỗi chặng. Thay đổi luật sau này cần version mới, không sửa thưởng/kết quả tuần đã lưu.
 
+> Cập nhật 26/10: luật hiện hành v2 giảm còn 50 XP/cấp, League 2 thành viên/2 người có XP và tối thiểu một suất. Xem [quyết định v2](M05_ENGAGEMENT_V2.md). Phần dưới giữ nguyên làm baseline v1.
+
 ## 1. Nền và phạm vi
 
 Đã fetch và fast-forward local main từ be92240 lên **57f2951**, cùng origin/main và có đầy đủ M04/V5. Không tạo branch, commit hoặc push. Các file kế hoạch M05 chưa commit được sao lưu và giữ lại khi cập nhật.

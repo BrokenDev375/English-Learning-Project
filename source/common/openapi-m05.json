@@ -636,7 +636,8 @@
                       "minimumMembers": 10,
                       "minimumActive": 5,
                       "promotionPercent": 20,
-                      "demotionPercent": 20
+                      "demotionPercent": 20,
+                      "minimumMovementSlots": 0
                     }
                   },
                   "membership": null
@@ -775,7 +776,8 @@
                       "minimumMembers": 10,
                       "minimumActive": 5,
                       "promotionPercent": 20,
-                      "demotionPercent": 20
+                      "demotionPercent": 20,
+                      "minimumMovementSlots": 0
                     }
                   },
                   "membership": {
@@ -1098,7 +1100,8 @@
                           "minimumMembers": 10,
                           "minimumActive": 5,
                           "promotionPercent": 20,
-                          "demotionPercent": 20
+                          "demotionPercent": 20,
+                          "minimumMovementSlots": 0
                         }
                       },
                       "groupId": 1,
@@ -1249,7 +1252,11 @@
         ]
       },
       "PolicyVersion": {
-        "const": "m05-p0-v1"
+        "type": "string",
+        "enum": [
+          "m05-p0-v1",
+          "m05-p0-v2"
+        ]
       },
       "Command": {
         "type": "object",
@@ -1318,7 +1325,7 @@
           },
           "nextLevelAtXp": {
             "type": "integer",
-            "minimum": 100,
+            "minimum": 50,
             "maximum": 9007199254740991
           },
           "day": {
@@ -1447,7 +1454,29 @@
           "backlog",
           "processingState"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "policyVersion": {
+                  "const": "m05-p0-v1"
+                }
+              },
+              "required": [
+                "policyVersion"
+              ]
+            },
+            "then": {
+              "properties": {
+                "nextLevelAtXp": {
+                  "minimum": 100
+                }
+              }
+            }
+          }
+        ],
+        "description": "Activity level follows the policy effective at read time: v1 uses 100 XP/level; v2 uses 50. Existing XP and source-time reward decisions are unchanged."
       },
       "SyncResult": {
         "type": "object",
@@ -1861,16 +1890,31 @@
             "const": 25
           },
           "minimumMembers": {
-            "const": 10
+            "type": "integer",
+            "enum": [
+              2,
+              10
+            ]
           },
           "minimumActive": {
-            "const": 5
+            "type": "integer",
+            "enum": [
+              2,
+              5
+            ]
           },
           "promotionPercent": {
             "const": 20
           },
           "demotionPercent": {
             "const": 20
+          },
+          "minimumMovementSlots": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ]
           }
         },
         "required": [
@@ -1878,9 +1922,11 @@
           "minimumMembers",
           "minimumActive",
           "promotionPercent",
-          "demotionPercent"
+          "demotionPercent",
+          "minimumMovementSlots"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Versioned season snapshot. v1: 10 members/5 active, floor 20%; v2: 2 members/2 active, at least one slot per side. Frozen seasons retain their own rules."
       },
       "Season": {
         "type": "object",

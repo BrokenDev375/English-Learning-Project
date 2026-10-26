@@ -46,6 +46,21 @@ class GamificationApiTest extends GamificationFixture {
         ok(c.call("POST","/api/me/gamification/sync",Map.of("requestId",key(),"xp",500)),400);
         ok(new Client().login(teacher).call("GET","/api/me/gamification",null),403);
     }
+    @Test void levelPaceChangesWithoutMintingXpAndLateSourcesKeepTheirSubmissionTimePolicy()throws Exception {
+        tx.executeWithoutResult(t->{
+            em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-22 00:00:00' WHERE version='m05-p0-v2'").executeUpdate();
+            em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-01 00:00:00' WHERE version='m05-p0-v1'").executeUpdate();
+        });
+        var c=new Client().login(alice);clock.set("2026-10-21T12:00:00Z");var old=submit(c,practice(c,5),"yes");
+        clock.set("2026-10-22T12:00:00Z");sync(c);
+        var state=summary(c);assertThat(state.path("policyVersion").asText()).isEqualTo("m05-p0-v2");assertThat(state.path("totalXp").asInt()).isEqualTo(25);assertThat(state.path("activityLevel").asInt()).isEqualTo(1);assertThat(state.path("nextLevelAtXp").asInt()).isEqualTo(50);
+        var fact=ok(c.call("GET","/api/me/gamification/activities?submissionId="+old.path("submissionId").asLong(),null),200).path("items").get(0);
+        assertThat(fact.path("policyVersion").asText()).isEqualTo("m05-p0-v1");
+        tx.executeWithoutResult(t->bank(5));submit(c,practice(c,5),"yes");sync(c);
+        state=summary(c);assertThat(state.path("totalXp").asInt()).isEqualTo(50);assertThat(state.path("activityLevel").asInt()).isEqualTo(2);assertThat(state.path("levelFloorXp").asInt()).isEqualTo(50);assertThat(state.path("nextLevelAtXp").asInt()).isEqualTo(100);
+        long ledger=count("xp_ledger");summary(c);sync(c);assertThat(count("xp_ledger")).isEqualTo(ledger);assertThat(summary(c).path("totalXp").asInt()).isEqualTo(50);
+        clock.set("2026-10-21T12:00:00Z");assertThat(summary(c).path("activityLevel").asInt()).isEqualTo(1);assertThat(summary(c).path("nextLevelAtXp").asInt()).isEqualTo(100);
+    }
     @Test void freshAnswersAreAwardedOnceAndReceiptReplayKeepsOriginalBody()throws Exception {
         var c=new Client().login(alice); var result=submit(c,practice(c,5),"yes");
         assertThat(summary(c).path("backlog").path("pendingSubmissions").asInt()).isEqualTo(1);

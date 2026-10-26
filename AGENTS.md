@@ -83,7 +83,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V9
+│   │   │   ├── db/migration/                  Flyway V1–V10
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -190,7 +190,7 @@ Trong `features/learning/`:
 
 - `types.ts`: DTO học viên và hàm xác định đã trả lời/đầy đủ; không dùng DTO tác giả chứa keys để dựng câu trước nộp.
 - `api.ts`: adapter create/read/list/mutation/result; tái sử dụng `api.ts` chung để giữ cookie/CSRF.
-- `LearningWorkspace.tsx`: nối catalog vào LEARN; form PRACTICE và lịch sử.
+- `LearningWorkspace.tsx`: nối bản đồ vào LEARN, Ôn tập cá nhân và lịch sử; không có form PRACTICE, vẫn phục hồi lượt/lệnh cũ.
 - `PersonalReview.tsx`: sync kết quả theo batch, dashboard cá nhân và tạo lượt REVIEW qua cùng start/pending command của M03.
 - `LessonIntroduction.tsx`: trang giới thiệu gọn, tóm tắt số câu, CTA bắt đầu/tiếp tục/học lại theo lượt thực tế và kết quả gần nhất. Bài COMPLETED vẫn có thể có lượt học lại dở; khi tìm kết quả gần nhất phải so submittedAt, không lấy updatedAt của lượt vừa chữa làm thứ tự nộp.
 - `AttemptRunner.tsx`: runner chung, điều hướng câu, hint/check, lưu và xác nhận submit.
@@ -424,3 +424,5 @@ Trước khi kết thúc, kiểm tra `git diff --check` và `git status --short`
 Ưu tiên để phiên sau biết **dự án đang ở đâu, sửa ở đâu, phải giữ điều gì và đã kiểm tra đến đâu**. Khi cần chi tiết, dẫn tới file chuyên trách thay vì sao chép toàn bộ đặc tả hoặc báo cáo vào đây.
 
 Luồng học hiện tại 26/10: STUDENT chỉ có **Vào chơi** và **Ôn tập cá nhân** làm lối vào chính. Chơi lại bài/vòng ngay trong bản đồ; không có mục Luyện tự chọn hoặc Luyện thêm riêng. Giữ ba vai trò câu hỏi GUIDED/INDEPENDENT/REVIEW_VARIANT, API và lịch sử PRACTICE cũ, pending journal/receipt. URL tab=practice không có attempt được thay bằng bản đồ. Không migration. Xem [tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md) và [kiểm tra hai luồng](statics/results/two-learning-modes-validation.md).
+
+M05 v2 ngày 26/10: **50 XP/cấp**, League xét từ **2 thành viên và 2 người có XP**, tối thiểu một suất mỗi phía. V10 thêm policy mới, giữ XP/claim và lịch sử tuần đã chốt; chỉ tuần hiện tại còn OPEN được chuyển luật ngay. Xem [quyết định](docs/M05_ENGAGEMENT_V2.md), [kiểm tra](statics/results/engagement-v2-validation.md) và [đề xuất game](docs/GAMEPLAY_INTEGRATION_PROPOSAL.md).

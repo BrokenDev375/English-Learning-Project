@@ -76,6 +76,15 @@ class LeagueApiTest extends GamificationFixture {
         assertThat(board(a).path("self").path("rank").asInt()).isEqualTo(1);
         assertThat(ok(a.call("GET","/api/me/league/leaderboard?page=1&size=1",null),200).path("self").path("isSelf").asBoolean()).isTrue();
     }
+    @Test void aTwoPersonGroupCanPromoteAndFinalizeWithoutChangingXpOrFrozenHistory()throws Exception{
+        week();var a=new Client().login(alice);var b=new Client().login(bob);long id=group(a);assertThat(group(b)).isEqualTo(id);
+        submit(a,practice(a,4),"yes");sync(a);submit(b,practice(b,3),"yes");sync(b);
+        var current=board(a);assertThat(current.path("groupStats").path("movementEnabled").asBoolean()).isTrue();assertThat(current.path("groupStats").path("promotionQuota").asInt()).isEqualTo(1);assertThat(current.path("self").path("outcome").asText()).isEqualTo("PROMOTE");
+        var rules=ok(a.call("GET","/api/me/league",null),200).path("season").path("rules");assertThat(rules.path("minimumMembers").asInt()).isEqualTo(2);assertThat(rules.path("minimumMovementSlots").asInt()).isEqualTo(1);
+        long old=season();finish(old,id);var history=ok(a.call("GET","/api/me/league/history",null),200);assertThat(history.path("items").get(0).path("result").path("tierAfter").asText()).isEqualTo("SILVER");
+        lifecycle.finalizeGroup(old,id);assertThat(ok(a.call("GET","/api/me/league/history",null),200)).isEqualTo(history);assertThat(summary(a).path("totalXp").asInt()).isEqualTo(20);
+        clock.set(start.plus(Duration.ofDays(7)).plusSeconds(3600).toString());lifecycle.ensureCurrent();assertThat(join(a).path("membership").path("tier").asText()).isEqualTo("SILVER");
+    }
     @Test void graceIncludesOldWeekButCutoffExcludesItWithoutLosingLifetimeXp()throws Exception{
         week();var a=new Client().login(alice);var b=new Client().login(bob);group(a);group(b);
         clock.set(start.plus(Duration.ofDays(7)).minusNanos(1000).toString());var ra=submit(a,practice(a,3),"yes");var rb=submit(b,practice(b,3),"yes");

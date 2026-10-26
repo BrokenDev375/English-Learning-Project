@@ -171,7 +171,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": null
@@ -199,7 +200,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -291,7 +293,8 @@
                 "minimumMembers": 10,
                 "minimumActive": 5,
                 "promotionPercent": 20,
-                "demotionPercent": 20
+                "demotionPercent": 20,
+                "minimumMovementSlots": 0
               }
             },
             "groupId": 1,
@@ -364,7 +367,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -399,7 +403,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -466,6 +471,75 @@
         "message": "Đang chốt nhóm trước.",
         "fieldErrors": {}
       }
+    },
+    {
+      "name": "m05SummaryV2FiftyXpLevel",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v2",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 50,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05LeagueV2SmallGroup",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 0,
+        "state": "NOT_JOINED",
+        "canJoin": true,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v2",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 2,
+            "minimumActive": 2,
+            "promotionPercent": 20,
+            "demotionPercent": 20,
+            "minimumMovementSlots": 1
+          }
+        },
+        "membership": null
+      },
+      "path": "/api/me/league",
+      "method": "get",
+      "status": 200
     }
   ],
   "invalid": [
@@ -900,7 +974,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -935,7 +1010,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": null
@@ -961,7 +1037,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {

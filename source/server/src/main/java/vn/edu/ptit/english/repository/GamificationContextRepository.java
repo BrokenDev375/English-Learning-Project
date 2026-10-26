@@ -5,6 +5,7 @@ import vn.edu.ptit.english.entity.*;
 
 public interface GamificationContextRepository {
     GamificationPolicyEntity policy();
+    GamificationPolicyEntity policyAt(java.time.Instant at);
     void save(ReviewRewardContextEntity context);
     List<ReviewRewardContextEntity> contexts(long attemptId, long userId);
 }

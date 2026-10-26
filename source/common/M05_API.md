@@ -1,6 +1,6 @@
 # Hợp đồng M05 — Gamification và Giải đấu tuần
 
-Phiên bản 1.0.0, ngày 21/10/2026. Policy `m05-p0-v1` theo [quyết định P0](../../docs/M05_DECISIONS.md). **Đã triển khai cả 8 endpoint, subscription GAMIFICATION/LEAGUE, worker và chốt tuần.** Schema: [openapi-m05.json](openapi-m05.json). Phạm vi kiểm tra và giới hạn: [tiến độ](../../docs/M05_PROGRESS.md).
+Phiên bản 1.0.0, ngày 21/10/2026. Policy hiện hành `m05-p0-v2`, tương thích nguồn/lịch sử `m05-p0-v1`, theo [quyết định P0](../../docs/M05_DECISIONS.md). **Đã triển khai cả 8 endpoint, subscription GAMIFICATION/LEAGUE, worker và chốt tuần.** Schema: [openapi-m05.json](openapi-m05.json). Phạm vi kiểm tra và giới hạn: [tiến độ](../../docs/M05_PROGRESS.md).
 
 ## 1. Chung
 
@@ -22,7 +22,7 @@ Summary gồm:
 | policyVersion, activatedAt | Bộ luật và mốc bật đã lưu; không đổi theo restart |
 | revision | Phiên bản projection cá nhân |
 | totalXp | Lifetime SUM awardedXp đã commit |
-| activityLevel, levelFloorXp, nextLevelAtXp | 1 + floor(totalXp/100), ngưỡng mức hiện tại/kế tiếp |
+| activityLevel, levelFloorXp, nextLevelAtXp | 1 + floor(totalXp/step), step=50 cho v2 và 100 cho v1; ngưỡng mức hiện tại/kế tiếp theo cùng step |
 | day | date, awardedXp, capXp=200, qualifiedSubmissions, isActive của hôm nay |
 | streak | current, best, lastActiveDate (null nếu chưa có) |
 | badges | earnedCount, totalCount=3 |
@@ -77,7 +77,7 @@ LeagueOverview gồm serverTime, revision, state, canJoin, season, membership. s
 | CLOSING | Membership đang đợi chốt tuần, canJoin=false |
 | FINALIZED | Membership đã chốt; kết quả bất biến, canJoin=false |
 
-Season có id/startAt/endAt/cutoffAt/status/policyVersion và rules (capacity, minimumMembers, minimumActive, promotionPercent, demotionPercent). State theo thời gian server, không dựa duy nhất job đã cập nhật status hay chưa. Khi đã sang tuần mới mà chưa tham gia, API hiển thị season mới; kết quả cũ xem ở history. Không hiển thị season cũ là ACTIVE vì scheduler chậm.
+Season có id/startAt/endAt/cutoffAt/status/policyVersion và rules (capacity, minimumMembers, minimumActive, promotionPercent, demotionPercent, minimumMovementSlots). State theo thời gian server, không dựa duy nhất job đã cập nhật status hay chưa. Khi đã sang tuần mới mà chưa tham gia, API hiển thị season mới; kết quả cũ xem ở history. Không hiển thị season cũ là ACTIVE vì scheduler chậm.
 
 Membership có memberKey, groupId, tier, joinedAt, weeklyXp, rank (null khi chưa có snapshot rank), projectedOutcome và result (null đến khi group finalized). projectedOutcome là PROMOTE/KEEP/DEMOTE, chưa phải kết quả cuối. result có frozen rank, memberCount/activeCount, weeklyXp, tierBefore/tierAfter, outcome, holdReason và finalizedAt. Nếu group chưa đủ điều kiện thì projectedOutcome=KEEP.
 
@@ -134,3 +134,11 @@ python scripts/verify-m05-contract.py
 ```
 
 Kiểm tra này xác thực cấu trúc OpenAPI/JSON Schema và fixture hợp lệ/không hợp lệ, không chứng minh endpoint runtime hoặc transaction đúng. Các ca nghiệp vụ/lock/worker nằm trong [ma trận M05](../../docs/M05_MANUAL_TEST_CASES.md); phải chạy khi chặng tương ứng có implementation.
+
+## Cập nhật policy v2 — 26/10/2026
+
+Summary.policyVersion là luật hiệu lực lúc đọc; activityLevel dùng 50 XP/cấp ở v2, 100 ở v1. Không tạo XP từ việc đổi level. Activity/ledger dùng policy theo submittedAt, context REVIEW theo selectedAt; nguồn cũ xử lý muộn không bị đổi version hay cộng lại claim.
+
+LeagueRules thêm minimumMovementSlots: v1=0 (JSON cũ thiếu trường đọc thành 0), v2=1. v2 minimumMembers=2 và minimumActive=2, capacity=25, promotionPercent/demotionPercent=20. Khi movementEnabled, suất mỗi phía max(minimumMovementSlots, floor(memberCount*percent/100)), sau đó áp dụng giới hạn tier/khối hòa như cũ. Một người hoặc chỉ một người có XP vẫn giữ bậc.
+
+V10 giữ v1 và cập nhật tuần hiện tại còn OPEN/chưa hết endAt sang v2; lịch sử và tuần đã kết thúc giữ rules cũ. Frontend dùng rules của từng season để diễn giải holdReason. Các request/receipt/cutoff/ownership không đổi. Chi tiết tại [quyết định v2](../../docs/M05_ENGAGEMENT_V2.md).
