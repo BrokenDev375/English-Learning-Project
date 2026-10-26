@@ -78,6 +78,7 @@ test('home recommends a real next lesson, retries failed reads and fits mobile',
 
 test('ordering draft survives reload and home resume; submit completes the round without leaking keys', async ({ page }) => {
   test.setTimeout(90000); let s = await start(page); expect(JSON.stringify(s)).not.toContain('acceptedOrders');
+  await expect(page.locator('.word-bridge .bridge-scene')).toHaveAttribute('data-open', 'false');
   await chooseOrdering(page, ['She', 'likes']);
   await page.getByRole('button', { name: 'Chuyển từ 2 sang trái', exact: true }).click(); await expect(page.locator('.ordered-words .word-token')).toHaveText(['likes', 'She']);
   await page.getByRole('button', { name: 'Chuyển từ 1 sang phải', exact: true }).click();
@@ -105,9 +106,11 @@ test('ordering draft survives reload and home resume; submit completes the round
     await page.locator('.question-nav button').nth(i).click(); const q = s.items[i];
     if (q.question.type === 'ORDERING') { await page.getByRole('button', { name: 'Xóa câu trả lời', exact: true }).click(); await chooseOrdering(page); }
     else for (let n = 0; n < 2; n++) { await page.locator('.matching-left button').nth(n).click(); const id = 'r' + (n + 1); await page.locator('.matching-right button').nth(q.question.content.rightItems!.findIndex(r => r.id === id)).click(); }
-    if (q.practiceRole === 'GUIDED') { await page.getByRole('button', { name: 'Kiểm tra đáp án', exact: true }).click(); await expect(page.locator('.key-explanation')).toContainText('She likes music'); }
+    if (q.practiceRole === 'GUIDED') { await page.getByRole('button', { name: 'Kiểm tra đáp án', exact: true }).click(); await expect(page.locator('.key-explanation')).toContainText('She likes music'); await expect(page.locator('.word-bridge .bridge-scene')).toHaveAttribute('data-open', 'true'); }
   }
   await page.getByRole('button', { name: 'Nộp bài', exact: true }).click(); await page.getByRole('button', { name: 'Xác nhận nộp bài', exact: true }).click(); await expect(page.locator('.result-score')).toContainText('100');
+  await expect(page.locator('.game-vault-scene .bridge-scene')).toHaveAttribute('data-open', 'true');
+  await expect(page.locator('.game-chests .is-open')).toHaveCount(3);
   const rounds = await (await page.request.get('/api/me/rounds?size=50')).json(); const round = rounds.items.find((r: { unit: { id: number } }) => r.unit.id === unitId); expect(round.completedLessons).toBe(1); expect(round.state).toBe('COMPLETED');
   await page.goto('/#/learning?unit=' + unitId); await expect(page.locator('.round-overview')).toContainText('Đã hoàn thành 1/1 bài'); await expect(page.locator('.round-overview')).toContainText('hoàn thành tất cả bài');
   await page.reload(); await expect(page.locator('.round-overview')).toContainText('Đã hoàn thành 1/1 bài');

@@ -5,6 +5,8 @@ import type { Instruction } from '../content/authoring';
 import type { Objective } from '../content/catalog';
 import { Instructions } from '../content/AuthorPreview';
 import { listAttempts, readAttempt } from './api';
+import { TreasureChest } from './GameArtwork';
+import './gameplay.css';
 import type { Progress } from './types';
 
 export interface Introduction {
@@ -69,6 +71,7 @@ export default function LessonIntroduction({ intro, progress, progressReady, stu
       {progress && <div className="lesson-state"><span className={'lesson-state-badge ' + progress.state.toLowerCase()}><span aria-hidden="true">{progress.state === 'COMPLETED' ? '✓' : progress.state === 'STARTED' ? '◷' : '○'}</span><span>{progress.state === 'COMPLETED' ? 'Đã hoàn thành bài học' : progress.state === 'STARTED' ? 'Đã bắt đầu · Chưa hoàn thành' : 'Chưa bắt đầu'}</span></span>{progress.updateAvailable && <span className="lesson-update">Có phiên bản bài học mới</span>}</div>}
     </div>
     <div className="lesson-intro-section"><h2>Bạn sẽ học gì?</h2><ul>{intro.objectives.map(o => <li key={o.id}>{o.name}</li>)}</ul></div>
+    <div className="game-intro"><TreasureChest small /><div><h2>Săn kho báu tiếng Anh</h2><p>Chọn cổng, tìm từ còn thiếu hoặc ghép thẻ theo câu hỏi của bài. Mỗi câu đúng mở một rương khi nộp bài. Bài có câu xếp từ sẽ đưa bạn đến thử thách xây cầu.</p></div></div>
     <div className="lesson-intro-section"><h2>Cách chơi</h2><p>Đọc, nghe hoặc xem học liệu đi kèm rồi trả lời {total} câu hỏi. Bạn có thể mở gợi ý và kiểm tra đáp án ở {intro.lesson.questionCounts.guided} câu có hướng dẫn. Kiểm tra trước khi nộp là tùy chọn. Nộp đủ đáp án để hoàn thành bài; sau đó xem lời giải và xác nhận về vòng học.</p><Instructions lesson={{ instructions }} /></div>
     {current?.error && <div className="message error" role="alert">{current.error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Tải lại trạng thái lượt học</button></div>}
     {student && !progressReady && <p className="muted" role="status">Đang tải tiến độ… <button className="link-button" onClick={retryProgress}>Tải lại tiến độ</button></p>}

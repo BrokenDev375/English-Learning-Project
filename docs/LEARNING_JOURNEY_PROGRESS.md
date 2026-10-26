@@ -54,3 +54,13 @@ Kết quả kiểm tra lần này tại [biên bản bản đồ vòng chơi](..
 - GUIDED và INDEPENDENT vẫn nằm trong bài chơi; REVIEW_VARIANT ưu tiên cho ôn cá nhân theo M04. Giữ nguyên schema, ngân hàng, lựa chọn câu hỏi, điểm, XP và luật mở vòng.
 - API PRACTICE và dữ liệu cũ giữ để tương thích. URL tab=practice không kèm attempt chuyển bằng replace về catalog; URL có attempt vẫn mở đúng lượt. Trang chủ/lịch sử tiếp tục mở được lượt cũ. Journal cũ còn PREPARED vẫn có nút gửi lại với cùng requestId/payload.
 - Thay đổi chỉ frontend/tài liệu, không thay backend hoặc thêm migration. Bằng chứng lần này ở [biên bản hai luồng](../statics/results/two-learning-modes-validation.md); các số kiểm thử trước là lịch sử riêng.
+
+## Game Săn kho báu — 26/10/2026
+
+- [x] Cảnh đảo/nhân vật/rương trong lượt học và ôn, lối vào có hình rương trên trang chủ/giới thiệu bài.
+- [x] Ghép thẻ có đường nối, mảnh chìa khóa và hoạt cảnh mở rương; xếp từ lắp ván và qua cầu; trắc nghiệm chọn cổng, điền từ mở khóa.
+- [x] Nút chọn trò lấy đúng dạng câu có trong lượt, cuộn tới khu vực chơi. Lưu/khôi phục bằng draft M06 hiện có.
+- [x] Chỉ feedback đúng cho đáp án hiện tại hoặc kết quả nộp mới mở rương. Không lộ khóa INDEPENDENT/REVIEW_VARIANT trước nộp.
+- [x] Kho báu kết quả theo Submission, sao minh họa và xem lại hoạt cảnh không thêm XP hoặc sửa điểm.
+
+Thiết kế/giới hạn tại [gameplay](GAMEPLAY_INTEGRATION_PROPOSAL.md), bằng chứng tại [biên bản](../statics/results/gameplay-validation.md). Demo chưa có ORDERING nên trò xây cầu chỉ hiện khi bài có dạng câu đó.

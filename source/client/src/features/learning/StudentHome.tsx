@@ -10,6 +10,8 @@ import { modeNames } from './types';
 import { recommendedRound, RoundMeter } from './journey';
 import type { RoundProgress } from './journey';
 import './journey.css';
+import { TreasureChest } from './GameArtwork';
+import './gameplay.css';
 
 interface HomeData { overview: LearnerOverview; active: Summary | null; snapshot: Snapshot | null; rounds: CatalogPage<RoundProgress>; next: RoundProgress | null }
 const openTab = (tab: string) => navigate({ view: 'learning', tab }, { reset: true });
@@ -49,12 +51,12 @@ export default function StudentHome({ user }: { user: User }) {
     {loading && !data && <p role="status">Đang tải hành trình học tập…</p>}
     {data && <>
       <article className="journey-hero game-hero"><div><span className="eyebrow">{data.active ? 'TIẾP TỤC TỪ NƠI BẠN DỪNG' : 'SẴN SÀNG CHƠI CHƯA?'}</span><h2>{title}</h2>
-        <p>{data.active ? `${data.active.answeredCount}/${data.active.totalQuestions} câu đã trả lời trên máy chủ. Tiếp tục lượt đang làm của bạn.` : data.next ? 'Làm đủ các bài trong vòng để mở khóa vòng tiếp theo. Xem đáp án và giải thích sau khi nộp bài.' : 'Mở bản đồ để xem hành trình hoặc chơi lại các vòng đã hoàn thành.'}</p>
+        <p>{data.active ? `${data.active.answeredCount}/${data.active.totalQuestions} câu đã trả lời trên máy chủ. Tiếp tục lượt đang làm của bạn.` : data.next ? 'Săn kho báu qua trò ghép thẻ, chọn cổng và tìm từ. Làm đủ các bài để mở vòng tiếp theo; xem đáp án sau khi nộp.' : 'Mở bản đồ để xem hành trình hoặc chơi lại các vòng đã hoàn thành.'}</p>
         {data.next && !data.active && <RoundMeter {...data.next} />}
         <button className="button primary home-play-button" disabled={!!error} onClick={action}><span aria-hidden="true">▶</span> {actionLabel} →</button>
-      </div><div className="game-hero-art" aria-hidden="true"><span>✦</span><b>▶</b><small>PLAY &amp; LEARN</small><i>✧</i></div></article>
+      </div><div className="game-hero-art" aria-hidden="true"><TreasureChest /><small>SĂN KHO BÁU</small></div></article>
       <div className="home-mode-cards" aria-label="Chọn cách học">
-        <article className="panel"><span className="mode-symbol" aria-hidden="true">▶</span><h2>Chơi theo vòng</h2><p>Hành trình chính. Vượt từng vòng theo thứ tự để mở vòng tiếp theo.</p><button className="link-button" onClick={() => openTab('catalog')}>Mở bản đồ vòng chơi →</button></article>
+        <article className="panel"><span className="mode-symbol" aria-hidden="true">▶</span><h2>Chơi theo vòng</h2><p>Chơi săn kho báu trong từng bài. Vượt các vòng theo thứ tự để mở thử thách tiếp theo.</p><button className="link-button" onClick={() => openTab('catalog')}>Mở bản đồ vòng chơi →</button></article>
         <article className="panel"><span className="mode-symbol" aria-hidden="true">↻</span><h2>Ôn tập cá nhân</h2><p>{review?.needsReview ? `${review.needsReview} mục tiêu cần ôn. ` : ''}Ôn câu sai và nội dung đến hạn từ kết quả của bạn.</p><button className="link-button" onClick={openReview}>Xem nội dung cần ôn →</button></article>
       </div>
       <div className="journey-totals" aria-label="Tổng quan hành trình"><article><strong>{data.overview.activity.completedLessons}</strong><span>Bài đã hoàn thành</span></article><article><strong>{data.overview.activity.activeAttempts}</strong><span>Lượt đang làm</span></article><article><strong>{data.rounds.totalElements}</strong><span>Vòng trong hành trình</span></article></div>
