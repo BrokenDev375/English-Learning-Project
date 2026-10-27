@@ -171,7 +171,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": null
@@ -199,7 +200,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -291,7 +293,8 @@
                 "minimumMembers": 10,
                 "minimumActive": 5,
                 "promotionPercent": 20,
-                "demotionPercent": 20
+                "demotionPercent": 20,
+                "minimumMovementSlots": 0
               }
             },
             "groupId": 1,
@@ -364,7 +367,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -399,7 +403,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -465,6 +470,465 @@
         "code": "LEAGUE_SETTLEMENT_PENDING",
         "message": "Đang chốt nhóm trước.",
         "fieldErrors": {}
+      }
+    },
+    {
+      "name": "m05SummaryV2FiftyXpLevel",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v2",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 50,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "m05LeagueV2SmallGroup",
+      "schema": "#/components/schemas/LeagueOverview",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "revision": 0,
+        "state": "NOT_JOINED",
+        "canJoin": true,
+        "season": {
+          "id": 1,
+          "startAt": "2026-10-18T17:00:00Z",
+          "endAt": "2026-10-25T17:00:00Z",
+          "cutoffAt": "2026-10-25T17:02:00Z",
+          "status": "OPEN",
+          "policyVersion": "m05-p0-v2",
+          "rules": {
+            "capacity": 25,
+            "minimumMembers": 2,
+            "minimumActive": 2,
+            "promotionPercent": 20,
+            "demotionPercent": 20,
+            "minimumMovementSlots": 1
+          }
+        },
+        "membership": null
+      },
+      "path": "/api/me/league",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt0Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 0,
+        "activityLevel": 1,
+        "levelFloorXp": 0,
+        "nextLevelAtXp": 10,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt10Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 10,
+        "activityLevel": 2,
+        "levelFloorXp": 10,
+        "nextLevelAtXp": 30,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt25Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 25,
+        "activityLevel": 2,
+        "levelFloorXp": 10,
+        "nextLevelAtXp": 30,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt30Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 30,
+        "activityLevel": 3,
+        "levelFloorXp": 30,
+        "nextLevelAtXp": 60,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt50Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 50,
+        "activityLevel": 3,
+        "levelFloorXp": 30,
+        "nextLevelAtXp": 60,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "progressiveLevelAt550Xp",
+      "schema": "#/components/schemas/Summary",
+      "body": {
+        "serverTime": "2026-10-21T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "policyVersion": "m05-p0-v3",
+        "activatedAt": "2026-10-21T00:00:00Z",
+        "revision": 0,
+        "totalXp": 550,
+        "activityLevel": 11,
+        "levelFloorXp": 550,
+        "nextLevelAtXp": 660,
+        "day": {
+          "date": "2026-10-21",
+          "awardedXp": 0,
+          "capXp": 200,
+          "qualifiedSubmissions": 0,
+          "isActive": false
+        },
+        "streak": {
+          "current": 0,
+          "best": 0,
+          "lastActiveDate": null
+        },
+        "badges": {
+          "earnedCount": 0,
+          "totalCount": 3
+        },
+        "backlog": {
+          "pendingSubmissions": 0,
+          "deferredSubmissions": 0
+        },
+        "processingState": "IDLE"
+      },
+      "path": "/api/me/gamification",
+      "method": "get",
+      "status": 200
+    },
+    {
+      "name": "emptyGlobalWeek",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [],
+        "items": [],
+        "self": {
+          "position": null,
+          "rank": null,
+          "displayName": "Học viên mới",
+          "activityLevel": 1,
+          "weeklyXp": 0,
+          "isSelf": true
+        },
+        "totalElements": 0,
+        "page": 0,
+        "size": 20,
+        "totalPages": 0
+      }
+    },
+    {
+      "name": "globalWeekTies",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "items": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "self": {
+          "position": 3,
+          "rank": 3,
+          "displayName": "Học viên 3",
+          "activityLevel": 5,
+          "weeklyXp": 90,
+          "isSelf": true
+        },
+        "totalElements": 3,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "globalSelfOutsidePage",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": true
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": false
+          }
+        ],
+        "items": [
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": false
+          }
+        ],
+        "self": {
+          "position": 1,
+          "rank": 1,
+          "displayName": "Học viên 1",
+          "activityLevel": 5,
+          "weeklyXp": 100,
+          "isSelf": true
+        },
+        "totalElements": 3,
+        "page": 1,
+        "size": 2,
+        "totalPages": 2
       }
     }
   ],
@@ -900,7 +1364,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -935,7 +1400,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": null
@@ -961,7 +1427,8 @@
             "minimumMembers": 10,
             "minimumActive": 5,
             "promotionPercent": 20,
-            "demotionPercent": 20
+            "demotionPercent": 20,
+            "minimumMovementSlots": 0
           }
         },
         "membership": {
@@ -1089,6 +1556,335 @@
         "answerKey": {
           "correctOptionId": "a"
         }
+      }
+    },
+    {
+      "name": "globalZeroXpHasNoRank",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [],
+        "items": [],
+        "self": {
+          "position": null,
+          "rank": 1,
+          "displayName": "Học viên mới",
+          "activityLevel": 1,
+          "weeklyXp": 0,
+          "isSelf": true
+        },
+        "totalElements": 0,
+        "page": 0,
+        "size": 20,
+        "totalPages": 0
+      }
+    },
+    {
+      "name": "globalBoardDoesNotExposeAccountId",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "items": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false,
+            "userId": 999
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "self": {
+          "position": 3,
+          "rank": 3,
+          "displayName": "Học viên 3",
+          "activityLevel": 5,
+          "weeklyXp": 90,
+          "isSelf": true
+        },
+        "totalElements": 3,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "globalPodiumHasAtMostThreeRows",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          },
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          }
+        ],
+        "items": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "self": {
+          "position": 3,
+          "rank": 3,
+          "displayName": "Học viên 3",
+          "activityLevel": 5,
+          "weeklyXp": 90,
+          "isSelf": true
+        },
+        "totalElements": 3,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "globalXpCannotBeNegative",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "items": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": -1,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "self": {
+          "position": 3,
+          "rank": 3,
+          "displayName": "Học viên 3",
+          "activityLevel": 5,
+          "weeklyXp": 90,
+          "isSelf": true
+        },
+        "totalElements": 3,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "globalPersonalPositionMustBeSelf",
+      "schema": "#/components/schemas/WeeklyLeaderboardBoard",
+      "body": {
+        "serverTime": "2026-10-27T10:00:00Z",
+        "zone": "Asia/Ho_Chi_Minh",
+        "weekStartAt": "2026-10-25T17:00:00Z",
+        "weekEndAt": "2026-11-01T17:00:00Z",
+        "top": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "items": [
+          {
+            "position": 1,
+            "rank": 1,
+            "displayName": "Học viên 1",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 2,
+            "rank": 1,
+            "displayName": "Học viên 2",
+            "activityLevel": 5,
+            "weeklyXp": 100,
+            "isSelf": false
+          },
+          {
+            "position": 3,
+            "rank": 3,
+            "displayName": "Học viên 3",
+            "activityLevel": 5,
+            "weeklyXp": 90,
+            "isSelf": true
+          }
+        ],
+        "self": {
+          "position": 3,
+          "rank": 3,
+          "displayName": "Học viên 3",
+          "activityLevel": 5,
+          "weeklyXp": 90,
+          "isSelf": false
+        },
+        "totalElements": 3,
+        "page": 0,
+        "size": 20,
+        "totalPages": 1
       }
     }
   ]

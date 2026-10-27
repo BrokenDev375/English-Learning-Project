@@ -67,6 +67,7 @@ API `content/answerKey/source` ánh xạ lần lượt `content_json/answer_json
 | SINGLE_CHOICE | options: [{id,text}] | {correctOptionId} | {type:"SINGLE_CHOICE",optionId:"opt-a"}; optionId=null khi chưa chọn |
 | FILL_BLANK | parts gồm TEXT{text} hoặc BLANK{blankId} | blanks:[{blankId,acceptedAnswers:[]}], caseSensitive, normalizeWhitespace | {type:"FILL_BLANK",values:[{blankId,value}]} |
 | MATCHING | leftItems/rightItems: [{id,text}] | pairs:[{leftId,rightId}] | {type:"MATCHING",pairs:[{leftId,rightId}]} |
+| ORDERING | tokens:[{id,text}] | acceptedOrders:[[tokenId,...]] | {type:"ORDERING",tokenIds:[tokenId,...]} |
 
 Quy tắc publish:
 
@@ -187,7 +188,7 @@ Result chứa first/final response/outcome/responseComplete/support, origin/obje
 
 Retry sau nộp cần response đầy đủ; ghi trial CORRECTION nguồn RETRY, supportUsed=true, tăng Attempt revision và trả Feedback. Không UPDATE attempt_answers sau nộp, không sửa Submission/score/FIRST/tiến độ hoàn thành. Result GET sau chữa vẫn là kết quả nộp ban đầu.
 
-LessonCompleted chỉ true cho LEARN khi mọi item điền đủ và mọi GUIDED có trial CHECK trước nộp. Chưa làm xong vẫn được nộp nhưng không hoàn thành bài. Đã COMPLETED trước đó thì không hạ xuống STARTED khi học lại/nộp dở.
+LessonCompleted true cho LEARN khi mọi item được trả lời đầy đủ lúc nộp; trial CHECK của GUIDED là tùy chọn (quy tắc cập nhật 25/10/2026). Chưa làm xong vẫn được nộp nhưng không hoàn thành bài. Đã COMPLETED trước đó thì không hạ xuống STARTED khi học lại/nộp dở.
 
 ## 8. Tích hợp và kiểm tra
 
@@ -219,3 +220,31 @@ Luồng giảng viên: sửa/thay file AUDIO và xuất bản → bấm **Cập 
 - Sau mất mạng/mất ACK, giao diện giữ nguyên requestId và payload để **Thử lại cập nhật audio**. Chỉ báo thành công sau ACK. Tải lại cả trang sẽ mất thao tác đang giữ trong bộ nhớ; cần lấy lại trạng thái máy chủ trước khi thao tác mới.
 
 Sửa quyền liên quan: Lesson mới thuộc chủ Unit kể cả khi ADMIN tạo giúp; quyền đọc asset của tài liệu công bố dùng chung bao gồm các phiên bản PUBLISHED cũ trên root còn active published. Không cấp quyền đọc nháp riêng hoặc root đã ngừng cấp.
+
+## Mở rộng vòng học và ORDERING — 25/10/2026
+
+GET `/api/me/rounds?q=&topicId=&page=0&size=20`: chỉ STUDENT, cookie/session hiện hành, Cache-Control private/no-store, chỉ đọc REPEATABLE_READ. q tối đa 100 ký tự, topicId là ID hợp lệ, page ≥ 0, size 1–50. Trả CatalogPage<RoundProgress>; mỗi hàng có unit, totalLessons, completedLessons, startedLessons, state (NOT_STARTED/IN_PROGRESS/COMPLETED), nextLessonId nullable. Unit sắp theo stage/sortOrder/id; bài theo sortOrder/id. Đếm riêng principal, chỉ các Lesson có published và chưa retire. COMPLETED khi tổng > 0 và mọi bài có progress COMPLETED; nextLessonId là bài chưa hoàn thành đầu tiên. Unit không có bài công bố bị loại như learner catalog hiện tại. Công bố thêm bài/retire làm thay đổi mẫu số hiện tại, không xóa tiến độ lịch sử. GET không đồng bộ ôn hoặc thưởng. TEACHER/ADMIN 403, chưa đăng nhập 401, query sai 400.
+
+ORDERING giữ schemaVersion=1 và dùng migration V9 mở rộng CHECK type. Draft nhận tối đa 20 tokens và 10 acceptedOrders; các ID/text vẫn kiểm tra kiểu/độ dài. Xuất bản yêu cầu 2–20 ID duy nhất, text không trắng và 1–10 thứ tự đúng; mỗi thứ tự chứa đủ mỗi token ID đúng một lần. ID tối đa 40 ký tự, text tối đa 100. acceptedOrders thuộc answerKey, không cấp trong PublicQuestion hoặc snapshot.
+
+Đáp án `{type:"ORDERING",tokenIds:[...]}` nhận 0–20 ID duy nhất; ID lạ/loại sai/trùng trả INVALID_ANSWER. Danh sách rỗng/null là UNANSWERED, danh sách chưa đủ có outcome=INCORRECT và responseComplete=false. Khi đủ, đối chiếu chuỗi nội dung token đã chuẩn hóa NFC với các thứ tự được chấp nhận; ID khác có cùng text được hoán đổi tương đương. Không tự chuẩn hóa case/khoảng trắng hoặc chấm gần đúng. Đảo thẻ lưu trong Display.optionIds khi tạo Attempt, snapshot phục hồi đúng thứ tự đã cấp. Thao tác UI dùng cùng draft/playerState/receipt/revision và IndexedDB M06; không bổ sung mutation hoặc thưởng riêng. FIRST, feedback, submit, correction và quyền xem khóa tiếp tục theo M03.
+
+## Xác nhận sau khi xem đáp án — cập nhật 25/10/2026
+
+Nộp đủ đáp án là điều kiện hoàn thành LEARN, không cần CHECK từng GUIDED và không yêu cầu đúng hết. UI sau nộp hiển thị tất cả câu trả lời/đáp án/giải thích cùng một nút Xác nhận hoàn thành bài học để trở về vòng. Hint/check vẫn là hỗ trợ tùy chọn trước nộp, không đổi luật FIRST/support.
+
+POST `/api/attempts/{id}/complete`, body `{requestId,baseRevision}` theo schema Hint (hai trường bắt buộc), cookie/session/CSRF STUDENT. Reply LessonCompletionAck `{requestId,attemptId,revision,lessonId,lessonCompleted:true}`, private/no-store; replay có Idempotent-Replayed. Chỉ cho owner, mode LEARN, state SUBMITTED, mọi ResultItem.finalResponseComplete=true của Submission gốc. Không dùng đáp án chữa để bù câu chưa đủ khi nộp. Sai owner 404, sai vai trò 403, chưa nộp/sai mode 409, bài nộp chưa đủ 400 LESSON_INCOMPLETE.
+
+Luồng thông thường đã có progress COMPLETED từ submit; xác nhận không tăng revision hoặc ghi lại tiến độ. Dữ liệu luật cũ có bài nộp đủ nhưng thiếu CHECK nên STARTED được xác nhận mà không phải làm lại: dưới actor→Attempt→progress lock, kiểm tra revision, ghi COMPLETED/phiên bản/thời gian và receipt cùng transaction, tăng Attempt revision để invalidation. Giữ lastAttemptId/lastScorePercent của hoạt động mới hơn. Không ghi lại Submission, FIRST, câu trả lời khi nộp, điểm, lịch ôn hoặc thưởng/huy hiệu cũ. Không thêm migration. Cùng requestId replay trước revision; xác nhận lặp bằng key mới trên bài đã hoàn thành cũng không nhân mốc tiến độ.
+
+Client dùng pending Operation kind=complete trong cùng journal làm bài M06, giữ nguyên key/payload qua timeout/reload và GET đối soát. Xác nhận thành công điều hướng về đúng Unit/vòng; GET result vẫn là dữ liệu bất biến theo lúc nộp.
+
+## Bản đồ và khóa vòng — 26/10/2026
+
+RoundProgress thêm number (integer ≥1), locked (boolean), prerequisiteUnitId, prerequisiteRoundNumber và prerequisiteTitle (nullable). Thứ tự toàn cục là Unit.stage/sortOrder/id của Unit có Lesson đang công bố. Số thứ tự và điều kiện mở khóa tính trước q/topicId/page/size. Tìm kiếm và phân trang giữ hành vi catalog hiện hành. GET `/api/me/rounds/{id}` trả một RoundProgress; quyền/session/cache như danh sách, ID sai 400, vòng không còn công bố 404, không tự ghi tiến độ.
+
+Vòng COMPLETED được chơi lại. Vòng khác bị khóa nếu có bất kỳ vòng trước chưa hoàn thành; prerequisite chỉ vòng chưa hoàn thành đầu tiên cần làm. Tất cả Lesson đang công bố của vòng trước cần progress COMPLETED; không yêu cầu điểm tối thiểu. Bài mới/retire làm thay đổi mẫu số hiện tại theo luật vòng học.
+
+POST `/api/attempts` mode LEARN kiểm tra khóa tại server sau actor lock và khóa Lesson, trước khi tạo Attempt/exposure/progress. Vòng bị khóa trả 409 ROUND_LOCKED kèm thông báo vòng cần hoàn thành, không ghi receipt thành công. Sau khi mở khóa có thể gửi lại request chưa thành công. Lượt đang IN_PROGRESS đã tồn tại theo cùng selection vẫn được tiếp tục trước bước kiểm tra khóa; replay receipt vẫn đi trước kiểm tra trạng thái. Đây là tương thích dữ liệu đang làm, không cấp quyền tạo lượt mới vượt vòng. PRACTICE/REVIEW không bị khóa và không tăng tiến độ vòng.
+
+Số vòng không lưu vào Submission và không thay đổi FIRST/điểm/XP. API mới không cấp khóa đáp án. Không migration, không backfill hoặc tự hoàn thành bài cũ.

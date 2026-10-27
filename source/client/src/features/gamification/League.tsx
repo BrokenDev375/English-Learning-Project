@@ -4,7 +4,7 @@ import { navigate } from '../../navigation';
 import './rewards.css';
 
 interface Result { rank: number; memberCount: number; activeCount: number; weeklyXp: number; tierBefore: string; tierAfter: string; outcome: string; holdReason: string; finalizedAt: string }
-interface Season { id: number; startAt: string; endAt: string; cutoffAt: string; status: string; rules: { capacity: number; minimumMembers: number; minimumActive: number } }
+interface Season { id: number; startAt: string; endAt: string; cutoffAt: string; status: string; rules: { capacity: number; minimumMembers: number; minimumActive: number; promotionPercent?: number; demotionPercent?: number; minimumMovementSlots?: number } }
 interface Membership { memberKey: string; groupId: number; tier: string; joinedAt: string; weeklyXp: number; rank: number | null; projectedOutcome: string; result: Result | null }
 interface Overview { serverTime: string; revision: number; state: string; canJoin: boolean; season: Season | null; membership: Membership | null }
 interface Member { memberKey: string; displayName: string; isSelf: boolean; rank: number; weeklyXp: number; outcome: string }
@@ -12,10 +12,16 @@ interface Board { items: Member[]; self: Member; revision: number; provisional: 
 interface History { items: { season: Season; groupId: number; result: Result }[]; totalElements: number; totalPages: number }
 const tiers: Record<string, string> = { BRONZE: 'Đồng', SILVER: 'Bạc', GOLD: 'Vàng', PLATINUM: 'Bạch Kim', DIAMOND: 'Kim Cương' };
 const outcomes: Record<string, string> = { KEEP: 'Giữ bậc', PROMOTE: 'Lên bậc', DEMOTE: 'Xuống bậc' };
-const holds: Record<string, string> = { NONE: '', TOO_FEW_MEMBERS: 'Nhóm chưa đủ 10 thành viên để xét lên/xuống bậc.', TOO_FEW_ACTIVE: 'Nhóm cần ít nhất 5 người có XP để xét lên/xuống bậc.', TIED_BOUNDARY: 'Khối hòa điểm vắt ranh giới nên giữ bậc.', MINIMUM_TIER: 'Bạn đang ở bậc đầu tiên.', MAXIMUM_TIER: 'Bạn đang ở bậc cao nhất.' };
+const holds: Record<string, string> = { NONE: '', TIED_BOUNDARY: 'Khối hòa điểm vắt ranh giới nên giữ bậc.', MINIMUM_TIER: 'Bạn đang ở bậc đầu tiên.', MAXIMUM_TIER: 'Bạn đang ở bậc cao nhất.' };
+function holdReason(reason: string, rules?: Season['rules']) {
+  if (reason === 'TOO_FEW_MEMBERS') return rules ? `Nhóm cần ít nhất ${rules.minimumMembers} thành viên để xét lên/xuống bậc.` : 'Nhóm chưa đủ thành viên theo luật của tuần đó.';
+  if (reason === 'TOO_FEW_ACTIVE') return rules ? `Nhóm cần ít nhất ${rules.minimumActive} người có XP để xét lên/xuống bậc.` : 'Nhóm chưa đủ người có XP theo luật của tuần đó.';
+  return holds[reason] ?? reason;
+}
 const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
 
-export default function LeagueDashboard() {
+export default function LeagueDashboard({ embedded = false }: { embedded?: boolean }) {
+  const Heading = embedded ? 'h2' : 'h1';
   const [overview, setOverview] = useState<Overview | null>(null), [board, setBoard] = useState<Board | null>(null), [history, setHistory] = useState<History | null>(null);
   const [page, setPage] = useState(0), [historyPage, setHistoryPage] = useState(0), [refresh, setRefresh] = useState(0);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -62,7 +68,7 @@ export default function LeagueDashboard() {
   }
   const member = overview?.membership, season = overview?.season;
   return <section className="rewards-page league-page">
-    <div className="reward-heading"><div><span className="eyebrow">CÙNG NHAU GIỮ NHỊP HỌC</span><h1>Giải đấu tuần<span>.</span></h1><p className="muted">Thi đua bằng XP học tập. Mỗi tuần là một lần chủ động tham gia.</p></div><button className="button secondary" onClick={() => setRefresh(v => v + 1)}>Tải lại bảng</button></div>
+    <div className="reward-heading"><div><span className="eyebrow">CÙNG NHAU GIỮ NHỊP HỌC</span><Heading>Giải đấu tuần<span>.</span></Heading><p className="muted">Thi đua bằng XP học tập. Mỗi tuần là một lần chủ động tham gia.</p></div><button className="button secondary" onClick={() => setRefresh(v => v + 1)}>Tải lại bảng</button></div>
     {error && <div className="message error" role="alert">{error}</div>}
     {!overview && !error && <p role="status">Đang tải giải đấu…</p>}
     {overview?.state === 'UNAVAILABLE' && <div className="panel league-intro"><h2>Tuần thi đấu đang được chuẩn bị</h2><p>Vui lòng tải lại sau ít giây.</p></div>}
@@ -73,19 +79,19 @@ export default function LeagueDashboard() {
       {overview?.state === 'WAITING_PREVIOUS_SETTLEMENT' && <p role="status">Nhóm tuần trước của bạn đang chờ chốt. Sau khi có kết quả, bạn có thể tham gia tuần mới.</p>}
       {(overview?.canJoin || pending.current) && <button className="button" disabled={busy} onClick={() => void join()}>{busy ? 'Đang tham gia…' : pending.current ? 'Kiểm tra lần tham gia' : 'Tham gia tuần này'}</button>}
       {member && <div className="league-self"><div><span>XP tuần của bạn</span><strong>{member.weeklyXp}</strong></div><div><span>Thứ hạng {member.result ? 'chính thức' : 'tạm thời'}</span><strong>#{member.rank ?? '—'}</strong></div><div><span>{member.result ? 'Kết quả' : 'Dự kiến'}</span><strong>{outcomes[member.projectedOutcome]}</strong></div></div>}
-      {member?.result && <p>{holds[member.result.holdReason]} Bậc tiếp theo: <strong>{tiers[member.result.tierAfter]}</strong>.</p>}
+      {member?.result && <p>{holdReason(member.result.holdReason, season.rules)} Bậc tiếp theo: <strong>{tiers[member.result.tierAfter]}</strong>.</p>}
       {member && !member.result && season.status !== 'OPEN' && <p role="status">Tuần đã đóng nhận tham gia. Bảng đang chờ chốt sau {date(season.cutoffAt)}.</p>}
     </article>}
     {board && <article className="panel league-board"><div className="reward-history-head"><h2>Bảng nhóm của bạn</h2><span className="muted">{board.groupStats.memberCount}/25 thành viên · {board.groupStats.activeCount} người có XP</span></div>
-      <p className="muted">{board.provisional ? 'Thứ hạng tạm thời, có thể thay đổi đến khi chốt tuần.' : 'Kết quả chính thức đã được lưu.'} {holds[board.groupStats.holdReason]}</p>
+      <p className="muted">{board.provisional ? 'Thứ hạng tạm thời, có thể thay đổi đến khi chốt tuần.' : 'Kết quả chính thức đã được lưu.'} {holdReason(board.groupStats.holdReason, season?.rules)}</p>
       <div className="league-table-wrap"><table><thead><tr><th>Hạng</th><th>Học viên</th><th>XP tuần</th><th>{board.provisional ? 'Dự kiến' : 'Kết quả'}</th></tr></thead><tbody>{board.items.map(row => <tr key={row.memberKey} className={row.isSelf ? 'league-me' : ''}><td>#{row.rank}</td><td>{row.displayName}{row.isSelf && <small> · Bạn</small>}</td><td><strong>{row.weeklyXp}</strong></td><td>{outcomes[row.outcome]}</td></tr>)}</tbody></table></div>
       {!board.items.some(row => row.isSelf) && <p>Vị trí của bạn: #{board.self.rank} · {board.self.weeklyXp} XP · {outcomes[board.self.outcome]}</p>}
       <div className="pagination"><span>Trang {page + 1}/{Math.max(1, board.totalPages)}</span><div><button className="button secondary" disabled={page === 0} onClick={() => setPage(v => v - 1)}>Trang trước</button><button className="button secondary" disabled={page + 1 >= board.totalPages} onClick={() => setPage(v => v + 1)}>Trang sau</button></div></div>
       <button className="link-button" onClick={() => navigate({ view: 'learning' }, { reset: true })}>Học và tích lũy XP tuần →</button>
     </article>}
-    <details className="panel league-rules"><summary>Luật xếp hạng và tính điểm</summary><p>Tuần bắt đầu thứ Hai lúc 00:00, theo giờ Việt Nam. Tối đa 25 người/nhóm; chỉ xét lên/xuống khi đủ 10 thành viên và 5 người có XP. Mỗi phía có tối đa 20% số thành viên.</p><p>Người bằng XP có cùng hạng. Khối hòa vắt ranh giới giữ bậc, không phân xử bằng thời điểm tham gia. Đồng không xuống thấp hơn; Kim Cương không lên cao hơn. Vắng tuần giữ bậc đã chốt gần nhất.</p><p>Bài nộp thuộc tuần cũ được xét thêm trong 2 phút sau hết tuần. Sau mốc đó, XP cá nhân hợp lệ vẫn được nhận nhưng bảng tuần cũ giữ nguyên. XP trước khi tham gia không được cộng ngược vào bảng.</p></details>
+    <details className="panel league-rules"><summary>Luật xếp hạng và tính điểm</summary><p>Tuần bắt đầu thứ Hai lúc 00:00, theo giờ Việt Nam. Tối đa {season?.rules.capacity ?? 25} người/nhóm; xét lên/xuống khi đủ {season?.rules.minimumMembers ?? 2} thành viên và {season?.rules.minimumActive ?? 2} người có XP. Số suất lên bậc lấy {season?.rules.promotionPercent ?? 20}% số thành viên, xuống bậc lấy {season?.rules.demotionPercent ?? 20}%, làm tròn xuống.{(season?.rules.minimumMovementSlots ?? 0) > 0 && <> Nhóm nhỏ vẫn có ít nhất {season!.rules.minimumMovementSlots} suất mỗi phía khi đủ điều kiện.</>}</p><p>Người bằng XP có cùng hạng. Khối hòa vắt ranh giới giữ bậc, không phân xử bằng thời điểm tham gia. Đồng không xuống thấp hơn; Kim Cương không lên cao hơn. Vắng tuần giữ bậc đã chốt gần nhất.</p><p>Bài nộp thuộc tuần cũ được xét thêm trong 2 phút sau hết tuần. Sau mốc đó, XP cá nhân hợp lệ vẫn được nhận nhưng bảng tuần cũ giữ nguyên. XP trước khi tham gia không được cộng ngược vào bảng.</p></details>
     <article className="panel reward-history"><h2>Lịch sử tuần của bạn</h2>{history && !history.items.length && <p className="muted">Chưa có tuần đã chốt. Kết quả sẽ xuất hiện ở đây sau khi nhóm hoàn tất.</p>}
-      {history?.items.map(item => <article key={item.season.id}><div className="reward-history-head"><div><strong>{date(item.season.startAt)} · {tiers[item.result.tierBefore]}</strong><small>#{item.result.rank}/{item.result.memberCount} · {item.result.weeklyXp} XP</small></div><strong>{outcomes[item.result.outcome]} → {tiers[item.result.tierAfter]}</strong></div><p className="muted">{holds[item.result.holdReason]}</p></article>)}
+      {history?.items.map(item => <article key={item.season.id}><div className="reward-history-head"><div><strong>{date(item.season.startAt)} · {tiers[item.result.tierBefore]}</strong><small>#{item.result.rank}/{item.result.memberCount} · {item.result.weeklyXp} XP</small></div><strong>{outcomes[item.result.outcome]} → {tiers[item.result.tierAfter]}</strong></div><p className="muted">{holdReason(item.result.holdReason, item.season.rules)}</p></article>)}
       {history && history.totalPages > 1 && <div className="pagination"><span>{history.totalElements} tuần đã chốt</span><div><button className="button secondary" disabled={historyPage === 0} onClick={() => setHistoryPage(v => v - 1)}>Tuần mới hơn</button><button className="button secondary" disabled={historyPage + 1 >= history.totalPages} onClick={() => setHistoryPage(v => v + 1)}>Tuần cũ hơn</button></div></div>}
     </article>
   </section>;

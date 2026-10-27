@@ -436,6 +436,36 @@
         "updateAvailable": true,
         "lastScorePercent": 80
       }
+    },
+    {
+      "name": "ordering partial answer",
+      "schema": "#/components/schemas/Answer",
+      "body": {
+        "type": "ORDERING",
+        "tokenIds": [
+          "word-1"
+        ]
+      }
+    },
+    {
+      "name": "ordering public question has tokens without keys",
+      "schema": "#/components/schemas/PublicQuestion",
+      "body": {
+        "type": "ORDERING",
+        "prompt": "Make a sentence",
+        "content": {
+          "tokens": [
+            {
+              "id": "a",
+              "text": "She"
+            },
+            {
+              "id": "b",
+              "text": "runs"
+            }
+          ]
+        }
+      }
     }
   ],
   "invalid": [
@@ -729,6 +759,26 @@
         "materialFeedback": []
       },
       "reason": "Missing required or forbidden field / const according to OpenAPI"
+    },
+    {
+      "name": "ordering rejects repeated token ids",
+      "schema": "#/components/schemas/Answer",
+      "body": {
+        "type": "ORDERING",
+        "tokenIds": [
+          "a",
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "ordering rejects foreign transport fields",
+      "schema": "#/components/schemas/Answer",
+      "body": {
+        "type": "ORDERING",
+        "tokenIds": [],
+        "answerKey": {}
+      }
     }
   ]
 }

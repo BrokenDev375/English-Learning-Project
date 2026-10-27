@@ -1,3 +1,4 @@
+import { write } from './round-fixtures';
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import type { Item, Snapshot, Result } from '../src/features/learning/types';
@@ -17,9 +18,9 @@ async function student(page: Page) {
   await page.goto('/#/learning'); await login(page, email); return email;
 }
 async function start(page: Page) {
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click();
-  await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click();
-  await page.getByRole('button', { name: 'Bắt đầu học', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click();
+  await page.getByRole('button', { name: /Chơi bài 1 · A day with Linh/ }).click();
+  await page.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click();
   await expect(page.locator('.question-nav button')).toHaveCount(10);
   return snapshot(page);
 }
@@ -29,7 +30,7 @@ async function fill(page: Page, item: Item) {
   const fields = page.locator('.answer-fields');
   if (item.question.type === 'SINGLE_CHOICE') await fields.getByRole('radio').first().check();
   if (item.question.type === 'FILL_BLANK') for (const input of await fields.getByRole('textbox').all()) await input.fill('demo');
-  if (item.question.type === 'MATCHING') for (const [i, input] of (await fields.getByRole('combobox').all()).entries()) await input.selectOption({ index: i + 1 });
+  if (item.question.type === 'MATCHING') for (let i = 0; i < item.question.content.leftItems!.length; i++) { await fields.locator('.matching-left button').nth(i).click(); await fields.locator('.matching-right button').nth(i).click(); }
 }
 async function settled(page: Page) { await expect(page.locator('.learning-status')).not.toContainText('Đang gửi'); }
 async function save(page: Page) { await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ'); }
@@ -107,9 +108,9 @@ test('LEARN renders all answer types, saves/restores, completes, corrects and up
   }
   await save(page); const restored = await snapshot(page); expect(restored.items.every(i => i.response)).toBe(true);
   await page.reload(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
-  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Lượt làm của tôi.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Lịch sử làm bài.' })).toBeVisible();
   await page.goBack(); await expect(page.locator('.question-nav button')).toHaveCount(10); expect(page.url()).toBe(url);
-  await page.goForward(); await expect(page.getByRole('heading', { name: 'Lượt làm của tôi.' })).toBeVisible();
+  await page.goForward(); await expect(page.getByRole('heading', { name: 'Lịch sử làm bài.' })).toBeVisible();
   await page.goBack(); await settled(page); await submit(page);
   await expect(page.getByRole('heading', { name: 'Đã hoàn thành bài học', exact: true })).toBeVisible();
   const before: Result = await (await page.request.get('/api/attempts/' + s.attemptId + '/result')).json();
@@ -119,13 +120,13 @@ test('LEARN renders all answer types, saves/restores, completes, corrects and up
   await page.screenshot({ path: 'test-results/module-3-result-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/module-3-result-mobile.png', fullPage: true });
-  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await page.getByRole('tab', { name: 'Khám phá bài học', exact: true }).click();
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await expect(page.getByText('Đã hoàn thành bài học', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await page.getByRole('tab', { name: 'Chơi theo vòng', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click(); await expect(page.getByText('Đã hoàn thành bài học', { exact: true })).toBeVisible();
 });
-test('PRACTICE supports filters, early submit, immutable result and a direct URL after reload', async ({ page }) => {
-  await student(page); await page.getByRole('tab', { name: 'Luyện tập theo chủ đề', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 }); await page.getByLabel('Số câu', { exact: true }).fill('3');
-  await page.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(3);
+test('legacy PRACTICE work stays accessible by history and direct URL after the menu is removed', async ({ page }) => {
+  await student(page);
+  const legacy = await write(page.request, '/api/attempts', { requestId: crypto.randomUUID(), mode: 'PRACTICE', topicId: 1, difficulty: 'EASY', count: 3 });
+  await page.goto('/#/learning?tab=practice&attempt=' + legacy.attemptId); await expect(page.locator('.question-nav button')).toHaveCount(3);
   const s = await snapshot(page); expect(s.mode).toBe('PRACTICE'); await expect(page.getByRole('button', { name: 'Mở gợi ý', exact: true })).toHaveCount(0);
   await submit(page); await expect(page.locator('.result-score')).toContainText('3 câu chưa trả lời');
   await page.reload(); await expect(page.locator('.result-score')).toContainText('0.00'); expect((await snapshot(page)).attemptId).toBe(s.attemptId);
@@ -192,12 +193,6 @@ test('real audio restores absolute position and clamps to the supplied segment o
   await audio.evaluate((p: HTMLAudioElement) => { p.currentTime = 5; }); await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.currentTime)).toBeLessThanOrEqual(3.01);
   await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: 'test-results/module-3-runner-mobile.png', fullPage: true });
 });
-test('teacher can browse introductions without student actions or attempt/progress requests', async ({ page }) => {
-  let privateRequests = 0; page.on('request', r => { if (/\/api\/(attempts|me\/learning-progress)/.test(r.url())) privateRequests++; });
-  await page.goto('/#/learning'); await login(page, local.DEMO_TEACHER_EMAIL ?? 'teacher@english.local', local.DEMO_TEACHER_PASSWORD ?? 'Teacher@12345');
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click();
-  await expect(page.getByRole('button', { name: 'Bắt đầu học', exact: true })).toHaveCount(0); await expect(page.getByRole('tab', { name: 'Luyện tập theo chủ đề', exact: true })).toHaveCount(0); expect(privateRequests).toBe(0);
-});
 test('lost create response survives sidebar navigation and replays the exact command', async ({ page }) => {
   await student(page); let original: unknown; let calls = 0;
   await page.route('**/api/attempts', async route => {
@@ -205,9 +200,9 @@ test('lost create response survives sidebar navigation and replays the exact com
     if (calls === 1) { original = route.request().postDataJSON(); expect((await route.fetch()).status()).toBe(201); return route.abort('failed'); }
     expect(route.request().postDataJSON()).toEqual(original); return route.continue();
   });
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click(); await page.getByRole('button', { name: 'Bắt đầu học', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click(); await page.getByRole('button', { name: /Chơi bài 1 · A day with Linh/ }).click(); await page.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Tài khoản', exact: true }).click(); await page.getByRole('button', { name: 'Khám phá bài học', exact: true }).click();
+  await page.getByRole('button', { name: 'Tài khoản', exact: true }).click(); await page.getByRole('button', { name: 'Vào chơi', exact: true }).click();
   await page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10); expect(calls).toBe(2);
   expect((await (await page.request.get('/api/attempts')).json()).totalElements).toBe(1);
 });
@@ -216,12 +211,6 @@ test('logout discards private memory; another student cannot load the previous a
   const radio = page.locator('.answer-fields').getByRole('radio').first(); await radio.focus(); await page.keyboard.press('ArrowDown'); await expect(page.locator('.answer-fields').getByRole('radio').nth(1)).toBeChecked();
   page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click(); await expect(page.getByRole('button', { name: 'Đăng nhập', exact: true })).toBeVisible();
   await student(page); const denied = page.waitForResponse(r => /\/api\/attempts\/\d+$/.test(r.url())); await page.goto(url); expect((await denied).status()).toBe(404); await expect(page.getByRole('alert')).toBeVisible(); await expect(page.locator('.answer-fields')).toHaveCount(0);
-});
-test('admin can browse without real attempts or learning progress calls', async ({ page }) => {
-  let calls = 0; page.on('request', r => { if (/\/api\/(attempts|me\/learning-progress)/.test(r.url())) calls++; });
-  await page.goto('/#/learning'); await login(page, local.BOOTSTRAP_ADMIN_EMAIL, local.BOOTSTRAP_ADMIN_PASSWORD);
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click();
-  await expect(page.getByRole('button', { name: 'Bắt đầu học', exact: true })).toHaveCount(0); expect(calls).toBe(0);
 });
 test('actual 15-second timeout retains the request key and blocks later mutations', async ({ page }) => {
   test.setTimeout(60000); await student(page); await start(page); await page.locator('.answer-fields').getByRole('radio').first().check(); let original: unknown; let calls = 0;
@@ -255,12 +244,12 @@ test('lesson introduction deduplicates description and distinguishes completed, 
     if (first.items[i].practiceRole === 'GUIDED') { await page.getByRole('button', { name: 'Kiểm tra đáp án', exact: true }).click(); await settled(page); }
   }
   await submit(page); await expect(page.getByRole('heading', { name: 'Đã hoàn thành bài học', exact: true })).toBeVisible();
-  await page.goto(introUrl.toString()); await expect(page.getByRole('button', { name: 'Học lại', exact: true })).toBeEnabled();
+  await page.goto(introUrl.toString()); await expect(page.getByRole('button', { name: 'Chơi lại bài', exact: true })).toBeEnabled();
   const intro = await (await page.request.get('/api/lessons/' + first.lesson!.lesson.id)).json();
   await expect(page.getByText(intro.lesson.description, { exact: true })).toHaveCount(1); await expect(page.locator('.lesson-facts')).toContainText('10 câu');
   const actions = page.locator('.lesson-intro-actions'); const firstBox = await actions.getByRole('button').first().boundingBox(), lastBox = await actions.getByRole('button').last().boundingBox();
   expect(Math.abs(firstBox!.y - lastBox!.y)).toBeLessThan(2); await page.screenshot({ path: 'test-results/module-3-intro-completed-desktop.png', fullPage: true });
-  await page.getByRole('button', { name: 'Học lại', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10); const second = await snapshot(page); expect(second.attemptId).not.toBe(first.attemptId);
+  await page.getByRole('button', { name: 'Chơi lại bài', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10); const second = await snapshot(page); expect(second.attemptId).not.toBe(first.attemptId);
   await page.goto(introUrl.toString()); await expect(page.getByRole('button', { name: 'Tiếp tục làm', exact: true })).toBeEnabled(); await expect(page.getByText('Đã hoàn thành bài học', { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: 'test-results/module-3-intro-active-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Xem kết quả gần nhất', exact: true }).click(); await expect(page.locator('.result-score')).toBeVisible(); expect((await snapshot(page)).attemptId).toBe(first.attemptId);
@@ -269,6 +258,20 @@ test('lesson introduction deduplicates description and distinguishes completed, 
   // Correcting the older submission changes updatedAt, but the more recently submitted result must stay selected.
   const token = await (await page.request.get('/api/auth/csrf')).json(); const old = await (await page.request.get('/api/attempts/' + first.attemptId)).json() as Snapshot;
   const corrected = await page.request.post('/api/attempts/' + first.attemptId + '/items/' + first.items[0].attemptQuestionId + '/retry', { headers: { [token.headerName]: token.token }, data: { requestId: crypto.randomUUID(), baseRevision: old.revision, response: { type: 'SINGLE_CHOICE', optionId: first.items[0].question.content.options![0].id } } }); expect(corrected.status()).toBe(200);
-  await page.goto(introUrl.toString()); await page.getByRole('button', { name: 'Học lại', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10);
+  await page.goto(introUrl.toString()); await page.getByRole('button', { name: 'Chơi lại bài', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10);
   await page.goto(introUrl.toString()); await expect(page.getByRole('button', { name: 'Tiếp tục làm', exact: true })).toBeEnabled(); await page.getByRole('button', { name: 'Xem kết quả gần nhất', exact: true }).click(); await expect(page.locator('.result-score')).toBeVisible(); expect((await snapshot(page)).attemptId).toBe(second.attemptId);
+});
+
+test('teacher can browse introductions without student actions or attempt/progress requests', async ({ page }) => {
+  let privateRequests = 0; page.on('request', r => { if (/\/api\/(attempts|me\/learning-progress)/.test(r.url())) privateRequests++; });
+  await page.goto('/#/learning'); await login(page, local.DEMO_TEACHER_EMAIL ?? 'teacher@english.local', local.DEMO_TEACHER_PASSWORD ?? 'Teacher@12345');
+  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click();
+  await expect(page.getByRole('button', { name: 'Bắt đầu chơi', exact: true })).toHaveCount(0); await expect(page.getByRole('tab', { name: 'Luyện tự chọn', exact: true })).toHaveCount(0); expect(privateRequests).toBe(0);
+});
+
+test('admin can browse without real attempts or learning progress calls', async ({ page }) => {
+  let calls = 0; page.on('request', r => { if (/\/api\/(attempts|me\/learning-progress)/.test(r.url())) calls++; });
+  await page.goto('/#/learning'); await login(page, local.BOOTSTRAP_ADMIN_EMAIL, local.BOOTSTRAP_ADMIN_PASSWORD);
+  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click();
+  await expect(page.getByRole('button', { name: 'Bắt đầu chơi', exact: true })).toHaveCount(0); expect(calls).toBe(0);
 });

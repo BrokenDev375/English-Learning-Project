@@ -63,6 +63,12 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     }
     public Page<LessonProgressEntity> progress(long userId,Long unitId,int page,int size){return progress.pageOwned(userId,unitId,PageRequest.of(page,size));}
     public Page<LessonEntity> progressLessons(long userId,Long unitId,int page,int size){return lessons.progressLessons(userId,unitId,PageRequest.of(page,size));}
+    public List<LessonEntity> publishedRoundLessons(Collection<Long> unitIds) {
+        return unitIds.isEmpty()?List.of():em.createQuery("select l from LessonEntity l join fetch l.published where l.unitId in :units and l.retiredAt is null order by l.sortOrder,l.id",LessonEntity.class).setParameter("units",unitIds).getResultList();
+    }
+    public List<LessonProgressEntity> roundProgress(long userId,Collection<Long> unitIds) {
+        return unitIds.isEmpty()?List.of():em.createQuery("select p from LessonProgressEntity p join LessonEntity l on l.id=p.id.lessonId where p.id.userId=:user and l.unitId in :units",LessonProgressEntity.class).setParameter("user",userId).setParameter("units",unitIds).getResultList();
+    }
     public AttemptEntity save(AttemptEntity v){
         var saved=attempts.saveAndFlush(v);
         if(saved.getRevision()>0) events.publishEvent(new vn.edu.ptit.english.socket.AttemptChanged(saved.getUserId(),saved.getId(),saved.getRevision()));

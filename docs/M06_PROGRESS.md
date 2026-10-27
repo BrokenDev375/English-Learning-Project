@@ -51,3 +51,7 @@ Người dùng review rồi quyết định commit/push/PR. Không tạo file m�
 - Thêm ba ca backend cho hai giao thức subscription cùng socket, quyền/bỏ theo dõi độc lập và hết heartbeat; hai ca manager và một E2E tích hợp reconnect thực với API/MySQL.
 - Backend **246/246 PASS** (0 failure/error/skip; BUILD SUCCESS, 13:21 min), browser **82/82 PASS** trong một lượt (4.1 phút), manager **9/9**, IndexedDB/journal **6/6** và build TypeScript/Vite PASS. Kết quả và giới hạn tại [biên bản M06](../statics/results/module-6-validation.md).
 - Không thay migration V1–V8, không chạy test ghi vào demo hoặc xóa volume. Không sửa lỗi join khi account bị khóa đã được review riêng ở M05 trong lượt tích hợp này.
+
+## Mở rộng vòng học và tương tác — 25/10/2026
+
+Storage guard nhận ORDERING và acceptedOrders trong feedback đã cấp; đáp án tokenIds đi qua cùng autosave/IndexedDB/journal. Giao diện ghép/sắp xếp hỗ trợ phục hồi cùng bản nháp, không thay chính sách replay hoặc revision. Xem [tiến độ chung](LEARNING_JOURNEY_PROGRESS.md) và [biên bản kiểm tra](../statics/results/learning-journey-validation.md). Các số kiểm thử ở phần trước thuộc mốc lịch sử, không thay kết quả của lượt mới.

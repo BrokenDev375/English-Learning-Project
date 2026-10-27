@@ -6,8 +6,8 @@ async function student(page: Page) {
   const csrf = await (await page.request.get('/api/auth/csrf')).json();
   expect((await page.request.post('/api/auth/register', { headers: { [csrf.headerName]: csrf.token }, data: { email, password: 'LearningTest@12345', fullName: 'Học viên M06' } })).status()).toBe(201);
   await page.goto('/#/learning'); await page.getByLabel('Email', { exact: true }).fill(email); await page.getByLabel('Mật khẩu', { exact: true }).fill('LearningTest@12345'); await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click();
-  await page.getByRole('button', { name: /Xem giới thiệu A day with Linh/ }).click(); await page.getByRole('button', { name: 'Bắt đầu học', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click();
+  await page.getByRole('button', { name: /Chơi bài 1 · A day with Linh/ }).click(); await page.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click();
   await expect(page.locator('.question-nav button')).toHaveCount(10); return email;
 }
 const status = (page: Page) => page.locator('.learning-status');
@@ -114,31 +114,27 @@ test('socket ACK loss triggers reconnect while HTTP learning continues', async (
 });
 
 test('create committed without ACK persists through reload and does not allocate a second Attempt', async ({ page }) => {
-  // Start one student first, then create a distinct PRACTICE intent.
-  await student(page); await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click(); await page.getByRole('tab', { name: 'Luyện tập theo chủ đề', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 });
-  await page.getByLabel('Số câu', { exact: true }).fill('3');
+  // Start lesson 1, then create a distinct LEARN intent for lesson 2 in the same unlocked round.
+  await student(page); await page.goto('/#/learning?unit=1&lesson=2');
+  await expect(page.getByRole('button', { name: 'Bắt đầu chơi', exact: true })).toBeEnabled();
   let payload: unknown; let calls = 0;
   await page.route('**/api/attempts', async route => {
     if (route.request().method() !== 'POST') return route.continue();
     if (++calls === 1) { payload = route.request().postDataJSON(); expect((await route.fetch()).status()).toBe(201); return route.abort(); }
     expect(route.request().postDataJSON()).toEqual(payload); return route.continue();
   });
-  await page.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click(); await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt' })).toBeVisible();
-  await page.reload(); await page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt' }).click(); await expect(page.locator('.question-nav button')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click(); await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt' })).toBeVisible();
+  await page.reload(); await page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt' }).click(); await expect(page.locator('.question-nav button')).toHaveCount(10);
   expect(calls).toBe(2); expect((await (await page.request.get('/api/attempts')).json()).totalElements).toBe(2);
 });
 
 for (const reloadWhileWaiting of [false, true]) test(`another tab selecting B never opens pending A${reloadWhileWaiting ? ', including recovery after reload' : ''}`, async ({ page, context }) => {
   await student(page);
-  await page.getByRole('button', { name: 'Về danh sách lượt', exact: true }).click();
-  await page.getByRole('tab', { name: 'Luyện tập theo chủ đề', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 });
-  await page.getByLabel('Số câu', { exact: true }).fill('2');
-  // Both catalogs are mounted before A creates its shared journal entry.
-  const tab = await context.newPage(); await tab.goto(page.url());
-  await tab.getByRole('combobox', { name: 'Chủ đề luyện tập', exact: true }).selectOption({ index: 1 });
-  await tab.getByLabel('Số câu', { exact: true }).fill('3');
+  await page.goto('/#/learning?unit=1&lesson=2');
+  await expect(page.getByRole('button', { name: 'Bắt đầu chơi', exact: true })).toBeEnabled();
+  // Both lesson introductions are mounted before A creates its shared journal entry.
+  const tab = await context.newPage(); await tab.goto('/#/learning?unit=1&lesson=1');
+  await expect(tab.getByRole('button', { name: 'Tiếp tục làm', exact: true })).toBeEnabled();
   let bodyA: { requestId: string }, attemptA = 0;
   await page.route('**/api/attempts', async route => {
     if (route.request().method() !== 'POST') return route.continue();
@@ -146,12 +142,12 @@ for (const reloadWhileWaiting of [false, true]) test(`another tab selecting B ne
     const response = await route.fetch(); expect(response.status()).toBe(201);
     attemptA = (await response.json()).attemptId; await route.abort();
   });
-  await page.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click();
+  await page.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true })).toBeVisible();
   let release!: () => void, started!: () => void, failRecovery = reloadWhileWaiting;
   const gate = new Promise<void>(resolve => { release = resolve; });
   const recoveryStarted = new Promise<void>(resolve => { started = resolve; });
-  const posted: { requestId: string; count: number }[] = [];
+  const posted: { requestId: string; lessonId: number }[] = [];
   await tab.route('**/api/attempts', async route => {
     if (route.request().method() !== 'POST') return route.continue();
     const body = route.request().postDataJSON(); posted.push(body);
@@ -162,7 +158,7 @@ for (const reloadWhileWaiting of [false, true]) test(`another tab selecting B ne
     return route.continue();
   });
   try {
-    await tab.getByRole('button', { name: 'Bắt đầu hoặc tiếp tục luyện tập', exact: true }).click();
+    await tab.getByRole('button', { name: 'Tiếp tục làm', exact: true }).click();
     await recoveryStarted;
     await expect(tab.getByRole('status').filter({ hasText: 'Đang xác nhận và mở lượt làm bạn đã chọn' })).toBeVisible();
     expect(tab.url()).not.toContain('attempt=');
@@ -172,11 +168,38 @@ for (const reloadWhileWaiting of [false, true]) test(`another tab selecting B ne
     await tab.reload();
     await tab.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true }).click();
   }
-  await expect(tab.locator('.question-nav button')).toHaveCount(3);
+  await expect(tab.locator('.question-nav button')).toHaveCount(10);
   expect((await snapshot(tab)).attemptId).not.toBe(attemptA);
-  expect(posted.filter(row => row.requestId !== bodyA.requestId).map(row => row.count)).toEqual([3]);
-  expect((await (await tab.request.get('/api/attempts')).json()).totalElements).toBe(3);
+  expect(posted.filter(row => row.requestId !== bodyA.requestId).map(row => row.lessonId)).toEqual([1]);
+  expect((await (await tab.request.get('/api/attempts')).json()).totalElements).toBe(2);
   await tab.close();
+});
+
+test('a legacy PRACTICE command committed before the menu removal still replays from its journal', async ({ page }) => {
+  await student(page); const user = await (await page.request.get('/api/auth/me')).json();
+  const body = { requestId: crypto.randomUUID(), mode: 'PRACTICE', topicId: 1, difficulty: 'EASY', count: 3 };
+  const csrf = await (await page.request.get('/api/auth/csrf')).json();
+  const committed = await page.request.post('/api/attempts', { headers: { [csrf.headerName]: csrf.token }, data: body }); expect(committed.status()).toBe(201);
+  const original = await committed.json();
+  // Model the PREPARED journal left by the old UI after a lost server response.
+  await page.evaluate(({ userId, body }) => new Promise<void>((resolve, reject) => {
+    const open = indexedDB.open('english-learning-recovery', 1); open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result, tx = db.transaction('commands', 'readwrite');
+      tx.objectStore('commands').put({ key: `${userId}:${body.requestId}`, version: 1, userId, kind: 'create', body, status: 'PREPARED', queuedAt: Date.now() });
+      tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error);
+    };
+  }), { userId: user.id, body });
+  let replayed = 0;
+  await page.route('**/api/attempts', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    replayed++; expect(route.request().postDataJSON()).toEqual(body); return route.continue();
+  });
+  await page.goto('/#/learning?tab=practice'); await page.reload();
+  await expect(page.locator('.practice-form')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true }).click(); await expect(page.locator('.question-nav button')).toHaveCount(3);
+  expect((await snapshot(page)).attemptId).toBe(original.attemptId); expect(replayed).toBe(1);
+  expect((await (await page.request.get('/api/attempts')).json()).totalElements).toBe(2);
 });
 
 for (const corruption of ['command', 'snapshot']) test(`corrupt persisted ${corruption} is quarantined instead of dispatching an arbitrary URL`, async ({ page }) => {

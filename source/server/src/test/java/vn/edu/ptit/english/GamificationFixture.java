@@ -67,6 +67,8 @@ abstract class GamificationFixture {
         tx=new TransactionTemplate(transactions); clock.set("2026-10-21T12:00:00Z");
         if(hash==null) hash=passwords.encode(PASSWORD); String prefix=UUID.randomUUID().toString();
         tx.executeWithoutResult(s->{
+            // Keep the published journey isolated from earlier test fixtures.
+            em.createQuery("select l from LessonEntity l where l.retiredAt is null",LessonEntity.class).getResultList().forEach(LessonEntity::retire);
             em.createNativeQuery("UPDATE gamification_policies SET activated_at='2026-10-01 00:00:00',effective_at='2026-10-01 00:00:00'").executeUpdate();
             alice=users.create(prefix+"a@rewards.test",hash,"Alice",Role.STUDENT);
             bob=users.create(prefix+"b@rewards.test",hash,"Bob",Role.STUDENT);

@@ -17,7 +17,7 @@ public final class AuthoringRequests {
     }
     public record Copy(String requestId,long sourceVersionId) {}
     public record Order(String requestId,long baseRevision,List<Long> lessonIds) {}
-    public static final Set<String> TYPES=Set.of("SINGLE_CHOICE","FILL_BLANK","MATCHING"), DIFFICULTIES=Set.of("EASY","MEDIUM","HARD"), ROLES=Set.of("GUIDED","INDEPENDENT","REVIEW_VARIANT");
+    public static final Set<String> TYPES=Set.of("SINGLE_CHOICE","FILL_BLANK","MATCHING","ORDERING"), DIFFICULTIES=Set.of("EASY","MEDIUM","HARD"), ROLES=Set.of("GUIDED","INDEPENDENT","REVIEW_VARIANT");
     public static void strict(JsonNode n,String... names){if(n==null||!n.isObject())throw invalid("body","Cần dữ liệu dạng đối tượng.");var actual=new HashSet<String>();n.fieldNames().forEachRemaining(actual::add);if(!actual.equals(Set.of(names)))throw invalid("body","Các trường phải đúng và đủ theo loại nội dung.");}
     public static String text(JsonNode n,String key,int max,boolean nullable,boolean nonempty){var v=n.get(key);if(v!=null&&v.isNull()&&nullable)return null;if(v==null||!v.isTextual()||v.asText().length()>max||(nonempty&&v.asText().isEmpty()))throw invalid(key,"Thông tin thiếu hoặc vượt độ dài cho phép.");return v.asText();}
     public static long id(long value){if(value<1||value>9007199254740991L)throw invalid("id","Mã nội dung không hợp lệ.");return value;}
@@ -34,6 +34,15 @@ public final class AuthoringRequests {
         switch(type){
             case "SINGLE_CHOICE" -> {strict(c,"options");items(c,"options");strict(a,"correctOptionId");text(a,"correctOptionId",40,true,true);}
             case "FILL_BLANK" -> {strict(c,"parts");for(var p:array(c,"parts",21)){String kind=text(p,"kind",10,false,true);if(kind.equals("TEXT")){strict(p,"kind","text");text(p,"text",2000,false,false);}else if(kind.equals("BLANK")){strict(p,"kind","blankId");text(p,"blankId",40,false,true);}else throw invalid("content.parts","Loại đoạn không hợp lệ.");}strict(a,"blanks","caseSensitive","normalizeWhitespace");bool(a,"caseSensitive");bool(a,"normalizeWhitespace");for(var b:array(a,"blanks",5)){strict(b,"blankId","acceptedAnswers");text(b,"blankId",40,false,true);for(var v:array(b,"acceptedAnswers",10))if(!v.isTextual()||v.asText().isEmpty()||v.asText().length()>200)throw invalid("answerKey.blanks","Đáp án thiếu hoặc quá dài.");}}
+            case "ORDERING" -> {
+                strict(c,"tokens");
+                for(var token:array(c,"tokens",20)){strict(token,"id","text");text(token,"id",40,false,true);text(token,"text",100,false,false);}
+                strict(a,"acceptedOrders");
+                for(var order:array(a,"acceptedOrders",10)) {
+                    if(!order.isArray()||order.size()>20)throw invalid("answerKey.acceptedOrders","Thứ tự cần danh sách tối đa 20 mã từ.");
+                    for(var token:order)if(!token.isTextual()||token.asText().isEmpty()||token.asText().length()>40)throw invalid("answerKey.acceptedOrders","Mã từ không hợp lệ.");
+                }
+            }
             case "MATCHING" -> {strict(c,"leftItems","rightItems");items(c,"leftItems");items(c,"rightItems");strict(a,"pairs");for(var p:array(a,"pairs",6)){strict(p,"leftId","rightId");text(p,"leftId",40,false,true);text(p,"rightId",40,false,true);}}
         }
         return new QuestionInput(key(n),update?number(n,"baseRevision",0,false):null,update?number(n,"draftVersionId",1,false):null,

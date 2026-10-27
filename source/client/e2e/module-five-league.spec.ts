@@ -27,10 +27,10 @@ function answer(item: Item): Answer {
   if (item.question.type === 'FILL_BLANK') return { type: 'FILL_BLANK', values: key.blanks.map(b => ({ blankId: b.blankId, value: b.acceptedAnswers[0] })) };
   return { type: 'MATCHING', pairs: key.pairs };
 }
-async function practice(page: Page, topicIndex: number) {
+async function practice(page: Page, topicIndex: number, count = 3) {
   const units = await (await page.request.get('/api/units?size=50')).json();
   const unit = units.items.find((u: { title: string }) => u.title.includes(topicIndex ? 'Trường' : 'Sinh hoạt hằng ngày'));
-  const snapshot: Snapshot = await post(page, '/api/attempts', { requestId: crypto.randomUUID(), mode: 'PRACTICE', topicId: unit.topicId, difficulty: 'EASY', count: 3 });
+  const snapshot: Snapshot = await post(page, '/api/attempts', { requestId: crypto.randomUUID(), mode: 'PRACTICE', topicId: unit.topicId, difficulty: 'EASY', count });
   await post(page, `/api/attempts/${snapshot.attemptId}/submit`, { requestId: crypto.randomUUID(), baseRevision: snapshot.revision, playerState: snapshot.playerState,
     answers: snapshot.items.map(item => ({ attemptQuestionId: item.attemptQuestionId, response: answer(item) })) });
   await expect.poll(async () => (await (await page.request.get('/api/me/gamification')).json()).backlog.pendingSubmissions, { timeout: 20000 }).toBe(0);
@@ -46,6 +46,19 @@ async function memberRow(page: Page, name: string) {
   }
   return page.getByRole('row').filter({ hasText: name });
 }
+
+test('a two-member active group has a promotion slot and displays the easier current rules', async ({ page, browser }) => {
+  test.setTimeout(60000); await learner(page, 'Nhóm nhỏ A'); await page.getByRole('button', { name: 'Tham gia tuần này', exact: true }).click();
+  const context = await browser.newContext();
+  try {
+    const other = await context.newPage(); await learner(other, 'Nhóm nhỏ B'); await other.getByRole('button', { name: 'Tham gia tuần này', exact: true }).click();
+    await practice(page, 0, 3); await practice(other, 0, 2);
+    await expect.poll(async () => (await (await page.request.get('/api/me/league/leaderboard')).json()).groupStats.movementEnabled, { timeout: 20000 }).toBe(true);
+    const overview = await (await page.request.get('/api/me/league')).json(), board = await (await page.request.get('/api/me/league/leaderboard')).json();
+    expect(overview.season.rules.minimumMembers).toBe(2); expect(overview.season.rules.minimumActive).toBe(2); expect(board.groupStats.memberCount).toBe(2); expect(board.groupStats.promotionQuota).toBe(1); expect(board.self.outcome).toBe('PROMOTE');
+    await page.reload(); await page.locator('.league-rules summary').click(); await expect(page.locator('.league-rules')).toContainText('đủ 2 thành viên và 2 người có XP'); await expect(page.locator('.league-rules')).toContainText('ít nhất 1 suất'); await expect(page.locator('.league-self')).toContainText('Lên bậc');
+  } finally { await context.close(); }
+});
 
 test('join lost ACK replays same request and refresh keeps the membership', async ({ page }) => {
   await learner(page, 'Học viên kiểm tra tham gia');

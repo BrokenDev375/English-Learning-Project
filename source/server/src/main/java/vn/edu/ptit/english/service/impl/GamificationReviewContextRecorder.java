@@ -17,7 +17,7 @@ public class GamificationReviewContextRecorder implements ReviewRewardContextRec
     public GamificationReviewContextRecorder(ReviewRepository review,GamificationContextRepository rewards) { this.review=review; this.rewards=rewards; }
     @Override @Transactional(propagation=Propagation.MANDATORY)
     public void capture(long attemptId,long userId,Collection<Long> objectiveIds,Instant at) {
-        var policy=rewards.policy();
+        var policy=rewards.policyAt(at);
         for(long objectiveId:new TreeSet<>(objectiveIds)) {
             var p=review.progress(new ReviewObjectiveKey(userId,objectiveId)).orElse(null);
             // Other provider implementations may have no M04 schedule. Never invent evidence.

@@ -69,6 +69,8 @@ test('review uses unseen variants, retains drafts and reschedules after independ
   await register(page); const learned = await prepare(page); await openReview(page);
   await expect(page.locator('.review-objective')).toHaveCount(1);
   await expect(page.locator('.review-state')).toHaveText('Cần luyện thêm');
+  await expect(page.locator('.review-reason strong')).toHaveText('Vì sao cần ôn?');
+  await expect(page.locator('.review-reason span')).not.toBeEmpty();
   const data = await (await page.request.get('/api/me/review')).json();
   expect(data.objectives.items[0].hasMistakes).toBe(true);
   await page.getByLabel('Số câu mỗi lượt', { exact: true }).fill('1');
@@ -81,7 +83,7 @@ test('review uses unseen variants, retains drafts and reschedules after independ
   const first = s.items[0];
   if (first.question.type === 'SINGLE_CHOICE') await page.locator('.answer-fields').getByRole('radio').first().check();
   else if (first.question.type === 'FILL_BLANK') for (const field of await page.locator('.answer-fields').getByRole('textbox').all()) await field.fill('draft');
-  else for (const [i, field] of (await page.locator('.answer-fields').getByRole('combobox').all()).entries()) await field.selectOption({ index: i + 1 });
+  else if (first.question.type === 'MATCHING') for (let i = 0; i < first.question.content.leftItems!.length; i++) { await page.locator('.matching-left button').nth(i).click(); await page.locator('.matching-right button').nth(i).click(); }
   await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click();
   await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
   const saved = await snapshot(page); await page.reload();

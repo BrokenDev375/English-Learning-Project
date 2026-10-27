@@ -22,5 +22,6 @@ public interface ContentRepository {
     boolean questionReferenced(long version); boolean questionInUse(long root);
     Page<TopicEntity> publicTopics(String q,int page,int size);
     Page<ObjectiveEntity> publicObjectives(String q,Long topic,int page,int size);
+    List<UnitEntity> allPublicUnits();
     Page<UnitEntity> publicUnits(String q,Long topic,int page,int size);
 }

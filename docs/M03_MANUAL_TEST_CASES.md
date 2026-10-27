@@ -17,8 +17,8 @@ Phạm vi: LEARN/PRACTICE, nháp, hint/check, nộp, kết quả/chữa và ti�
 | UI-02 | Bắt đầu bài seed; xem từng câu, điều hướng qua lại | 10 câu, đủ chọn/điền/ghép theo bài; giữ đáp án nhập; không lộ keys/transcript |
 | UI-03 | Nhập một câu, để câu khác trống; Lưu nháp; F5, Back/Forward, mở URL trong tab cùng tài khoản | Đáp án và câu đang xem khớp bản đã ACK; Attempt ID/bộ câu không đổi |
 | UI-04 | Câu GUIDED: mở hint, check đáp án đầy đủ, sửa và check lại; sang INDEPENDENT | GUIDED có hỗ trợ/feedback đúng; không transcript trước nộp; INDEPENDENT không có hint/check |
-| UI-05 | Nhập đủ, CHECK mọi GUIDED rồi nộp, kể cả có đáp án sai | Xác nhận nộp; bài COMPLETED; kết quả có FIRST/final và giải thích/transcript |
-| UI-06 | Nộp khi còn trống/partial hoặc chưa CHECK đủ GUIDED | Cảnh báo nộp sớm; nộp được, không hoàn thành Lesson; số chưa trả lời/điểm đúng |
+| UI-05 | Nhập đủ rồi nộp, không CHECK GUIDED, kể cả có đáp án sai | Xác nhận nộp; bài COMPLETED; kết quả có FIRST/final và giải thích/transcript |
+| UI-06 | Nộp khi còn trống/partial | Cảnh báo nộp sớm; nộp được, không hoàn thành Lesson; số chưa trả lời/điểm đúng |
 | UI-07 | Chữa một câu sau nộp rồi tải lại kết quả | Phản hồi CORRECTION; Submission ID, FIRST, final, điểm và tiến độ gốc giữ nguyên |
 | UI-08 | Bài đã hoàn thành → học lại → nhập dở → trở về giới thiệu | Nút Tiếp tục làm mở đúng lượt dở; trạng thái COMPLETED không bị hạ; xem được lần nộp gần nhất |
 | UI-09 | PRACTICE chọn Topic/độ khó/số câu, nộp và mở từ lịch sử | Đúng mode/bộ lọc, không hint/check; thiếu câu không lặp để đủ số; không hoàn thành Lesson |

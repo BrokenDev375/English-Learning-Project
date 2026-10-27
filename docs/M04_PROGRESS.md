@@ -28,3 +28,7 @@ Ngày 21/10/2026. Bản bàn giao P0 được phát triển trên nhánh feature
 - Không đổi hợp đồng lưu/nộp/chữa M03; không sửa V1–V4; không xóa volume dữ liệu.
 
 Xem [kế hoạch](M04_IMPLEMENTATION_PLAN.md), [API](../source/common/M04_API.md), [ca thao tác](M04_MANUAL_TEST_CASES.md), [validation](../statics/results/module-4-validation.md).
+
+## Giao diện hai luồng — 26/10/2026
+
+Ôn tập cá nhân là một trong hai lối vào chính cùng Vào chơi; không có Luyện tự chọn/Luyện thêm riêng. Giao diện giải thích nguồn kết quả, mục tiêu cần ôn, lý do và ưu tiên câu biến thể; tài khoản chưa có dữ liệu được dẫn về vòng chơi. Bỏ hộp đề xuất mức luyện vì không còn form tự chọn độ khó. Giữ bộ chọn, ledger/sync, bonus và các trường API M04; không đổi thuật toán hoặc migration. Kiểm tra tại [biên bản hai luồng](../statics/results/two-learning-modes-validation.md).

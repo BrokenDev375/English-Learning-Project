@@ -12,12 +12,16 @@ import static vn.edu.ptit.english.service.impl.LeagueRanking.*;
 @Service @Transactional(isolation=Isolation.READ_COMMITTED)
 public class LeagueLifecycle {
     private final LeagueRepository repository;private final Clock clock;
-    public LeagueLifecycle(LeagueRepository repository,Clock clock){this.repository=repository;this.clock=clock;}
+    private final vn.edu.ptit.english.repository.GamificationContextRepository policies;
+    public LeagueLifecycle(LeagueRepository repository,Clock clock,vn.edu.ptit.english.repository.GamificationContextRepository policies){this.repository=repository;this.clock=clock;this.policies=policies;}
     private Instant now(){return clock.instant().truncatedTo(ChronoUnit.MICROS);}
     public void ensureCurrent(){
         // A single existing policy row serializes first creation, including concurrent schedulers.
         repository.lockPolicy();var start=weekStart(now());if(repository.season(start).isPresent())return;
-        var season=repository.save(new LeagueSeasonEntity(start,RULES,GamificationRules.VERSION));
+        var policy=policies.policy();var json=policy.getPolicy();
+        var rules=new Rules(json.path("groupCapacity").asInt(),json.path("minimumMembers").asInt(),json.path("minimumActive").asInt(),
+            json.path("promotionPercent").asInt(),json.path("demotionPercent").asInt(),json.path("minimumMovementSlots").asInt(0));
+        var season=repository.save(new LeagueSeasonEntity(start,rules,policy.getVersion()));
         for(var tier:Tier.values())repository.save(new LeagueAllocatorEntity(season.getId(),tier));
     }
     @Transactional(readOnly=true) public List<Long> due(){return repository.dueSeasons(now());}

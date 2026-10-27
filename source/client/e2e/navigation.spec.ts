@@ -75,17 +75,17 @@ test('question and lesson forms and Unit ordering restore their screens after hi
 
 test('learner Unit and lesson introduction survive Back, Forward and refresh', async ({ page }) => {
   await signIn(page, true);
-  await page.getByRole('button', { name: 'Khám phá bài học', exact: true }).click();
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click();
-  await page.getByRole('button', { name: 'Xem giới thiệu A day with Linh — Morning routine →', exact: true }).click();
+  await page.getByRole('button', { name: 'Vào chơi', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click();
+  await page.getByRole('button', { name: 'Chơi bài 1 · A day with Linh — Morning routine →', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Bạn sẽ học gì?', exact: true })).toBeVisible();
-  await page.goBack(); await expect(page.getByRole('heading', { name: 'Sinh hoạt hằng ngày — Bắt đầu.' })).toBeVisible();
-  await page.goBack(); await expect(page.getByRole('heading', { name: 'Bài học tiếng Anh.' })).toBeVisible();
+  await page.goBack(); await expect(page.getByRole('heading', { name: 'Vòng 1 · Sinh hoạt hằng ngày — Bắt đầu.' })).toBeVisible();
+  await page.goBack(); await expect(page.getByRole('heading', { name: 'Bản đồ vòng chơi.' })).toBeVisible();
   await page.goForward(); await page.goForward();
   await expect(page.getByRole('heading', { name: 'Bạn sẽ học gì?', exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('heading', { name: 'Bạn sẽ học gì?', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Về danh sách bài trong Unit', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Sinh hoạt hằng ngày — Bắt đầu.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Về danh sách bài trong vòng', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Vòng 1 · Sinh hoạt hằng ngày — Bắt đầu.' })).toBeVisible();
 });
 
 test('login preserves a requested screen and browser history cannot restore a signed-out session', async ({ page }) => {

@@ -31,6 +31,7 @@ public final class AttemptViews {
     public record Summary(long attemptId,Mode mode,State state,Long lessonVersionId,long revision,int totalQuestions,
         int answeredCount,Instant createdAt,Instant updatedAt,Instant submittedAt,Long submissionId) {}
     public record DraftAck(String requestId,long attemptId,long revision,State state,Instant savedAt,int answeredCount) {}
+    public record LessonCompletionAck(String requestId,long attemptId,long revision,long lessonId,boolean lessonCompleted) {}
     public record HintResult(String requestId,long attemptId,long revision,long attemptQuestionId,String hint) {}
     public record Feedback(String requestId,long attemptId,long revision,long attemptQuestionId,long trialId,int trialNo,
         TrialKind kind,Outcome outcome,boolean responseComplete,boolean supportUsed,JsonNode answerKey,String explanation) {}
@@ -53,6 +54,7 @@ public final class AttemptViews {
                 independentFreshCorrectCount,lessonCompleted,items,materialFeedback);
         }
     }
+    public record RoundProgress(vn.edu.ptit.english.dto.CatalogViews.Unit unit,int totalLessons,int completedLessons,int startedLessons,String state,Long nextLessonId,int number,boolean locked,Long prerequisiteUnitId,Integer prerequisiteRoundNumber,String prerequisiteTitle) {}
     public record LessonProgress(long lessonId,ProgressState state,Long lastAttemptId,Instant completedAt,
         Long lastCompletedVersionId,Long currentPublishedVersionId,boolean updateAvailable,BigDecimal lastScorePercent) {}
 }

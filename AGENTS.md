@@ -34,6 +34,8 @@ Có ba vai trò:
 
 Đặc trưng của bài tập mạng nằm trong cách xử lý phiên đăng nhập, WebSocket, timeout, mất phản hồi sau commit, gửi lại request và ghi đồng thời. Chưa có bằng chứng đo tải hoặc hiệu quả học tập; không tự mô tả dự án như một hệ thống nhiều backend, offline đầy đủ hoặc ứng dụng đã nghiệm thu toàn bộ.
 
+Vòng học và tương tác ngày 25/10: Unit được trình bày thành vòng cho STUDENT, trang chủ có gợi ý tiếp tục/ôn/bài tiếp theo, MATCHING dùng thẻ và có ORDERING xuyên suốt. Source thêm V9; DB demo chưa nâng trong lượt này. Xem [tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md) và [kiểm tra](statics/results/learning-journey-validation.md); không dùng số test M07 lịch sử thay bằng chứng của thay đổi mới.
+
 ### Mốc tiến độ cập nhật ngày 25/10/2026
 
 | Module | Trạng thái thực tế |
@@ -81,7 +83,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V8
+│   │   │   ├── db/migration/                  Flyway V1–V10
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -188,7 +190,7 @@ Trong `features/learning/`:
 
 - `types.ts`: DTO học viên và hàm xác định đã trả lời/đầy đủ; không dùng DTO tác giả chứa keys để dựng câu trước nộp.
 - `api.ts`: adapter create/read/list/mutation/result; tái sử dụng `api.ts` chung để giữ cookie/CSRF.
-- `LearningWorkspace.tsx`: nối catalog vào LEARN; form PRACTICE và lịch sử.
+- `LearningWorkspace.tsx`: nối bản đồ vào LEARN, Ôn tập cá nhân và lịch sử; không có form PRACTICE, vẫn phục hồi lượt/lệnh cũ.
 - `PersonalReview.tsx`: sync kết quả theo batch, dashboard cá nhân và tạo lượt REVIEW qua cùng start/pending command của M03.
 - `LessonIntroduction.tsx`: trang giới thiệu gọn, tóm tắt số câu, CTA bắt đầu/tiếp tục/học lại theo lượt thực tế và kết quả gần nhất. Bài COMPLETED vẫn có thể có lượt học lại dở; khi tìm kết quả gần nhất phải so submittedAt, không lấy updatedAt của lượt vừa chữa làm thứ tự nộp.
 - `AttemptRunner.tsx`: runner chung, điều hướng câu, hint/check, lưu và xác nhận submit.
@@ -222,6 +224,7 @@ Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite trans
 | V6 | Nền M05: gamification policy/claim/ledger/profile/day/badge/processed/failure và review_reward_context; đã nâng local english-learning-main tại 5176/8083 theo yêu cầu chạy thử |
 | V7 | gamification_outbox; đã áp dụng trên demo |
 | V8 | league_seasons/group_allocators/groups/members/outbox; FK xp_ledger.season_id, kết quả frozen trên membership; đã áp dụng demo, schema tiếp theo cần migration mới |
+| V9 | Mở rộng CHECK question_versions.type cho ORDERING; không thêm bảng hoặc viết lại dữ liệu; chưa nâng DB demo trong lượt triển khai này |
 
 Flyway quản lý schema; Hibernate giữ `ddl-auto=validate`. Không sửa migration đã áp dụng, không dùng create/update để chữa lệch schema. Thay đổi schema tiếp theo cần migration mới. SQL dưới `docs/database/planned/` là tài liệu hợp đồng, không tự chạy thay migration runtime.
 
@@ -243,7 +246,7 @@ Chọn LEARN/PRACTICE → tạo hoặc tiếp tục Attempt IN_PROGRESS
   → đọc kết quả, chữa bằng CORRECTION, xem tiến độ
 ```
 
-- Ba loại câu hiện có: SINGLE_CHOICE, FILL_BLANK, MATCHING. Dùng ID ổn định của option/blank/pair, không dùng chỉ số hiển thị.
+- Bốn loại câu hiện có: SINGLE_CHOICE, FILL_BLANK, MATCHING, ORDERING (mở rộng 25/10). Dùng ID ổn định của option/blank/pair, không dùng chỉ số hiển thị.
 - Chốt Version ID, origin, slot, permutation và dấu seen khi tạo lượt. Lượt cũ tiếp tục dùng bản đã chốt dù nội dung được xuất bản lại, đổi audio hoặc retire.
 - Exposure tăng khi tạo lượt mới; resume/GET/replay không tăng lại.
 - Attempt chỉ có IN_PROGRESS/SUBMITTED. `revision` là revision nghiệp vụ, không dùng JPA `@Version`; mỗi mutation thật chỉ tăng một lần dưới khóa.
@@ -259,7 +262,7 @@ Mỗi Attempt có đúng một Submission. Trong transaction, tạo Result nội
 
 Submit lưu final/trials/Submission/state/revision/progress/receipt **cùng một transaction**. GET result đọc kết quả đã lưu, không chấm lại theo nội dung hoặc trial mới. submittedAt của Result dùng JSON STRING để tránh mất độ chính xác khi MySQL lưu epoch dạng số.
 
-LEARN hoàn thành khi mọi đáp án đầy đủ và mọi GUIDED đã CHECK trước submit; không yêu cầu đúng hết. DB chỉ lưu STARTED/COMPLETED, API tổng hợp NOT_STARTED. Học lại/nộp dở không hạ COMPLETED. Tiến độ gồm bài đang công bố và lịch sử riêng; bài retire có currentPublishedVersionId=null. updateAvailable so bản công bố với bản hoàn thành gần nhất, hoặc bản lượt gần nhất nếu chưa hoàn thành.
+LEARN hoàn thành khi nộp đầy đủ mọi đáp án; CHECK GUIDED trước nộp là tùy chọn, không yêu cầu đúng hết (đổi theo yêu cầu 25/10). Kết quả hiển thị toàn bộ đáp án/giải thích và một nút xác nhận về vòng. POST /api/attempts/{id}/complete xác nhận idempotent, cho bài cũ đủ đáp án nhưng chưa hoàn thành ghi nhận tiến độ mà không đổi Submission/FIRST/điểm/thưởng cũ. DB chỉ lưu STARTED/COMPLETED, API tổng hợp NOT_STARTED. Học lại/nộp dở không hạ COMPLETED. Tiến độ gồm bài đang công bố và lịch sử riêng; bài retire có currentPublishedVersionId=null. updateAvailable so bản công bố với bản hoàn thành gần nhất, hoặc bản lượt gần nhất nếu chưa hoàn thành.
 
 REVIEW có provider M04; khi kết quả chưa đồng bộ trả REVIEW_SYNC_REQUIRED. Bản test có thể thay provider bằng mock để kiểm tra lỗi REVIEW_NOT_READY. M05 xử lý thưởng sau commit Submission bằng worker/sync riêng.
 
@@ -310,6 +313,7 @@ Không phát ACK thành công trước commit. Một lỗi ở bước lưu rece
 
 | Việc đang làm | Đọc trước |
 |---|---|
+| Vòng học/trang chủ/ORDERING | [Tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md), [API](source/common/M02_M03_API.md), [biên bản](statics/results/learning-journey-validation.md); RoundMeter/StudentHome, LearningProgressService.rounds, OrderingEditor/InteractiveAnswers |
 | Tiếp tục M07 | [Tiến độ](docs/M07_PROGRESS.md), [kế hoạch](docs/M07_IMPLEMENTATION_PLAN.md), [API](source/common/M07_API.md), [kiểm tra](statics/results/module-7-validation.md) |
 | Tiếp tục M03 | [Tiến độ](docs/M03_PROGRESS.md), rồi đúng bước trong [kế hoạch](docs/M03_IMPLEMENTATION_PLAN.md) |
 | Tiếp tục M04 | [Tiến độ](docs/M04_PROGRESS.md), [kế hoạch](docs/M04_IMPLEMENTATION_PLAN.md), [API](source/common/M04_API.md), [kiểm tra](statics/results/module-4-validation.md) |
@@ -418,3 +422,13 @@ Sau thay đổi đáng kể, cập nhật progress/checkbox và validation của
 Trước khi kết thúc, kiểm tra `git diff --check` và `git status --short`; file mới cần kiểm tra whitespace/liên kết vì diff mặc định có thể chưa chứa nội dung untracked. Báo rõ phần đã commit/chưa commit, test thực sự chạy và việc còn chờ. Chỉ commit/push khi được yêu cầu.
 
 Ưu tiên để phiên sau biết **dự án đang ở đâu, sửa ở đâu, phải giữ điều gì và đã kiểm tra đến đâu**. Khi cần chi tiết, dẫn tới file chuyên trách thay vì sao chép toàn bộ đặc tả hoặc báo cáo vào đây.
+
+Luồng học hiện tại 26/10: STUDENT chỉ có **Vào chơi** và **Ôn tập cá nhân** làm lối vào chính. Chơi lại bài/vòng ngay trong bản đồ; không có mục Luyện tự chọn hoặc Luyện thêm riêng. Giữ ba vai trò câu hỏi GUIDED/INDEPENDENT/REVIEW_VARIANT, API và lịch sử PRACTICE cũ, pending journal/receipt. URL tab=practice không có attempt được thay bằng bản đồ. Không migration. Xem [tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md) và [kiểm tra hai luồng](statics/results/two-learning-modes-validation.md).
+
+M05 v2 ngày 26/10: **50 XP/cấp**, League xét từ **2 thành viên và 2 người có XP**, tối thiểu một suất mỗi phía. V10 thêm policy mới, giữ XP/claim và lịch sử tuần đã chốt; chỉ tuần hiện tại còn OPEN được chuyển luật ngay. Xem [quyết định](docs/M05_ENGAGEMENT_V2.md), [kiểm tra](statics/results/engagement-v2-validation.md) và [gameplay](docs/GAMEPLAY_INTEGRATION_PROPOSAL.md).
+
+Game ngày 26/10: Săn kho báu tích hợp trong AttemptRunner/AttemptResult; GameArtwork và GameWorld là điểm vào cảnh SVG/hoạt cảnh/kết quả. InteractiveAnswers giữ bấm/chạm/kéo/bàn phím, dùng draft M06. Mở rương từ feedback đúng khớp đáp án hiện tại hoặc finalOutcome khi nộp; không tự chấm hay tăng XP. Demo chưa có ORDERING, không tự thêm câu. Không migration/backend mới. Xem [gameplay](docs/GAMEPLAY_INTEGRATION_PROPOSAL.md) và [kiểm tra](statics/results/gameplay-validation.md).
+
+Level v3 ngày 26/10: V11 INSERT policy m05-p0-v3, mỗi bước L→L+1 cần 10×L XP, ngưỡng L là 5×L×(L−1). ActivityLevels là bộ tính cấp dùng số nguyên; GamificationServiceImpl giữ hỗ trợ v1/v2 và policy nguồn theo submittedAt. Không đổi XP/cap/League/nguồn cũ. UI lấy floor/next từ Summary. Xem [luật và giới hạn](docs/M05_PROGRESSIVE_LEVELS.md), [kiểm tra](statics/results/progressive-levels-validation.md).
+
+Bảng xếp hạng chung ngày 27/10: GET /api/me/leaderboard, WeeklyLeaderboardService/Repository/Views là điểm vào; đọc daily stats đã commit theo tuần VN, ACTIVE STUDENT có XP dương, đồng hạng, top/page/self một snapshot. Không migration/ghi XP/join League; không cấp account ID/email. Leaderboards.tsx gom tab Toàn hệ thống/Nhóm thi đấu, sidebar Bảng xếp hạng; #/league tương thích mở nhóm. Xem [nghiệp vụ](docs/M05_GLOBAL_LEADERBOARD.md), [kiểm tra](statics/results/global-leaderboard-validation.md).

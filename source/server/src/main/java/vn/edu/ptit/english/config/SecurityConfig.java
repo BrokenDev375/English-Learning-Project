@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/me/gamification", "/api/me/gamification/**", "/api/me/badges", "/api/me/league", "/api/me/league/**").hasRole("STUDENT")
                 .requestMatchers("/api/teacher/statistics", "/api/teacher/statistics/**").hasRole("TEACHER")
-                .requestMatchers("/api/attempts", "/api/attempts/**", "/api/me/learning-progress", "/api/me/review", "/api/me/review/**", "/api/me/statistics", "/api/me/statistics/**").hasRole("STUDENT")
+                .requestMatchers("/api/attempts", "/api/attempts/**", "/api/me/learning-progress", "/api/me/rounds", "/api/me/rounds/**", "/api/me/review", "/api/me/review/**", "/api/me/statistics", "/api/me/statistics/**").hasRole("STUDENT")
                 .requestMatchers("/api/author/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/assets").hasAnyRole("TEACHER","ADMIN")
                 .anyRequest().authenticated())

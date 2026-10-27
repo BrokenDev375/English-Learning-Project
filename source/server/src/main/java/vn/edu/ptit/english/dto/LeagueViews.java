@@ -7,7 +7,11 @@ import java.util.List;
 public final class LeagueViews {
     private LeagueViews() {}
     public enum Tier { BRONZE,SILVER,GOLD,PLATINUM,DIAMOND }
-    public record Rules(int capacity,int minimumMembers,int minimumActive,int promotionPercent,int demotionPercent) {}
+    public record Rules(int capacity,int minimumMembers,int minimumActive,int promotionPercent,int demotionPercent,int minimumMovementSlots) {
+        public Rules(int capacity,int minimumMembers,int minimumActive,int promotionPercent,int demotionPercent) {
+            this(capacity,minimumMembers,minimumActive,promotionPercent,demotionPercent,0);
+        }
+    }
     public record Season(long id,@JsonFormat(shape=JsonFormat.Shape.STRING) Instant startAt,
         @JsonFormat(shape=JsonFormat.Shape.STRING) Instant endAt,@JsonFormat(shape=JsonFormat.Shape.STRING) Instant cutoffAt,
         String status,String policyVersion,Rules rules) {}

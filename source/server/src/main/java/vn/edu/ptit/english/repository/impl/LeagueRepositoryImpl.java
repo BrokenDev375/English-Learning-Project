@@ -12,8 +12,8 @@ public class LeagueRepositoryImpl implements LeagueRepository {
     private final EntityManager em;
     public LeagueRepositoryImpl(EntityManager em){this.em=em;}
     public <T extends GamificationRow> T save(T row){if(!em.contains(row))em.persist(row);em.flush();return row;}
-    public void lockPolicy(){em.createQuery("select p from GamificationPolicyEntity p",GamificationPolicyEntity.class)
-        .setLockMode(LockModeType.PESSIMISTIC_WRITE).getSingleResult();}
+    public void lockPolicy(){em.createQuery("select p from GamificationPolicyEntity p order by p.version",GamificationPolicyEntity.class)
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();}
     public Optional<LeagueSeasonEntity> season(Instant start){return em.createQuery("select s from LeagueSeasonEntity s where s.startAt=:s",LeagueSeasonEntity.class)
         .setParameter("s",start).getResultStream().findFirst();}
     public LeagueSeasonEntity season(long id){return em.find(LeagueSeasonEntity.class,id);}

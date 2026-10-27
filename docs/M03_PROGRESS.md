@@ -42,3 +42,11 @@ Các số trên thuộc đúng mốc source ghi trong báo cáo, không tự áp
 Người dùng review rồi tạo PR vào main trên web. Bước 6 đã có commit `9b0f1e0`. Checklist thủ công là quy trình tái hiện; chưa có phiên thao tác thủ công độc lập chạy lại từng dòng, không coi việc có checklist là bằng chứng chạy tay.
 
 REVIEW hiện trả REVIEW_NOT_READY khi chưa có provider M04. Lịch ôn M04, XP M05, offline bền vững M06 và thống kê nâng cao M07 chưa được triển khai đầy đủ trong phạm vi này.
+
+## Mở rộng vòng học và tương tác — 25/10/2026
+
+Thêm GET /api/me/rounds chỉ đọc tiến độ theo các Lesson đang công bố. ORDERING dùng tokenIds, hoán vị thẻ đã chốt, bộ chấm/nháp/feedback/nộp/chữa/receipt hiện có; MATCHING có giao diện thẻ. Trang chủ gợi ý tiếp tục/ôn/bài tiếp theo. Xem [tiến độ chung](LEARNING_JOURNEY_PROGRESS.md) và [biên bản kiểm tra](../statics/results/learning-journey-validation.md). Các số kiểm thử ở phần trước thuộc mốc lịch sử, không thay kết quả của lượt mới.
+
+## Đổi luồng hoàn thành sau khi xem đáp án — 25/10
+
+Theo yêu cầu mới, nộp đủ đáp án là hoàn thành, CHECK câu hướng dẫn trước nộp là tùy chọn. Kết quả có toàn bộ lời giải và một nút xác nhận về vòng. Endpoint complete hỗ trợ bài cũ đủ đáp án chưa được ghi nhận, không yêu cầu làm lại hoặc sửa Submission/FIRST/thưởng cũ; pending/replay dùng Session M06. Xem [biên bản mới](../statics/results/lesson-completion-flow-validation.md); số kiểm thử phía trên là lịch sử trước đổi luật.

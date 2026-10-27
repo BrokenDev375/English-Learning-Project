@@ -4,6 +4,10 @@ M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu**
 
 M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migration. Sau tích hợp M05/M06, hồ sơ đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần từ dịch vụ M05; số kết nối chỉ tính socket còn mở trong cửa sổ heartbeat M06 trên một backend.
 
+## Bảng xếp hạng
+
+Đăng nhập STUDENT → **Bảng xếp hạng** trên menu. **Toàn hệ thống** tự tính XP tuần khi có thưởng hợp lệ; **Nhóm thi đấu** giữ cơ chế Giải đấu tuần. Có top 3, đồng hạng và vị trí cá nhân ngoài trang. [Chi tiết](docs/M05_GLOBAL_LEADERBOARD.md).
+
 ## Demo M05 hiện tại
 
 Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.
@@ -39,15 +43,15 @@ LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave serve
 
 ## M04 — ôn tập cá nhân
 
-Đăng nhập STUDENT → Học bài → tab **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và gợi ý mức luyện. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
+Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và lý do cần ôn. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
 
-Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng mục tiêu và mức cần luyện. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch nhắc mặc định 1–3–7 ngày là quy tắc demo, không phải mô hình đã chứng minh tối ưu. Gợi ý tăng mức cần ít nhất hai bộ câu mới đủ dữ liệu và nội dung ở mức kế tiếp. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
+Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng mục tiêu và mức cần luyện. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch nhắc mặc định 1–3–7 ngày là quy tắc demo, không phải mô hình đã chứng minh tối ưu. API vẫn tính gợi ý tăng mức khi có đủ dữ liệu; giao diện hiện tập trung vào kiến thức, lý do và mốc ôn. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
 
 ## M03 — học và luyện tập
 
-Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Khám phá bài học** → Unit → giới thiệu bài → **Bắt đầu học** (hoặc **Tiếp tục làm/Học lại** theo trạng thái). Có ba dạng câu, đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. M06 tự lưu tại máy rồi đồng bộ khi đủ điều kiện; nút **Lưu nháp lên máy chủ** gửi ngay. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
+Chạy `start.cmd`, mở http://localhost:5173, đăng nhập STUDENT rồi chọn **Vào chơi** → vòng đang mở → bài → **Bắt đầu chơi** (hoặc **Tiếp tục làm/Chơi lại bài** theo trạng thái). Có bốn dạng câu: chọn một đáp án, điền trống, ghép cặp và sắp xếp từ (ORDERING); có đọc/ảnh/audio, gợi ý và kiểm tra cho câu hướng dẫn. M06 tự lưu tại máy rồi đồng bộ khi đủ điều kiện; nút **Lưu nháp lên máy chủ** gửi ngay. Nộp bài gửi toàn bộ đáp án mới nhất và cho phép nộp sớm. Kết quả giữ điểm gốc khi chữa; tiến độ hoàn thành bài khác số câu trả lời đúng.
 
-Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt làm của tôi** lọc và mở lại lượt dở/đã nộp. Khi chưa nhận được xác nhận, journal giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu rồi lưu rõ ràng. “Đã lưu tại máy” khác “Đã lưu trên máy chủ”; bản chưa commit IndexedDB vẫn có thể mất khi đóng tab. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi M06](docs/M06_MANUAL_TEST_CASES.md).
+Tab **Lịch sử làm bài** lọc và mở lại lượt dở/đã nộp, gồm các lượt PRACTICE cũ. Bài/vòng đã làm có nút chơi lại; không có form tạo luyện tự chọn trên giao diện. Khi chưa nhận được xác nhận, journal giữ nguyên thao tác để gửi lại và đối soát; 409 yêu cầu lựa chọn bản dữ liệu rồi lưu rõ ràng. “Đã lưu tại máy” khác “Đã lưu trên máy chủ”; bản chưa commit IndexedDB vẫn có thể mất khi đóng tab. REVIEW được cấp qua M04 và dùng chung runner. Xem [cách thử và phục hồi lỗi M06](docs/M06_MANUAL_TEST_CASES.md).
 
 ## M02 — biên soạn học liệu đã có thể dùng thử
 
@@ -55,7 +59,7 @@ Tab **Luyện tập theo chủ đề** chọn độ khó/số câu; **Lượt l�
 
 Chọn **Câu hỏi** để soạn chọn một đáp án/điền chỗ trống/ghép cặp, gắn tài liệu và xuất bản. Chọn **Bài học** để thêm hướng dẫn/ví dụ, chọn mục tiêu, thêm câu theo ba nhóm và sắp xếp. Luồng lưu nháp → xem trước → xuất bản kiểm tra cả bài và phụ thuộc trong một transaction; sao chép câu giữ nguồn gốc, chỉnh sửa giữ phiên bản cũ. Có sẵn 6 bài, mỗi bài 15 câu (5 hướng dẫn, 5 tự làm, 5 vận dụng mới); tổng 90 câu, gồm 30 câu mỗi dạng. Bài đầu là **A day with Linh — Morning routine**.
 
-Menu **Khám phá bài học** dùng danh mục công bố M02 và nối vào lượt học M03 cho STUDENT. Giới thiệu/snapshot trước nộp không trả khóa đáp án/ngân hàng hoặc transcript. Xem [tiến độ hoàn thành M02](docs/M02_PROGRESS.md), [nguồn và manifest](statics/dataset/README.md), [nghiệm thu seed](statics/results/module-2-seed-validation.md).
+Menu **Vào chơi** dùng danh mục công bố M02 và nối vào lượt học M03 cho STUDENT. Giới thiệu/snapshot trước nộp không trả khóa đáp án/ngân hàng hoặc transcript. Xem [tiến độ hoàn thành M02](docs/M02_PROGRESS.md), [nguồn và manifest](statics/dataset/README.md), [nghiệm thu seed](statics/results/module-2-seed-validation.md).
 
 Để thử từng chức năng, dùng [checklist 98 ca kiểm thử M02](docs/M02_MANUAL_TEST_CASES.md), có tài khoản/dữ liệu mẫu, bước thực hiện và kết quả mong đợi.
 
@@ -131,8 +135,24 @@ Xem [kiểm tra M01](statics/results/module-1-validation.md), [danh mục M02](s
 
 ## Mạng, giới hạn và contribution
 
-HTTP truyền auth/API; `/ws/events` có cookie/origin, HELLO/HEARTBEAT/ACK, subscription owner và invalidation sau commit. M06 có presence riêng tại `/api/me/connections`; heartbeat mặc định 25 giây, liveness server 75 giây, sweep 5 giây. Cấu hình `WS_PRESENCE_TIMEOUT_MS`/`WS_SWEEP_MS` trong `.env`, Compose truyền tới backend. Socket hỏng không mặc định chặn HTTP. Sự kiện giải đấu chờ M05, dashboard tổng hợp chờ M07. Xem [hợp đồng M06](source/common/M06_API.md).
+HTTP truyền auth/API; `/ws/events` có cookie/origin, HELLO/HEARTBEAT/ACK, subscription owner và invalidation sau commit. M06 có presence riêng tại `/api/me/connections`; heartbeat mặc định 25 giây, liveness server 75 giây, sweep 5 giây. Cấu hình `WS_PRESENCE_TIMEOUT_MS`/`WS_SWEEP_MS` trong `.env`, Compose truyền tới backend. Socket hỏng không mặc định chặn HTTP. Kết nối hỗ trợ invalidation phần thưởng/Giải đấu tuần M05; trang chủ học viên tổng hợp dữ liệu M03/M04/M05/M07. Xem [hợp đồng M06](source/common/M06_API.md).
 
 Session/kết nối nằm trong RAM của một backend, restart cần đăng nhập lại; account/role/status bền vững trong DB. Chưa triển khai rate limiting đăng nhập, khôi phục mật khẩu qua email hoặc nhiều backend. Các hướng contribution của toàn dự án vẫn cần thực nghiệm theo plan.
 
 Nguồn: [Spring Security session management](https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/session-management.html), [Spring WebSocket](https://docs.spring.io/spring-framework/reference/6.2/web/websocket/server.html), hướng dẫn môn học tại INSTRUCTION.md.
+
+## Vòng học và bài tập tương tác — 25/10
+
+Trang chủ STUDENT đưa lượt đang làm, nội dung cần ôn và bài tiếp theo lên trước, kèm thành tích thực tế. Mỗi Unit là một vòng học; tiến độ vòng tính theo các Lesson đang công bố đã hoàn thành. Các vòng đang công bố đều mở, không có điều kiện khóa vòng hoặc ngưỡng điểm mới.
+
+Ghép cặp dùng thẻ bấm/chạm, bàn phím hoặc kéo thả. Giáo viên có thêm dạng **Sắp xếp từ thành câu** trong ngân hàng câu hỏi, khai báo thẻ và một hoặc nhiều thứ tự đúng; học viên có thể chọn/đổi vị trí/bỏ từ, lưu nháp, tiếp tục, nộp và chữa như các dạng khác. Seed cũ giữ 90 câu; giáo viên biên soạn ORDERING để đưa vào bài.
+
+Source có migration **V9** mở rộng loại câu. DB demo chưa được nâng trong lượt triển khai này; khởi động backend mới sẽ áp dụng migration còn thiếu như cấu hình Flyway hiện tại. Xem [tiến độ và cách thử](docs/LEARNING_JOURNEY_PROGRESS.md), [hợp đồng](source/common/M02_M03_API.md) và [kết quả kiểm tra](statics/results/learning-journey-validation.md).
+
+### Hoàn thành bài sau khi nộp
+
+Trả lời đầy đủ rồi nộp để hoàn thành bài; nút Kiểm tra đáp án ở câu hướng dẫn là tùy chọn. Sau nộp, xem toàn bộ đáp án/giải thích rồi bấm Xác nhận hoàn thành bài học để về vòng. Nếu bài cũ đã nộp đủ nhưng chưa được tính do thiếu CHECK, mở kết quả và xác nhận ngay; không cần làm lại. Điểm/Submission cũ giữ nguyên. Xem [kiểm tra luồng](statics/results/lesson-completion-flow-validation.md).
+
+Luồng học hiện tại 26/10: STUDENT chỉ có **Vào chơi** và **Ôn tập cá nhân** làm lối vào chính. Chơi lại bài/vòng ngay trong bản đồ; không có mục Luyện tự chọn hoặc Luyện thêm riêng. Giữ ba vai trò câu hỏi GUIDED/INDEPENDENT/REVIEW_VARIANT, API và lịch sử PRACTICE cũ, pending journal/receipt. URL tab=practice không có attempt được thay bằng bản đồ. Không migration. Xem [tiến độ](docs/LEARNING_JOURNEY_PROGRESS.md) và [kiểm tra hai luồng](statics/results/two-learning-modes-validation.md).
+
+M05 v2 ngày 26/10: **50 XP/cấp**, League xét từ **2 thành viên và 2 người có XP**, tối thiểu một suất mỗi phía. V10 thêm policy mới, giữ XP/claim và lịch sử tuần đã chốt; chỉ tuần hiện tại còn OPEN được chuyển luật ngay. Xem [quyết định](docs/M05_ENGAGEMENT_V2.md), [kiểm tra](statics/results/engagement-v2-validation.md) và [đề xuất game](docs/GAMEPLAY_INTEGRATION_PROPOSAL.md).

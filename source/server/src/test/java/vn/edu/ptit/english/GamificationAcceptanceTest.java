@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -80,12 +81,12 @@ class GamificationAcceptanceTest extends GamificationFixture {
         var a=new Client().login(alice);clock.set("2026-10-01T00:00:00Z");submit(a,practice(a,3),"yes");sync(a);
         clock.set("2026-10-01T00:00:00.000001Z");submit(a,practice(a,3),"yes");sync(a);assertThat(summary(a).path("totalXp").asInt()).isEqualTo(30);
     }
-    @ParameterizedTest @ValueSource(ints={0,99,100,199,200})
-    void activityLevelBoundaryUsesTheStoredProjection(int xp)throws Exception{
+    @ParameterizedTest @CsvSource({"0,1,0,10","9,1,0,10","10,2,10,30","29,2,10,30","30,3,30,60","59,3,30,60","60,4,60,100","100,5,100,150","200,6,150,210","550,11,550,660"})
+    void activityLevelBoundaryUsesTheStoredProjection(int xp,int level,int floor,int next)throws Exception{
         // Projection boundary fixture, not XP manufactured by the public API.
         tx.executeWithoutResult(t->{var p=new GamificationProfileEntity(alice.id());p.record(xp);em.persist(p);});
-        var s=summary(new Client().login(alice));assertThat(s.path("activityLevel").asInt()).isEqualTo(1+xp/100);
-        assertThat(s.path("levelFloorXp").asInt()).isEqualTo(xp/100*100);assertThat(s.path("nextLevelAtXp").asInt()).isEqualTo(xp/100*100+100);
+        var s=summary(new Client().login(alice));assertThat(s.path("activityLevel").asInt()).isEqualTo(level);
+        assertThat(s.path("levelFloorXp").asInt()).isEqualTo(floor);assertThat(s.path("nextLevelAtXp").asInt()).isEqualTo(next);
     }
     @Test void allocationAbandonmentNeverRegainsFreshXp()throws Exception{
         var c=new Client().login(alice);practice(c,6);var again=practice(c,5);submit(c,again,"yes");sync(c);

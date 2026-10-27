@@ -36,9 +36,20 @@ public class GamificationServiceImpl implements GamificationService {
         if(actor.role()!=Role.STUDENT) throw new ApiException(HttpStatus.FORBIDDEN,"FORBIDDEN","Chỉ học viên có phần thưởng học tập.");
     }
     private GamificationPolicyEntity policy() {
-        var policy=contexts.policy(); var json=policy.getPolicy();
-        if(!VERSION.equals(policy.getVersion())||json.path("freshQuestionXp").asInt()!=REWARD||json.path("dueObjectiveXp").asInt()!=REWARD
-            ||json.path("dailyXpCap").asInt()!=CAP||json.path("xpPerActivityLevel").asInt()!=100||!ZONE.getId().equals(json.path("zone").asText()))
+        return supported(contexts.policy());
+    }
+    static GamificationPolicyEntity supported(GamificationPolicyEntity policy) {
+        var json=policy.getPolicy();
+        boolean progressive=VERSION.equals(policy.getVersion());
+        int levelStep=FIXED_VERSION.equals(policy.getVersion())?50:100;
+        var curve=json.path("activityLevelCurve");
+        boolean validLevel=progressive
+            ? !json.has("xpPerActivityLevel")&&"INCREASING".equals(curve.path("type").asText())
+                &&curve.path("firstStepXp").asInt()==10&&curve.path("stepIncreaseXp").asInt()==10
+            : (FIXED_VERSION.equals(policy.getVersion())||LEGACY_VERSION.equals(policy.getVersion()))
+                &&json.path("xpPerActivityLevel").asInt()==levelStep;
+        if(!validLevel||json.path("freshQuestionXp").asInt()!=REWARD||json.path("dueObjectiveXp").asInt()!=REWARD
+            ||json.path("dailyXpCap").asInt()!=CAP||!ZONE.getId().equals(json.path("zone").asText()))
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,"GAMIFICATION_SCHEMA_UNSUPPORTED","Bộ luật phần thưởng chưa được hỗ trợ.");
         return policy;
     }
@@ -50,8 +61,10 @@ public class GamificationServiceImpl implements GamificationService {
         var profile=repository.profile(actor.id()).orElse(null); var day=repository.day(actor.id(),today).orElse(null);
         long total=profile==null?0:profile.getTotalXp(),revision=profile==null?0:profile.getRevision();
         long deferred=repository.deferredCount(actor.id(),at),pending=repository.pendingCount(actor.id())-deferred;
-        return new Summary(at,ZONE.getId(),p.getVersion(),p.getActivatedAt(),revision,total,total/100+1,total/100*100,
-            Math.min(9007199254740991L,total/100*100+100),new Day(today,day==null?0:day.getAwardedXp(),CAP,
+        var level=VERSION.equals(p.getVersion())?ActivityLevels.progressive(total)
+            :ActivityLevels.fixed(total,p.getPolicy().path("xpPerActivityLevel").asLong());
+        return new Summary(at,ZONE.getId(),p.getVersion(),p.getActivatedAt(),revision,total,level.value(),level.floorXp(),
+            level.nextLevelAtXp(),new Day(today,day==null?0:day.getAwardedXp(),CAP,
             day==null?0:day.getQualifiedSubmissions(),day!=null&&day.getQualifiedSubmissions()>0),streak(actor.id(),today),
             new BadgeCount(repository.badges(actor.id()).size(),3),new Backlog(pending,deferred),pending>0?"PENDING":deferred>0?"DEFERRED":"IDLE");
     }
@@ -106,12 +119,12 @@ public class GamificationServiceImpl implements GamificationService {
     }
     @Override public List<Long> pendingUsers(long afterUserId) { return repository.pendingUsers(afterUserId,now(),20); }
     private int processLocked(long userId) {
-        var policy=policy(); var pending=repository.pending(userId,now(),100);
+        policy(); var pending=repository.pending(userId,now(),100);
         leagues.lockSources(pending.stream().map(SubmissionEntity::getResult).toList());
         for(var source:pending) {
             var result=source.getResult();
             if(result.factsSchemaVersion()!=1) throw new GamificationSourceFailure(userId,source.getId(),"GAMIFICATION_SCHEMA_UNSUPPORTED");
-            process(userId,result,policy);
+            process(userId,result,supported(contexts.policyAt(result.submittedAt())));
         }
         return pending.size();
     }
@@ -126,7 +139,7 @@ public class GamificationServiceImpl implements GamificationService {
                 String reason=newQuestionReason(item); int wanted=reason==null?REWARD:0,awarded=0;
                 if(reason==null) {
                     if(repository.claim(userId,"NEW_QUESTION",item.originKey()).isPresent()) reason="ALREADY_CLAIMED";
-                    else { awarded=claim(userId,result,day,"NEW_QUESTION",item.originKey(),null,at); reason=awarded==REWARD?"AWARDED":"DAILY_CAP_REACHED"; }
+                    else { awarded=claim(userId,result,day,"NEW_QUESTION",item.originKey(),null,at,policy.getVersion()); reason=awarded==REWARD?"AWARDED":"DAILY_CAP_REACHED"; }
                 }
                 decisions.add(new Decision("NEW_QUESTION",item.attemptQuestionId(),item.objectiveId(),wanted,awarded,reason));
                 requested+=wanted; paid+=awarded;
@@ -143,7 +156,7 @@ public class GamificationServiceImpl implements GamificationService {
                         wanted=REWARD;
                         if(repository.claim(userId,"DUE_REVIEW",context.getCycleKey()).isPresent()) reason="ALREADY_CLAIMED";
                         else if(repository.claimedDay(userId,entry.getKey(),date)) reason="ALREADY_REWARDED_TODAY";
-                        else { awarded=claim(userId,result,day,"DUE_REVIEW",context.getCycleKey(),entry.getKey(),at); validDue=true; reason=awarded==REWARD?"AWARDED":"DAILY_CAP_REACHED"; }
+                        else { awarded=claim(userId,result,day,"DUE_REVIEW",context.getCycleKey(),entry.getKey(),at,policy.getVersion()); validDue=true; reason=awarded==REWARD?"AWARDED":"DAILY_CAP_REACHED"; }
                     }
                     decisions.add(new Decision("DUE_REVIEW",null,entry.getKey(),wanted,awarded,reason)); requested+=wanted; paid+=awarded;
                 }
@@ -161,10 +174,10 @@ public class GamificationServiceImpl implements GamificationService {
         repository.save(new GamificationProcessedEntity(userId,activity)); repository.clearFailure(result.submissionId());
         repository.save(new GamificationOutboxEntity(userId,profile.getRevision(),at));
     }
-    private int claim(long userId,Result result,GamificationDayEntity day,String type,String key,Long objective,Instant at) {
+    private int claim(long userId,Result result,GamificationDayEntity day,String type,String key,Long objective,Instant at,String policyVersion) {
         var claim=repository.save(new GamificationClaimEntity(userId,result.submissionId(),type,key,objective,day.getActivityDate()));
         int awarded=day.award(REWARD);
-        repository.save(new XpLedgerEntity(claim,VERSION,REWARD,awarded,result.submittedAt(),at)); return awarded;
+        repository.save(new XpLedgerEntity(claim,policyVersion,REWARD,awarded,result.submittedAt(),at)); return awarded;
     }
     private void badge(long userId,String code,Result result,Instant at) {
         if(repository.badges(userId).stream().noneMatch(b->b.getBadgeCode().equals(code)))

@@ -9,5 +9,6 @@ public interface AttemptCompletionService {
     RequestReceiptService.Result check(long id,long item,Check input,UserPrincipal actor);
     RequestReceiptService.Result retry(long id,long item,Check input,UserPrincipal actor);
     RequestReceiptService.Result submit(long id,Mutation input,UserPrincipal actor);
+    RequestReceiptService.Result complete(long id,Hint input,UserPrincipal actor);
     Result result(long id,UserPrincipal actor);
 }

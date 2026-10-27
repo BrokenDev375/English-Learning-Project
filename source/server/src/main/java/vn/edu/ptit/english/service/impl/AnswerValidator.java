@@ -22,6 +22,10 @@ public class AnswerValidator {
             if(a.values().size()>5) throw invalid("values");
             for(var v:a.values()) if(v==null||v.value()==null||v.value().codePointCount(0,v.value().length())>200
                 ||!allowed.contains(v.blankId())||!seen.add(v.blankId())) throw invalid("values");
+        } else if(answer instanceof OrderingAnswer a && q.type().equals("ORDERING")) {
+            var allowed=ids(q.content().path("tokens"));var seen=new HashSet<String>();
+            if(a.tokenIds().size()>20)throw invalid("tokenIds");
+            for(var token:a.tokenIds())if(token==null||!allowed.contains(token)||!seen.add(token))throw invalid("tokenIds");
         } else if(answer instanceof MatchingAnswer a && q.type().equals("MATCHING")) {
             var left=ids(q.content().path("leftItems")); var right=ids(q.content().path("rightItems"));
             var seenLeft=new HashSet<String>(); var seenRight=new HashSet<String>();

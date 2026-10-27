@@ -18,7 +18,7 @@ Ngày cập nhật 22/10/2026. Người dùng yêu cầu hoàn tất M05 theo t�
 
 - Học viên thấy XP, cấp độ, streak và huy hiệu trên dữ liệu thật. Trang phần thưởng có lịch sử phân trang và lý do từng quyết định.
 - FIRST độc lập, đủ/đúng, không hỗ trợ, chưa gặp trước đó: 5 XP/origin duy nhất. Ôn đúng mốc dùng context đã chốt, thưởng 5 XP/objective/cycle và tối đa một objective/ngày. Trần chung 200 XP/ngày; claim hợp lệ bị trần vẫn được ghi nhận.
-- Ngày hoạt động cần tự làm đủ `min(3, số câu độc lập được giao)` và đúng ít nhất một câu. Câu cũ có thể giữ streak, không tạo lại XP câu mới. Level = 1 + floor(totalXP/100).
+- Ngày hoạt động cần tự làm đủ `min(3, số câu độc lập được giao)` và đúng ít nhất một câu. Câu cũ có thể giữ streak, không tạo lại XP câu mới. Level hiện tại v2 = 1 + floor(totalXP/50); v1 dùng 100 XP/cấp.
 - Ba huy hiệu: hoàn thành bài đầu đủ điều kiện, ôn đúng mốc, streak 7 ngày. Huy hiệu không thưởng XP riêng.
 - Nguồn trước activation được đánh dấu BEFORE_ACTIVATION, không hồi tố XP/streak. Worker quét nguồn đã commit, không dựa vào MAX ID; POST sync dùng receipt cùng transaction với dữ liệu thưởng.
 - Outbox được commit cùng dữ liệu, gửi invalidation cho socket cùng user đã subscribe. Client đọc GET để đối soát, không cộng điểm cục bộ. Polling/reconnect vẫn lấy lại được trạng thái khi mất thông báo.
@@ -53,3 +53,15 @@ Demo dùng `start-main.cmd`, cổng 5176/8083, WS origins tương ứng. Đã sa
 Bằng chứng chặng League: [kiểm tra Giải đấu tuần](../statics/results/module-5-league-validation.md). Lượt chốt P0 bổ sung nguồn commit đảo thứ tự, lỗi từng projection/receipt, multipart/partial, nhiều objective/cap195, allocator hai nhóm đầy, exact endAt, finalizer tiếp tục nhóm còn thiếu, socket scope/outbox replay, phản hồi UI đảo thứ tự và reconnect thật. Runtime/backend giữ nguyên; UI chặn pending cũ thay terminal.
 
 Bộ `verify-m05-acceptance.mjs` đã đạt qua worker tắt/bật, restart, force recreate/seed và replay, giữ huy hiệu/context/frozen history/điểm tuần; 6 nhóm SQL audit không sai lệch. Workload local 20 học viên/40 WebSocket/120 Submission đã đo và ghi cấu hình/thời gian trong biên bản. Đây là nghiệm thu P0 theo phạm vi test, không phải chứng minh mọi lịch crash/interleaving hoặc tải production.
+
+## Cập nhật nhịp chơi v2 — 26/10/2026
+
+Đã bổ sung V10/policy m05-p0-v2: 50 XP/cấp, League từ 2 thành viên và 2 người có XP, tối thiểu một suất mỗi phía khi đủ điều kiện. Giữ thưởng/cap/claim/streak và kết quả đã chốt; nguồn chọn policy theo submittedAt. Giao diện hiển thị luật từ đúng season. Xem [quyết định v2](M05_ENGAGEMENT_V2.md), [đề xuất lồng game](GAMEPLAY_INTEGRATION_PROPOSAL.md) và [kiểm tra mới](../statics/results/engagement-v2-validation.md). Số kiểm thử P0 phía trên là lịch sử riêng.
+
+## Level tăng dần v3 — 26/10/2026
+
+V11/policy m05-p0-v3 thay bước cố định 50 XP bằng 10×cấp hiện tại: 10, 20, 30, 40… XP. Giữ tổng XP, thưởng, trần ngày, lịch sử v1/v2 và luật League. Trang phần thưởng hiển thị chi phí cấp hiện tại và tổng XP mốc tiếp theo. Xem [luật/giới hạn v3](M05_PROGRESSIVE_LEVELS.md) và [kiểm tra](../statics/results/progressive-levels-validation.md).
+
+## Bảng xếp hạng chung — 27/10/2026
+
+Thêm endpoint thứ 9 GET /api/me/leaderboard, BXH XP tuần cho học viên ACTIVE, đồng hạng, top 3/phân trang/self ngoài trang. Tự có hạng khi có XP, không cần join. Menu Bảng xếp hạng có Toàn hệ thống/Nhóm thi đấu; route cũ mở tab nhóm. Không migration hoặc thay luật League/XP/level. Xem [thiết kế](M05_GLOBAL_LEADERBOARD.md) và [kiểm tra](../statics/results/global-leaderboard-validation.md).

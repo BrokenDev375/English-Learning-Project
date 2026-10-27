@@ -51,17 +51,11 @@ test('all seven real media files match the manifest and support byte ranges', as
   expect(files).toBe(7);
 });
 
-test('learner can browse three Units with two lessons each on desktop and mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/'); await page.getByLabel('Email', { exact: true }).fill(local.DEMO_STUDENT_EMAIL ?? 'student@english.local'); await page.getByLabel('Mật khẩu', { exact: true }).fill(local.DEMO_STUDENT_PASSWORD ?? 'Student@12345'); await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click(); await page.getByRole('button', { name: 'Khám phá bài học', exact: true }).click();
-  await page.getByLabel('Tìm Unit', { exact: true }).fill('Bắt đầu');
-  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
-  await expect(page.locator('.catalog-card')).toHaveCount(3);
-  await expect(page.getByRole('heading', { name: 'Đi lại và chỉ đường — Bắt đầu', exact: true })).toBeVisible();
+test('learner sees three numbered rounds with later rounds locked on desktop and mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/'); await page.getByLabel('Email', { exact: true }).fill(local.DEMO_STUDENT_EMAIL ?? 'student@english.local'); await page.getByLabel('Mật khẩu', { exact: true }).fill(local.DEMO_STUDENT_PASSWORD ?? 'Student@12345'); await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click(); await page.getByRole('button', { name: 'Vào chơi', exact: true }).click();
+  await page.getByLabel('Tìm vòng học', { exact: true }).fill('Bắt đầu'); await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.round-map-card')).toHaveCount(3); await expect(page.locator('.round-stop.locked')).toHaveCount(2);
   await page.screenshot({ path: 'test-results/module-2-complete-units-desktop.png', fullPage: true });
-  for (const unit of ['Sinh hoạt hằng ngày — Bắt đầu', 'Ăn uống và mua sắm — Bắt đầu', 'Đi lại và chỉ đường — Bắt đầu']) {
-    await page.getByRole('button', { name: 'Xem bài trong ' + unit + ' →', exact: true }).click();
-    await expect(page.getByText('5 câu hướng dẫn · 5 câu tự làm', { exact: true })).toHaveCount(2);
-    if (unit.startsWith('Ăn')) { await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false); await page.screenshot({ path: 'test-results/module-2-complete-food-mobile.png', fullPage: true }); }
-    await page.getByRole('button', { name: 'Về các Unit', exact: true }).click();
-  }
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click(); await expect(page.getByText('5 câu hướng dẫn · 5 câu tự làm', { exact: true })).toHaveCount(2);
+  await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false); await page.screenshot({ path: 'test-results/module-2-complete-round-mobile.png', fullPage: true });
 });

@@ -86,7 +86,7 @@ test('single choice retries a lost ACK, publishes and keeps the old version besi
   await page.getByRole('button', { name: 'Lưu bản nháp', exact: true }).click(); await expect(page.getByRole('alert')).toContainText('Chưa kết nối'); await page.getByRole('button', { name: 'Thử lại thao tác', exact: true }).click(); await expect(page.getByRole('status')).toContainText('Đã lưu bản nháp'); expect(calls).toBe(2);
   await publish(page, 'câu hỏi'); await expect(page.locator('.author-preview').getByText('This answer follows the sentence.', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Tạo bản chỉnh sửa', exact: true }).click(); await page.getByRole('textbox', { name: 'Nội dung câu hỏi', exact: true }).fill(prefix + '-single-edited'); await save(page);
-  await page.getByRole('tab', { name: 'Bản đã xuất bản', exact: true }).click(); await expect(page.locator('.question-presentation h3')).toHaveText(prefix + '-single');
+  await page.getByRole('tab', { name: 'Bản đã xuất bản', exact: true }).click(); await expect(page.locator('.question-presentation legend')).toHaveText(prefix + '-single');
   await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('tab', { name: 'Bản nháp', exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.screenshot({ path: 'test-results/module-2-question-editor-mobile.png', fullPage: true });
@@ -100,7 +100,17 @@ test('fill blank accepts several answers and previews a blank without revealing 
 test('matching editor and learner-style interactions work', async ({ page }) => {
   await login(page); await newQ(page, 'MATCHING', prefix + '-match');
   for (let i = 1; i <= 2; i++) { await page.getByRole('textbox', { name: 'Mục trái ' + i, exact: true }).fill(i === 1 ? 'seven' : 'eight'); await page.getByRole('textbox', { name: 'Mục phải ' + i, exact: true }).fill(i === 1 ? '7' : '8'); await page.getByRole('combobox', { name: 'Ghép mục trái ' + i + ' với', exact: true }).selectOption('right-' + i); }
-  await save(page); await publish(page, 'câu hỏi'); await page.getByRole('combobox', { name: 'Ghép câu trả lời 1', exact: true }).selectOption('right-1');
+  await save(page); await publish(page, 'câu hỏi'); await page.locator('.author-preview .matching-left button').first().click(); await page.locator('.author-preview .matching-right button').first().click(); await expect(page.locator('.author-preview .matched-pairs li')).toHaveCount(1);
+});
+test('ordering editor publishes accepted word orders and offers a safe interactive preview', async ({ page }) => {
+  await login(page); await newQ(page, 'ORDERING', prefix + '-ordering');
+  await page.getByLabel('Từ hoặc cụm từ 1', { exact: true }).fill('She'); await page.getByLabel('Từ hoặc cụm từ 2', { exact: true }).fill('likes');
+  await page.getByRole('button', { name: 'Thêm thẻ từ', exact: true }).click(); await page.getByLabel('Từ hoặc cụm từ 3', { exact: true }).fill('music');
+  await save(page); await publish(page, 'câu hỏi');
+  const preview = page.locator('.author-preview'); await expect(preview.locator('.word-bank button')).toHaveCount(3);
+  await expect(preview).not.toContainText('This answer follows the sentence.');
+  for (const word of ['She', 'likes', 'music']) await preview.locator('.word-bank').getByRole('button', { name: word, exact: true }).click();
+  await expect(preview.locator('.ordered-words .word-token')).toHaveText(['She', 'likes', 'music']);
 });
 test('lesson editor previews and publishes its three question drafts together', async ({ page }) => {
   await login(page, 'Bài học'); await newLesson(page, 0); await save(page); await page.getByRole('button', { name: 'Xem trước', exact: true }).click();
@@ -128,8 +138,8 @@ test('published question from another author can be copied with the same origin'
   await page.getByRole('button', { name: 'Sao chép thành câu của tôi', exact: true }).click(); await expect(page.getByRole('status')).toContainText('giữ nguồn gốc câu'); await expect(page.getByRole('textbox', { name: 'Nội dung câu hỏi', exact: true })).toHaveValue('What time does Linh get up?');
 });
 test('student sees published lesson introductions without question keys', async ({ page }) => {
-  await page.goto('/'); await page.getByLabel('Email', { exact: true }).fill(env.DEMO_STUDENT_EMAIL ?? 'student@english.local'); await page.getByLabel('Mật khẩu', { exact: true }).fill(env.DEMO_STUDENT_PASSWORD ?? 'Student@12345'); await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click(); await page.getByRole('button', { name: 'Khám phá bài học', exact: true }).click();
-  await page.getByRole('button', { name: 'Xem bài trong Sinh hoạt hằng ngày — Bắt đầu →', exact: true }).click(); const intro = page.waitForResponse('**/api/lessons/*'); await page.getByRole('button', { name: 'Xem giới thiệu A day with Linh — Morning routine →', exact: true }).click(); expect(await (await intro).text()).not.toMatch(/answerKey|correctOptionId|transcript|materialVersionId/); await expect(page.getByRole('heading', { name: 'Bạn sẽ học gì?', exact: true })).toBeVisible();
+  await page.goto('/'); await page.getByLabel('Email', { exact: true }).fill(env.DEMO_STUDENT_EMAIL ?? 'student@english.local'); await page.getByLabel('Mật khẩu', { exact: true }).fill(env.DEMO_STUDENT_PASSWORD ?? 'Student@12345'); await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click(); await page.getByRole('button', { name: 'Vào chơi', exact: true }).click();
+  await page.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click(); const intro = page.waitForResponse('**/api/lessons/*'); await page.getByRole('button', { name: 'Chơi bài 1 · A day with Linh — Morning routine →', exact: true }).click(); expect(await (await intro).text()).not.toMatch(/answerKey|correctOptionId|transcript|materialVersionId/); await expect(page.getByRole('heading', { name: 'Bạn sẽ học gì?', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false); await page.screenshot({ path: 'test-results/module-2-learner-intro-mobile.png', fullPage: true });
 });
 test('demo question library and lesson preview fit desktop and mobile', async ({ page }) => {

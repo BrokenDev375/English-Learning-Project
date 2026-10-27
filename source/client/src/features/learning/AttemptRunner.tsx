@@ -6,6 +6,7 @@ import type { Item } from './types';
 import AnswerFields, { KeyExplanation, responseText } from './AnswerFields';
 import LearningMaterial from './LearningMaterial';
 import AttemptResult from './AttemptResult';
+import { GameWorld, sameGameAnswer } from './GameWorld';
 import { useOnline } from '../connection/useOnline';
 
 export default function AttemptRunner({ id, userId }: { id: number; userId: number }) {
@@ -36,6 +37,7 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
       <div className="table-wrap"><table><thead><tr><th>Câu</th><th>Đang nhập</th><th>Trên máy chủ</th></tr></thead><tbody>{s.items.map((i, n) => <tr key={i.attemptQuestionId}><td>{n + 1}</td><td>{responseText(i.question, answerOf(i))}</td><td>{responseText(i.question, conflict.items.find(v => v.attemptQuestionId === i.attemptQuestionId)?.response ?? null)}</td></tr>)}</tbody></table></div>
       <div className="learning-actions"><button className="button secondary" onClick={() => { if (window.confirm('Bỏ các thay đổi đang nhập và dùng bản máy chủ?')) session.resolveConflict(false); }}>Dùng bản máy chủ</button>{conflict.state === 'IN_PROGRESS' && <button className="button secondary" onClick={() => { if (window.confirm('Giữ toàn bộ câu trả lời đang nhập sau khi đối chiếu? Lần lưu tiếp theo sẽ thay bản máy chủ bằng các câu trả lời này.')) session.resolveConflict(true); }}>Giữ bản đang nhập sau đối chiếu</button>}</div></div>}
     {s.state === 'SUBMITTED' ? state.result ? <AttemptResult session={session} state={state} /> : <p>Đang tải kết quả… <button onClick={() => void session.load()}>Tải lại</button></p> : <>
+      <GameWorld items={s.items} current={item} filled={s.items.filter(row => complete(row.question, answerOf(row))).length} select={select} />
       {s.lesson && <details className="panel learning-panel"><summary>Hướng dẫn và mục tiêu bài học</summary><ul>{s.lesson.objectives.map(o => <li key={o.id}>{o.name}</li>)}</ul>{s.lesson.instructions.map((block, n) => <div key={n}><p>{block.text}</p>{block.kind === 'EXAMPLE' && block.translation && <p className="muted">{block.translation}</p>}</div>)}</details>}
       <div className="runner-layout"><nav className="panel question-nav" aria-label="Các câu trong lượt làm">{s.items.map((i, n) => <button key={i.attemptQuestionId} className={i === item ? 'current' : answered(answerOf(i)) ? 'answered' : ''} aria-current={i === item ? 'step' : undefined} aria-label={'Câu ' + (n + 1) + (answered(answerOf(i)) ? ', đã trả lời' : ', chưa trả lời')} onClick={() => select(i)}>{n + 1}</button>)}</nav>
         <div className="runner-main">{material && <LearningMaterial key={material.materialVersionId} material={material} restoreVersion={state.playerRestoreVersion} savedSeconds={draft.playerState.audioPositions.find(p => p.materialVersionId === material.materialVersionId)?.seconds} onPosition={seconds => {
@@ -45,8 +47,8 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
           if (previous !== undefined && Math.abs(previous - seconds) < 0.5) return;
           session.player({ ...player, audioPositions: [...player.audioPositions.filter(p => p.materialVersionId !== material.materialVersionId), { materialVersionId: material.materialVersionId, seconds }] });
         }} />}
-          <article className="panel learning-panel"><span className="eyebrow">CÂU {index + 1} · {item.practiceRole === 'GUIDED' ? 'CÓ HƯỚNG DẪN' : 'TỰ LÀM'}</span>
-            <AnswerFields key={item.attemptQuestionId} question={item.question} prefix={'item-' + item.attemptQuestionId} value={response} onChange={a => session.edit(item.attemptQuestionId, a)} disabled={fieldsDisabled} />
+          <article id="active-game-question" className="panel learning-panel"><span className="eyebrow">CÂU {index + 1} · {item.practiceRole === 'GUIDED' ? 'CÓ HƯỚNG DẪN' : 'TỰ LÀM'}</span>
+            <AnswerFields play verified={feedback?.data.outcome === 'CORRECT' && sameGameAnswer(feedback.response, response)} key={item.attemptQuestionId} question={item.question} prefix={'item-' + item.attemptQuestionId} value={response} onChange={a => session.edit(item.attemptQuestionId, a)} disabled={fieldsDisabled} />
             {item.practiceRole === 'GUIDED' && <div className="learning-actions"><button className="button secondary" disabled={disabled || !online || !item.hintAvailable} onClick={() => void session.mutate('hint', item.attemptQuestionId)}>{item.hintOpened ? 'Xem lại gợi ý' : 'Mở gợi ý'}</button><button className="button secondary" disabled={disabled || !online || !complete(item.question, response)} onClick={() => void session.mutate('check', item.attemptQuestionId, response)}>Kiểm tra đáp án</button></div>}
             {state.hints[item.attemptQuestionId] && <div className="message warning"><strong>Gợi ý:</strong> {state.hints[item.attemptQuestionId]}</div>}
             {feedback && <div className={"message " + (feedback.data.outcome === "CORRECT" ? "success" : "warning")}><strong>{outcomeNames[feedback.data.outcome]}</strong><p>Phản hồi cho đáp án đã kiểm tra: {responseText(item.question, feedback.response)}</p><KeyExplanation question={item.question} answerKey={feedback.data.answerKey} explanation={feedback.data.explanation} /></div>}
@@ -62,7 +64,7 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
         }
-      }}><h2 id="submit-heading">Nộp bài này?</h2><p>Đã nhập {count}/{s.items.length} câu. {s.items.filter(i => !complete(i.question, answerOf(i))).length} câu chưa đầy đủ. {s.items.filter(i => i.practiceRole === 'GUIDED' && !i.feedbackOpened).length} câu hướng dẫn chưa kiểm tra.</p><p>Bạn vẫn có thể nộp sớm. Điểm nộp sẽ được giữ nguyên khi chữa bài; hoàn thành bài yêu cầu đủ đáp án và kiểm tra mọi câu hướng dẫn.</p><div className="modal-actions"><button autoFocus className="button secondary" onClick={() => setConfirmSubmit(false)}>Tiếp tục làm</button><button className="button primary" disabled={disabled} onClick={() => { setConfirmSubmit(false); void session.mutate('submit'); }}>Xác nhận nộp bài</button></div></div></div>}
+      }}><h2 id="submit-heading">Nộp bài này?</h2><p>Đã nhập {count}/{s.items.length} câu. {s.items.filter(i => !complete(i.question, answerOf(i))).length} câu chưa đầy đủ.</p><p>Bạn vẫn có thể nộp sớm. Điểm nộp sẽ được giữ nguyên khi chữa bài; trả lời đủ mọi câu là điều kiện hoàn thành bài, không bắt buộc kiểm tra từng câu hướng dẫn.</p><div className="modal-actions"><button autoFocus className="button secondary" onClick={() => setConfirmSubmit(false)}>Tiếp tục làm</button><button className="button primary" disabled={disabled} onClick={() => { setConfirmSubmit(false); void session.mutate('submit'); }}>Xác nhận nộp bài</button></div></div></div>}
     </>}
   </section>;
 }

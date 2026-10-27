@@ -107,7 +107,7 @@ Không giữ khóa Attempt rồi quay lại khóa actor. Thứ tự khóa item/e
 - `supportUsed` của FIRST chụp trước khi mở feedback check lần đầu; hint đã mở làm FIRST có hỗ trợ. GUIDED_RETRY/CORRECTION sau thấy đáp án có hỗ trợ.
 - Submit chấm đáp án cuối; `scorePercent` dùng số câu thực cấp, BigDecimal và HALF_UP hai chữ số.
 - Hai số đếm independentFresh chỉ lấy FIRST của INDEPENDENT/REVIEW_VARIANT chưa gặp origin trước, chưa hỗ trợ và có đáp án không rỗng.
-- LEARN hoàn thành khi mọi câu điền đủ và mọi GUIDED có CHECK trước nộp; không bắt tất cả đúng. Nộp sớm được nhưng chưa hoàn thành.
+- LEARN hoàn thành khi nộp đủ mọi câu; CHECK GUIDED tùy chọn, không bắt tất cả đúng (cập nhật theo yêu cầu 25/10/2026). Nộp sớm được nhưng chưa hoàn thành.
 - Retry sau nộp chỉ thêm CORRECTION và tăng Attempt revision; giữ nguyên đáp án cuối, Submission, FIRST, điểm và tiến độ hoàn thành.
 
 ## 5. Các bước triển khai và mốc commit

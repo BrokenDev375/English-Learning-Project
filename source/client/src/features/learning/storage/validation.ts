@@ -6,6 +6,7 @@ function answer(v: unknown): boolean {
   if (v === null) return true;
   if (!object(v)) return false;
   if (v.type === 'SINGLE_CHOICE') return v.optionId === null || typeof v.optionId === 'string';
+  if (v.type === 'ORDERING') return strings(v.tokenIds) && (v.tokenIds as string[]).length <= 20 && new Set(v.tokenIds as string[]).size === (v.tokenIds as string[]).length;
   if (v.type === 'FILL_BLANK') return Array.isArray(v.values) && v.values.every(x => object(x) && typeof x.blankId === 'string' && typeof x.value === 'string');
   return v.type === 'MATCHING' && Array.isArray(v.pairs) && v.pairs.every(x => object(x) && typeof x.leftId === 'string' && typeof x.rightId === 'string');
 }
@@ -18,6 +19,7 @@ function question(v: unknown): boolean {
   const c = v.content;
   const options = (value: unknown) => Array.isArray(value) && value.length > 0 && value.every(x => object(x) && typeof x.id === 'string' && typeof x.text === 'string');
   if (v.type === 'SINGLE_CHOICE') return options(c.options);
+  if (v.type === 'ORDERING') return options(c.tokens);
   if (v.type === 'MATCHING') return options(c.leftItems) && options(c.rightItems);
   return v.type === 'FILL_BLANK' && Array.isArray(c.parts) && c.parts.every(p => object(p) && (p.kind === 'TEXT' ? typeof p.text === 'string' : p.kind === 'BLANK' && typeof p.blankId === 'string'));
 }
@@ -37,7 +39,8 @@ export function validRecoveryState(v: unknown): boolean {
   return Object.values(v.feedback).every(f => {
     if (!object(f) || !object(f.data) || typeof f.data.explanation !== 'string' || !object(f.data.answerKey) || !answer(f.response)) return false;
     const key = f.data.answerKey;
-    return (!('blanks' in key) || Array.isArray(key.blanks) && key.blanks.every(b => object(b) && strings(b.acceptedAnswers)))
+    return (!('acceptedOrders' in key) || Array.isArray(key.acceptedOrders) && key.acceptedOrders.every(strings))
+      && (!('blanks' in key) || Array.isArray(key.blanks) && key.blanks.every(b => object(b) && strings(b.acceptedAnswers)))
       && (!('pairs' in key) || Array.isArray(key.pairs) && key.pairs.every(p => object(p) && typeof p.leftId === 'string' && typeof p.rightId === 'string'));
   });
 }
