@@ -6,7 +6,7 @@ import org.testcontainers.containers.MySQLContainer;
 import static org.assertj.core.api.Assertions.*;
 
 class EngagementMigrationTest {
-    @Test void v10ChangesOnlyTheOpenWeekAndKeepsOldPolicyXpAndFrozenResults()throws Exception {
+    @Test void v10AndV11KeepOldPoliciesXpAndFrozenResults()throws Exception {
         try(var mysql=new MySQLContainer<>("mysql:8.4")) {
             mysql.start();Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).target("9").load().migrate();
             String frozen,policy,submission;
@@ -30,11 +30,15 @@ class EngagementMigrationTest {
                 try(var r=s.executeQuery("SELECT MD5(CAST(result_json AS CHAR)) FROM submissions WHERE id=1")){r.next();submission=r.getString(1);}
             }
             var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(1);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(2);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();
             try(var c=mysql.createConnection("");var s=c.createStatement()) {
+                try(var r=s.executeQuery("SELECT JSON_UNQUOTE(JSON_EXTRACT(policy_json,'$.activityLevelCurve.type')),JSON_EXTRACT(policy_json,'$.activityLevelCurve.firstStepXp'),JSON_EXTRACT(policy_json,'$.activityLevelCurve.stepIncreaseXp'),JSON_EXTRACT(policy_json,'$.dailyXpCap') FROM gamification_policies WHERE version='m05-p0-v3'")) {
+                    r.next();assertThat(r.getString(1)).isEqualTo("INCREASING");assertThat(r.getInt(2)).isEqualTo(10);assertThat(r.getInt(3)).isEqualTo(10);assertThat(r.getInt(4)).isEqualTo(200);
+                }
                 try(var r=s.executeQuery("SELECT version,JSON_EXTRACT(policy_json,'$.xpPerActivityLevel'),activated_at FROM gamification_policies ORDER BY version")) {
                     assertThat(r.next()).isTrue();assertThat(r.getString(1)).isEqualTo("m05-p0-v1");assertThat(r.getInt(2)).isEqualTo(100);String activated=r.getString(3);
                     assertThat(r.next()).isTrue();assertThat(r.getString(1)).isEqualTo("m05-p0-v2");assertThat(r.getInt(2)).isEqualTo(50);assertThat(r.getString(3)).isEqualTo(activated);
+                    assertThat(r.next()).isTrue();assertThat(r.getString(1)).isEqualTo("m05-p0-v3");assertThat(r.getObject(2)).isNull();assertThat(r.getString(3)).isEqualTo(activated);
                 }
                 try(var r=s.executeQuery("SELECT id,policy_version,JSON_EXTRACT(rules_json,'$.minimumMembers'),JSON_EXTRACT(rules_json,'$.minimumMovementSlots'),revision FROM league_seasons ORDER BY id")) {
                     r.next();assertThat(r.getString(2)).isEqualTo("m05-p0-v1");assertThat(r.getInt(3)).isEqualTo(10);assertThat(r.getLong(5)).isZero();

@@ -1188,6 +1188,127 @@
           }
         }
       }
+    },
+    "/api/me/leaderboard": {
+      "get": {
+        "operationId": "m05GlobalWeeklyLeaderboard",
+        "summary": "Current-week leaderboard across active students",
+        "tags": [
+          "M05"
+        ],
+        "x-implementation-status": "implemented-p0",
+        "x-roles": [
+          "STUDENT"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Committed current-week ranking, without creating rewards or League membership.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeeklyLeaderboardBoard"
+                },
+                "example": {
+                  "serverTime": "2026-10-27T10:00:00Z",
+                  "zone": "Asia/Ho_Chi_Minh",
+                  "weekStartAt": "2026-10-25T17:00:00Z",
+                  "weekEndAt": "2026-11-01T17:00:00Z",
+                  "top": [],
+                  "items": [],
+                  "self": {
+                    "position": null,
+                    "rank": null,
+                    "displayName": "Học viên mới",
+                    "activityLevel": 1,
+                    "weeklyXp": 0,
+                    "isSelf": true
+                  },
+                  "totalElements": 0,
+                  "page": 0,
+                  "size": 20,
+                  "totalPages": 0
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "See M05_API.md for codes and retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1255,7 +1376,8 @@
         "type": "string",
         "enum": [
           "m05-p0-v1",
-          "m05-p0-v2"
+          "m05-p0-v2",
+          "m05-p0-v3"
         ]
       },
       "Command": {
@@ -1325,7 +1447,7 @@
           },
           "nextLevelAtXp": {
             "type": "integer",
-            "minimum": 50,
+            "minimum": 10,
             "maximum": 9007199254740991
           },
           "day": {
@@ -1474,9 +1596,28 @@
                 }
               }
             }
+          },
+          {
+            "if": {
+              "properties": {
+                "policyVersion": {
+                  "const": "m05-p0-v2"
+                }
+              },
+              "required": [
+                "policyVersion"
+              ]
+            },
+            "then": {
+              "properties": {
+                "nextLevelAtXp": {
+                  "minimum": 50
+                }
+              }
+            }
           }
         ],
-        "description": "Activity level follows the policy effective at read time: v1 uses 100 XP/level; v2 uses 50. Existing XP and source-time reward decisions are unchanged."
+        "description": "Level uses the read-time policy: v1 100 XP/level; v2 50; v3 cost from L to L+1 is 10*L XP, threshold at L is 5*L*(L-1). Existing XP and source-time reward facts remain unchanged."
       },
       "SyncResult": {
         "type": "object",
@@ -2561,6 +2702,184 @@
           "serverTime"
         ],
         "additionalProperties": false
+      },
+      "WeeklyLeaderboardMember": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "rank": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
+          },
+          "activityLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "weeklyXp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1400
+          },
+          "isSelf": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "position",
+          "rank",
+          "displayName",
+          "activityLevel",
+          "weeklyXp",
+          "isSelf"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "weeklyXp": {
+                  "const": 0
+                }
+              },
+              "required": [
+                "weeklyXp"
+              ]
+            },
+            "then": {
+              "properties": {
+                "position": {
+                  "type": "null"
+                },
+                "rank": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "position": {
+                  "type": "integer"
+                },
+                "rank": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WeeklyRankedMember": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeeklyLeaderboardMember"
+          },
+          {
+            "properties": {
+              "position": {
+                "type": "integer"
+              },
+              "rank": {
+                "type": "integer"
+              },
+              "weeklyXp": {
+                "minimum": 1
+              }
+            }
+          }
+        ]
+      },
+      "WeeklyLeaderboardBoard": {
+        "type": "object",
+        "properties": {
+          "serverTime": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "zone": {
+            "const": "Asia/Ho_Chi_Minh"
+          },
+          "weekStartAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "weekEndAt": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "top": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRankedMember"
+            },
+            "maxItems": 3
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRankedMember"
+            },
+            "maxItems": 50
+          },
+          "self": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WeeklyLeaderboardMember"
+              },
+              {
+                "properties": {
+                  "isSelf": {
+                    "const": true
+                  }
+                }
+              }
+            ]
+          },
+          "totalElements": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "totalPages": {
+            "$ref": "#/components/schemas/SafeInteger"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "serverTime",
+          "zone",
+          "weekStartAt",
+          "weekEndAt",
+          "top",
+          "items",
+          "self",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "additionalProperties": false,
+        "description": "Read-only current-week ranking of active students with positive committed XP. Vietnam Monday boundaries; equal XP shares competition rank. Position only stabilizes display within ties. No account IDs or emails. Self is returned even outside the page or with no rank."
       }
     }
   }

@@ -11,7 +11,7 @@ import LearningWorkspace from './features/learning/LearningWorkspace';
 import { activateLearningUser, clearLearningSessions, hasUnsavedLearning, hasStoredUnsavedLearning, hasUnpersistedLearning, prepareLearningUser, forgetLearningUser } from './features/learning/session';
 import { startConnections, subscribeConnection, connectionSnapshot } from './features/connection/manager';
 import RewardsDashboard from './features/gamification/Rewards';
-import LeagueDashboard from './features/gamification/League';
+import Leaderboards from './features/gamification/Leaderboards';
 import LearnerProfile from './features/statistics/LearnerProfile';
 import AdminStatistics from './features/statistics/AdminStatistics';
 import TeacherStatistics from './features/statistics/TeacherStatistics';
@@ -22,7 +22,7 @@ export default function App() {
   const [loading, setLoading] = useState(true); const [notice, setNotice] = useState('');
   const [routeView] = useRouteParam('view', 'home');
   const [learningTab] = useRouteParam('tab', 'catalog');
-  const view = ['home', 'account', 'admin', 'content', 'learning', 'profile', 'statistics', 'rewards', 'league'].includes(routeView) ? routeView : 'home';
+  const view = ['home', 'account', 'admin', 'content', 'learning', 'profile', 'statistics', 'rewards', 'league', 'leaderboard'].includes(routeView) ? routeView : 'home';
   const setView = (next: string, replace = false) => navigate({ view: next }, { reset: true, replace });
   const connection = useSyncExternalStore(subscribeConnection, connectionSnapshot); const connected = connection === 'connected'; const [busy, setBusy] = useState(false);
   async function restore() {
@@ -67,7 +67,7 @@ export default function App() {
         </> : <button className={view === 'learning' ? 'active' : ''} onClick={() => setView('learning')}><span aria-hidden="true">▦</span>Khám phá bài học</button>}
         {user.role === 'STUDENT' && <button className={view === 'profile' ? 'active' : ''} onClick={() => setView('profile')}><span aria-hidden="true">↗</span>Hồ sơ học tập</button>}
         {user.role === 'STUDENT' && <button className={view === 'rewards' ? 'active' : ''} onClick={() => setView('rewards')}><span aria-hidden="true">✦</span>Phần thưởng học tập</button>}
-        {user.role === 'STUDENT' && <button className={view === 'league' ? 'active' : ''} onClick={() => setView('league')}><span aria-hidden="true">♜</span>Giải đấu tuần</button>}
+        {user.role === 'STUDENT' && <button className={view === 'league' || view === 'leaderboard' ? 'active' : ''} onClick={() => setView('leaderboard')}><span aria-hidden="true">♜</span>Bảng xếp hạng</button>}
         {user.role !== 'STUDENT' && <button className={view === 'content' ? 'active' : ''} onClick={() => setView('content')}><span aria-hidden="true">▤</span>Quản lý học liệu</button>}
         {user.role === 'ADMIN' && <button className={view === 'admin' ? 'active' : ''} onClick={() => setView('admin')}><span aria-hidden="true">♧</span>Quản lý tài khoản</button>}
         {user.role === 'ADMIN' && <button className={view === 'statistics' ? 'active' : ''} onClick={() => setView('statistics')}><span aria-hidden="true">▥</span>Thống kê học tập</button>}
@@ -75,11 +75,11 @@ export default function App() {
       </nav><div className="sidebar-note"><strong>Small steps.<br />Steady progress.</strong><span>Dành một chút thời gian cho bản thân mỗi ngày.</span></div>
       <div className="sidebar-user"><span className="avatar">{initials(user.fullName)}</span><div><strong>{user.fullName}</strong><small>{roleNames[user.role]}</small></div></div>
     </aside>
-    <div className="workspace"><header className="topbar"><span>Không gian học tập <span className="slash">/</span> <strong>{view === 'league' ? 'Giải đấu tuần' : view === 'rewards' ? 'Phần thưởng' : view === 'profile' ? 'Hồ sơ học tập' : view === 'statistics' ? 'Thống kê' : view === 'learning' ? user.role !== 'STUDENT' ? 'Bài học' : learningTab === 'review' ? 'Ôn tập cá nhân' : learningTab === 'history' ? 'Lịch sử làm bài' : 'Chơi theo vòng' : view === 'content' ? 'Học liệu' : view === 'admin' ? 'Quản trị' : view === 'account' ? 'Tài khoản' : 'Trang chủ'}</strong></span>
+    <div className="workspace"><header className="topbar"><span>Không gian học tập <span className="slash">/</span> <strong>{view === 'league' || view === 'leaderboard' ? 'Bảng xếp hạng' : view === 'rewards' ? 'Phần thưởng' : view === 'profile' ? 'Hồ sơ học tập' : view === 'statistics' ? 'Thống kê' : view === 'learning' ? user.role !== 'STUDENT' ? 'Bài học' : learningTab === 'review' ? 'Ôn tập cá nhân' : learningTab === 'history' ? 'Lịch sử làm bài' : 'Chơi theo vòng' : view === 'content' ? 'Học liệu' : view === 'admin' ? 'Quản trị' : view === 'account' ? 'Tài khoản' : 'Trang chủ'}</strong></span>
       <div className="topbar-actions"><span className={'connection ' + (connected ? 'online' : '')}><i />{connected ? 'Đã kết nối' : 'Đang kết nối lại'}</span><button className="link-button" disabled={busy} onClick={logout}>{busy ? 'Đang thoát…' : 'Đăng xuất'}</button></div></header>
       <main className="main-content">
         {notice && <div className="message error" role="alert">{notice}</div>}
-        {view === 'league' && user.role === 'STUDENT' ? <LeagueDashboard key={user.id} /> : view === 'rewards' && user.role === 'STUDENT' ? <RewardsDashboard key={user.id} /> : view === 'profile' && user.role === 'STUDENT' ? <LearnerProfile key={user.id} user={user} /> : view === 'statistics' && user.role === 'ADMIN' ? <AdminStatistics key={user.id} /> : view === 'statistics' && user.role === 'TEACHER' ? <TeacherStatistics key={user.id} /> : view === 'learning' ? <LearningWorkspace key={user.id} user={user} /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
+        {(view === 'league' || view === 'leaderboard') && user.role === 'STUDENT' ? <Leaderboards key={user.id} /> : view === 'rewards' && user.role === 'STUDENT' ? <RewardsDashboard key={user.id} /> : view === 'profile' && user.role === 'STUDENT' ? <LearnerProfile key={user.id} user={user} /> : view === 'statistics' && user.role === 'ADMIN' ? <AdminStatistics key={user.id} /> : view === 'statistics' && user.role === 'TEACHER' ? <TeacherStatistics key={user.id} /> : view === 'learning' ? <LearningWorkspace key={user.id} user={user} /> : view === 'content' && user.role !== 'STUDENT' ? <ContentWorkspace user={user} /> : view === 'admin' && user.role === 'ADMIN' ? <AdminAccounts currentUser={user} /> : view === 'account' ?
           <section><span className="eyebrow">THÔNG TIN CÁ NHÂN</span><h1>Tài khoản của bạn<span>.</span></h1><p className="muted">Thông tin và quyền truy cập hiện tại của bạn.</p>
             <div className="panel profile-card"><span className="avatar large">{initials(user.fullName)}</span><h2>{user.fullName}</h2><span className="role-pill">{roleNames[user.role]}</span>
               <dl><div><dt>Email</dt><dd>{user.email}</dd></div><div><dt>Vai trò</dt><dd>{roleNames[user.role]}</dd></div><div><dt>Trạng thái</dt><dd>Hoạt động</dd></div><div><dt>Ngày tham gia</dt><dd>{formatDate(user.createdAt)}</dd></div></dl></div>

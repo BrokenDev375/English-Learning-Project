@@ -4,6 +4,10 @@ M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu**
 
 M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migration. Sau tích hợp M05/M06, hồ sơ đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần từ dịch vụ M05; số kết nối chỉ tính socket còn mở trong cửa sổ heartbeat M06 trên một backend.
 
+## Bảng xếp hạng
+
+Đăng nhập STUDENT → **Bảng xếp hạng** trên menu. **Toàn hệ thống** tự tính XP tuần khi có thưởng hợp lệ; **Nhóm thi đấu** giữ cơ chế Giải đấu tuần. Có top 3, đồng hạng và vị trí cá nhân ngoài trang. [Chi tiết](docs/M05_GLOBAL_LEADERBOARD.md).
+
 ## Demo M05 hiện tại
 
 Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.

@@ -1,6 +1,6 @@
 # Hợp đồng M05 — Gamification và Giải đấu tuần
 
-Phiên bản 1.0.0, ngày 21/10/2026. Policy hiện hành `m05-p0-v2`, tương thích nguồn/lịch sử `m05-p0-v1`, theo [quyết định P0](../../docs/M05_DECISIONS.md). **Đã triển khai cả 8 endpoint, subscription GAMIFICATION/LEAGUE, worker và chốt tuần.** Schema: [openapi-m05.json](openapi-m05.json). Phạm vi kiểm tra và giới hạn: [tiến độ](../../docs/M05_PROGRESS.md).
+Phiên bản 1.0.0, ngày 21/10/2026. Policy hiện hành `m05-p0-v3`, tương thích nguồn/lịch sử `m05-p0-v1` và `m05-p0-v2`, theo [quyết định P0](../../docs/M05_DECISIONS.md). **Đã triển khai cả 9 endpoint, subscription GAMIFICATION/LEAGUE, worker và chốt tuần.** Schema: [openapi-m05.json](openapi-m05.json). Phạm vi kiểm tra và giới hạn: [tiến độ](../../docs/M05_PROGRESS.md).
 
 ## 1. Chung
 
@@ -142,3 +142,9 @@ Summary.policyVersion là luật hiệu lực lúc đọc; activityLevel dùng 5
 LeagueRules thêm minimumMovementSlots: v1=0 (JSON cũ thiếu trường đọc thành 0), v2=1. v2 minimumMembers=2 và minimumActive=2, capacity=25, promotionPercent/demotionPercent=20. Khi movementEnabled, suất mỗi phía max(minimumMovementSlots, floor(memberCount*percent/100)), sau đó áp dụng giới hạn tier/khối hòa như cũ. Một người hoặc chỉ một người có XP vẫn giữ bậc.
 
 V10 giữ v1 và cập nhật tuần hiện tại còn OPEN/chưa hết endAt sang v2; lịch sử và tuần đã kết thúc giữ rules cũ. Frontend dùng rules của từng season để diễn giải holdReason. Các request/receipt/cutoff/ownership không đổi. Chi tiết tại [quyết định v2](../../docs/M05_ENGAGEMENT_V2.md).
+
+Cập nhật level v3 ngày 26/10: chi phí L → L+1 là 10×L XP, mốc cấp L là 5×L×(L−1). Summary vẫn trả activityLevel/levelFloorXp/nextLevelAtXp; level theo policy hiện tại, nguồn thưởng theo submittedAt. XP/cap/League không đổi. Xem [luật v3](../../docs/M05_PROGRESSIVE_LEVELS.md).
+
+## Bảng xếp hạng toàn hệ thống — 27/10/2026
+
+GET /api/me/leaderboard?page=0&size=20 trả bảng XP tuần hiện tại (thứ Hai, giờ Việt Nam), top 3 dòng, trang danh sách và self luôn hiện. STUDENT ACTIVE có XP tuần dương tự được xếp hạng, không cần League membership. Cùng XP đồng hạng; 0 XP có rank/position null. Dùng awarded_xp theo activity_date của bài nộp đã xử lý, không lấy điểm client. Response chỉ có tên hiển thị/cấp/XP/rank/position/isSelf, không account ID/email. GET không ghi/sync thưởng. Chỉ page và size 1–50; lạ/sai trả VALIDATION_FAILED 400, chưa đăng nhập 401, vai trò khác 403; no-store, private. Schema WeeklyLeaderboardBoard tại OpenAPI. Xem [nghiệp vụ và UI](../../docs/M05_GLOBAL_LEADERBOARD.md).

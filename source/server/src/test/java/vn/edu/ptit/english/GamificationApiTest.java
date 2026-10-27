@@ -48,6 +48,7 @@ class GamificationApiTest extends GamificationFixture {
     }
     @Test void levelPaceChangesWithoutMintingXpAndLateSourcesKeepTheirSubmissionTimePolicy()throws Exception {
         tx.executeWithoutResult(t->{
+            em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-23 00:00:00' WHERE version='m05-p0-v3'").executeUpdate();
             em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-22 00:00:00' WHERE version='m05-p0-v2'").executeUpdate();
             em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-01 00:00:00' WHERE version='m05-p0-v1'").executeUpdate();
         });
@@ -60,6 +61,26 @@ class GamificationApiTest extends GamificationFixture {
         state=summary(c);assertThat(state.path("totalXp").asInt()).isEqualTo(50);assertThat(state.path("activityLevel").asInt()).isEqualTo(2);assertThat(state.path("levelFloorXp").asInt()).isEqualTo(50);assertThat(state.path("nextLevelAtXp").asInt()).isEqualTo(100);
         long ledger=count("xp_ledger");summary(c);sync(c);assertThat(count("xp_ledger")).isEqualTo(ledger);assertThat(summary(c).path("totalXp").asInt()).isEqualTo(50);
         clock.set("2026-10-21T12:00:00Z");assertThat(summary(c).path("activityLevel").asInt()).isEqualTo(1);assertThat(summary(c).path("nextLevelAtXp").asInt()).isEqualTo(100);
+    }
+    @Test void progressivePolicyRecalculatesLevelsWithoutMintingXpAndKeepsLateV2Facts()throws Exception {
+        tx.executeWithoutResult(t->{
+            em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-22 00:00:00' WHERE version='m05-p0-v3'").executeUpdate();
+            em.createNativeQuery("UPDATE gamification_policies SET effective_at='2026-10-01 00:00:00' WHERE version<>'m05-p0-v3'").executeUpdate();
+        });
+        var c=new Client().login(alice);var old=submit(c,practice(c,5),"yes");
+        clock.set("2026-10-22T12:00:00Z");sync(c);
+        var state=summary(c);assertThat(state.path("policyVersion").asText()).isEqualTo("m05-p0-v3");
+        assertThat(state.path("totalXp").asInt()).isEqualTo(25);assertThat(state.path("activityLevel").asInt()).isEqualTo(2);
+        assertThat(state.path("levelFloorXp").asInt()).isEqualTo(10);assertThat(state.path("nextLevelAtXp").asInt()).isEqualTo(30);
+        var fact=ok(c.call("GET","/api/me/gamification/activities?submissionId="+old.path("submissionId").asLong(),null),200).path("items").get(0);
+        assertThat(fact.path("policyVersion").asText()).isEqualTo("m05-p0-v2");
+        tx.executeWithoutResult(t->bank(5));var fresh=submit(c,practice(c,5),"yes");sync(c);
+        state=summary(c);assertThat(state.path("totalXp").asInt()).isEqualTo(50);assertThat(state.path("activityLevel").asInt()).isEqualTo(3);
+        assertThat(state.path("levelFloorXp").asInt()).isEqualTo(30);assertThat(state.path("nextLevelAtXp").asInt()).isEqualTo(60);
+        var current=ok(c.call("GET","/api/me/gamification/activities?submissionId="+fresh.path("submissionId").asLong(),null),200).path("items").get(0);
+        assertThat(current.path("policyVersion").asText()).isEqualTo("m05-p0-v3");
+        long ledger=count("xp_ledger");summary(c);sync(c);assertThat(count("xp_ledger")).isEqualTo(ledger);
+        assertThat(summary(c).path("totalXp").asInt()).isEqualTo(50);
     }
     @Test void freshAnswersAreAwardedOnceAndReceiptReplayKeepsOriginalBody()throws Exception {
         var c=new Client().login(alice); var result=submit(c,practice(c,5),"yes");

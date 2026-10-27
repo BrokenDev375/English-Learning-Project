@@ -2,7 +2,9 @@
 
 Ngày 26/10/2026, theo yêu cầu người dùng. Luật cũ tại [quyết định P0](M05_DECISIONS.md) là v1; không sửa migration hoặc kết quả đã lưu của v1.
 
-## Luật hiện hành
+Bổ sung sau v2: [level tăng dần v3](M05_PROGRESSIVE_LEVELS.md) thay bước 50 XP/cấp. Những số bên dưới ghi nhận luật v2; League và mức thưởng vẫn giữ nguyên.
+
+## Luật v2
 
 | Nội dung | v1 | v2 |
 |---|---|---|

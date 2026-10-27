@@ -38,11 +38,18 @@ public class GamificationServiceImpl implements GamificationService {
     private GamificationPolicyEntity policy() {
         return supported(contexts.policy());
     }
-    private GamificationPolicyEntity supported(GamificationPolicyEntity policy) {
+    static GamificationPolicyEntity supported(GamificationPolicyEntity policy) {
         var json=policy.getPolicy();
-        int levelStep=VERSION.equals(policy.getVersion())?50:100;
-        if(!(VERSION.equals(policy.getVersion())||LEGACY_VERSION.equals(policy.getVersion()))||json.path("freshQuestionXp").asInt()!=REWARD||json.path("dueObjectiveXp").asInt()!=REWARD
-            ||json.path("dailyXpCap").asInt()!=CAP||json.path("xpPerActivityLevel").asInt()!=levelStep||!ZONE.getId().equals(json.path("zone").asText()))
+        boolean progressive=VERSION.equals(policy.getVersion());
+        int levelStep=FIXED_VERSION.equals(policy.getVersion())?50:100;
+        var curve=json.path("activityLevelCurve");
+        boolean validLevel=progressive
+            ? !json.has("xpPerActivityLevel")&&"INCREASING".equals(curve.path("type").asText())
+                &&curve.path("firstStepXp").asInt()==10&&curve.path("stepIncreaseXp").asInt()==10
+            : (FIXED_VERSION.equals(policy.getVersion())||LEGACY_VERSION.equals(policy.getVersion()))
+                &&json.path("xpPerActivityLevel").asInt()==levelStep;
+        if(!validLevel||json.path("freshQuestionXp").asInt()!=REWARD||json.path("dueObjectiveXp").asInt()!=REWARD
+            ||json.path("dailyXpCap").asInt()!=CAP||!ZONE.getId().equals(json.path("zone").asText()))
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,"GAMIFICATION_SCHEMA_UNSUPPORTED","Bộ luật phần thưởng chưa được hỗ trợ.");
         return policy;
     }
@@ -54,9 +61,10 @@ public class GamificationServiceImpl implements GamificationService {
         var profile=repository.profile(actor.id()).orElse(null); var day=repository.day(actor.id(),today).orElse(null);
         long total=profile==null?0:profile.getTotalXp(),revision=profile==null?0:profile.getRevision();
         long deferred=repository.deferredCount(actor.id(),at),pending=repository.pendingCount(actor.id())-deferred;
-        long step=p.getPolicy().path("xpPerActivityLevel").asLong();
-        return new Summary(at,ZONE.getId(),p.getVersion(),p.getActivatedAt(),revision,total,total/step+1,total/step*step,
-            Math.min(9007199254740991L,total/step*step+step),new Day(today,day==null?0:day.getAwardedXp(),CAP,
+        var level=VERSION.equals(p.getVersion())?ActivityLevels.progressive(total)
+            :ActivityLevels.fixed(total,p.getPolicy().path("xpPerActivityLevel").asLong());
+        return new Summary(at,ZONE.getId(),p.getVersion(),p.getActivatedAt(),revision,total,level.value(),level.floorXp(),
+            level.nextLevelAtXp(),new Day(today,day==null?0:day.getAwardedXp(),CAP,
             day==null?0:day.getQualifiedSubmissions(),day!=null&&day.getQualifiedSubmissions()>0),streak(actor.id(),today),
             new BadgeCount(repository.badges(actor.id()).size(),3),new Backlog(pending,deferred),pending>0?"PENDING":deferred>0?"DEFERRED":"IDLE");
     }

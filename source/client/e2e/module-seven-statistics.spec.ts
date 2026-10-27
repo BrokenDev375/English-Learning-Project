@@ -69,10 +69,11 @@ test('profile reconciles committed XP and current league with M05 without awardi
   const value = await (await page.request.get('/api/me/statistics')).json();
   const league = await (await page.request.get('/api/me/league')).json();
   expect(value.rewards.totalXp).toBe(15);
+  expect(value.rewards.level).toBe(2);
   expect(value.rewards.currentWeek.xp).toBe(league.membership.weeklyXp);
   expect(value.rewards.currentWeek.position).toBe(league.membership.rank);
-  await expect(page.getByText('15 XP · Cấp 1 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
-  await page.reload(); await expect(page.getByText('15 XP · Cấp 1 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
+  await expect(page.getByText('15 XP · Cấp 2 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByText('15 XP · Cấp 2 · Chuỗi 1 ngày', { exact: true })).toBeVisible();
   expect((await (await page.request.get('/api/me/gamification')).json()).totalXp).toBe(15);
 });
 test('profile reads submitted work and links to review and immutable results', async ({ page }) => {

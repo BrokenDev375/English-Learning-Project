@@ -57,3 +57,11 @@ Bộ `verify-m05-acceptance.mjs` đã đạt qua worker tắt/bật, restart, fo
 ## Cập nhật nhịp chơi v2 — 26/10/2026
 
 Đã bổ sung V10/policy m05-p0-v2: 50 XP/cấp, League từ 2 thành viên và 2 người có XP, tối thiểu một suất mỗi phía khi đủ điều kiện. Giữ thưởng/cap/claim/streak và kết quả đã chốt; nguồn chọn policy theo submittedAt. Giao diện hiển thị luật từ đúng season. Xem [quyết định v2](M05_ENGAGEMENT_V2.md), [đề xuất lồng game](GAMEPLAY_INTEGRATION_PROPOSAL.md) và [kiểm tra mới](../statics/results/engagement-v2-validation.md). Số kiểm thử P0 phía trên là lịch sử riêng.
+
+## Level tăng dần v3 — 26/10/2026
+
+V11/policy m05-p0-v3 thay bước cố định 50 XP bằng 10×cấp hiện tại: 10, 20, 30, 40… XP. Giữ tổng XP, thưởng, trần ngày, lịch sử v1/v2 và luật League. Trang phần thưởng hiển thị chi phí cấp hiện tại và tổng XP mốc tiếp theo. Xem [luật/giới hạn v3](M05_PROGRESSIVE_LEVELS.md) và [kiểm tra](../statics/results/progressive-levels-validation.md).
+
+## Bảng xếp hạng chung — 27/10/2026
+
+Thêm endpoint thứ 9 GET /api/me/leaderboard, BXH XP tuần cho học viên ACTIVE, đồng hạng, top 3/phân trang/self ngoài trang. Tự có hạng khi có XP, không cần join. Menu Bảng xếp hạng có Toàn hệ thống/Nhóm thi đấu; route cũ mở tab nhóm. Không migration hoặc thay luật League/XP/level. Xem [thiết kế](M05_GLOBAL_LEADERBOARD.md) và [kiểm tra](../statics/results/global-leaderboard-validation.md).

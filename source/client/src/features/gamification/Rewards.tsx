@@ -46,7 +46,7 @@ function Stats({ value }: { value: Summary }) {
   const progress = Math.max(0, Math.min(100, (value.totalXp - value.levelFloorXp) / Math.max(1, value.nextLevelAtXp - value.levelFloorXp) * 100));
   return <div className="reward-stats">
     <article className="panel reward-level"><span className="eyebrow">CẤP ĐỘ HOẠT ĐỘNG</span><div className="reward-number">{value.activityLevel}<span>{value.totalXp.toLocaleString('vi-VN')} XP tích lũy</span></div>
-      <progress aria-label="Tiến độ cấp độ hoạt động" value={progress} max={100} /><small>Còn {Math.max(0, value.nextLevelAtXp - value.totalXp)} XP đến cấp tiếp theo</small><small>Mỗi {value.nextLevelAtXp - value.levelFloorXp} XP tăng 1 cấp</small></article>
+      <progress aria-label="Tiến độ cấp độ hoạt động" value={progress} max={100} /><small>Còn {Math.max(0, value.nextLevelAtXp - value.totalXp)} XP đến cấp tiếp theo</small><small>Cấp {value.activityLevel} → {value.activityLevel + 1}: {value.nextLevelAtXp - value.levelFloorXp} XP</small><small>Mốc tiếp theo: {value.nextLevelAtXp.toLocaleString('vi-VN')} XP tích lũy</small></article>
     <article className="panel"><span className="eyebrow">CHUỖI NGÀY HỌC</span><div className="reward-number">{value.streak.current}<span>ngày liên tiếp</span></div><small>Kỷ lục: {value.streak.best} ngày · {value.day.isActive ? 'Hôm nay đã có hoạt động hợp lệ' : 'Học thêm hôm nay để giữ chuỗi'}</small></article>
     <article className="panel"><span className="eyebrow">XP HÔM NAY</span><div className="reward-number">{value.day.awardedXp}<span>/ {value.day.capXp} XP</span></div><progress aria-label="Giới hạn XP hôm nay" value={value.day.awardedXp} max={value.day.capXp} /><small>Ngày học theo giờ Việt Nam</small></article>
   </div>;
@@ -56,7 +56,7 @@ export function RewardStrip() {
   const { summary, error } = useSummary();
   if (!summary) return error ? <p className="muted">Chưa tải được phần thưởng. <button className="link-button" onClick={changed}>Thử lại</button></p> : null;
   return <div className="reward-strip panel"><div><strong>{summary.totalXp} XP</strong><span>Cấp hoạt động {summary.activityLevel}</span></div><div><strong>{summary.streak.current} ngày</strong><span>Chuỗi học liên tiếp</span></div><div><strong>{summary.badges.earnedCount}/{summary.badges.totalCount}</strong><span>Huy hiệu đã đạt</span></div>
-    <div><strong>{summary.day.awardedXp}/{summary.day.capXp}</strong><span>XP hôm nay</span></div><div className="reward-strip-links"><button className="link-button" onClick={() => navigate({ view: 'rewards' }, { reset: true })}>Xem phần thưởng →</button><button className="link-button" onClick={() => navigate({ view: 'league' }, { reset: true })}>Thi đua tuần →</button></div></div>;
+    <div><strong>{summary.day.awardedXp}/{summary.day.capXp}</strong><span>XP hôm nay</span></div><div className="reward-strip-links"><button className="link-button" onClick={() => navigate({ view: 'leaderboard' }, { reset: true })}>Bảng xếp hạng →</button><button className="link-button" onClick={() => navigate({ view: 'rewards' }, { reset: true })}>Xem phần thưởng →</button><button className="link-button" onClick={() => navigate({ view: 'league' }, { reset: true })}>Thi đua tuần →</button></div></div>;
 }
 
 function Details({ activity }: { activity: Activity }) {

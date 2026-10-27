@@ -48,18 +48,22 @@ test('new learner has visible rewards, clear rules and three unearned badges', a
   await expect(page.getByText('Tối đa 200 XP/ngày.', { exact: false })).toBeVisible();
 });
 
-test('two completed seed lessons reach level two at fifty XP and reads do not award extra XP', async ({ page }) => {
+test('early levels need ten then twenty XP and reads do not award extra XP', async ({ page }) => {
   await register(page);
   const detail = await (await page.request.get('/api/units/1')).json();
-  for (const lesson of detail.lessons) {
+  for (const [index, lesson] of detail.lessons.entries()) {
     const snapshot: Snapshot = await post(page, '/api/attempts', { requestId: crypto.randomUUID(), mode: 'LEARN', lessonId: lesson.id });
     await post(page, '/api/attempts/' + snapshot.attemptId + '/submit', { requestId: crypto.randomUUID(), baseRevision: snapshot.revision, playerState: snapshot.playerState, answers: snapshot.items.map(item => ({ attemptQuestionId: item.attemptQuestionId, response: answer(item) })) });
+    if (index === 0) { await expect.poll(async () => (await (await page.request.get('/api/me/gamification')).json()).totalXp, { timeout: 20000 }).toBe(25); const first = await (await page.request.get('/api/me/gamification')).json(); expect(first.activityLevel).toBe(2); expect(first.levelFloorXp).toBe(10); expect(first.nextLevelAtXp).toBe(30); }
   }
   await expect.poll(async () => (await (await page.request.get('/api/me/gamification')).json()).totalXp, { timeout: 20000 }).toBe(50);
-  await page.reload(); await expect(page.getByText('Mỗi 50 XP tăng 1 cấp', { exact: true })).toBeVisible();
-  const summary = await (await page.request.get('/api/me/gamification')).json(); expect(summary.activityLevel).toBe(2); expect(summary.levelFloorXp).toBe(50); expect(summary.nextLevelAtXp).toBe(100); expect(summary.policyVersion).toBe('m05-p0-v2');
+  await page.reload(); await expect(page.getByText('Cấp 3 → 4: 30 XP', { exact: true })).toBeVisible();
+  const summary = await (await page.request.get('/api/me/gamification')).json(); expect(summary.activityLevel).toBe(3); expect(summary.levelFloorXp).toBe(30); expect(summary.nextLevelAtXp).toBe(60); expect(summary.policyVersion).toBe('m05-p0-v3');
   await post(page, '/api/me/gamification/sync', { requestId: crypto.randomUUID() });
   expect((await (await page.request.get('/api/me/gamification')).json()).totalXp).toBe(50);
+  expect(await page.getByRole('progressbar', { name: 'Tiến độ cấp độ hoạt động' }).evaluate((bar: HTMLProgressElement) => bar.value)).toBeCloseTo(200 / 3, 3);
+  await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: test.info().outputPath('progressive-level-mobile.png'), fullPage: true });
 });
 
 test('home shows the daily cap and links to server-timed league and review reward rules', async ({ page }) => {

@@ -20,7 +20,8 @@ function holdReason(reason: string, rules?: Season['rules']) {
 }
 const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
 
-export default function LeagueDashboard() {
+export default function LeagueDashboard({ embedded = false }: { embedded?: boolean }) {
+  const Heading = embedded ? 'h2' : 'h1';
   const [overview, setOverview] = useState<Overview | null>(null), [board, setBoard] = useState<Board | null>(null), [history, setHistory] = useState<History | null>(null);
   const [page, setPage] = useState(0), [historyPage, setHistoryPage] = useState(0), [refresh, setRefresh] = useState(0);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -67,7 +68,7 @@ export default function LeagueDashboard() {
   }
   const member = overview?.membership, season = overview?.season;
   return <section className="rewards-page league-page">
-    <div className="reward-heading"><div><span className="eyebrow">CÙNG NHAU GIỮ NHỊP HỌC</span><h1>Giải đấu tuần<span>.</span></h1><p className="muted">Thi đua bằng XP học tập. Mỗi tuần là một lần chủ động tham gia.</p></div><button className="button secondary" onClick={() => setRefresh(v => v + 1)}>Tải lại bảng</button></div>
+    <div className="reward-heading"><div><span className="eyebrow">CÙNG NHAU GIỮ NHỊP HỌC</span><Heading>Giải đấu tuần<span>.</span></Heading><p className="muted">Thi đua bằng XP học tập. Mỗi tuần là một lần chủ động tham gia.</p></div><button className="button secondary" onClick={() => setRefresh(v => v + 1)}>Tải lại bảng</button></div>
     {error && <div className="message error" role="alert">{error}</div>}
     {!overview && !error && <p role="status">Đang tải giải đấu…</p>}
     {overview?.state === 'UNAVAILABLE' && <div className="panel league-intro"><h2>Tuần thi đấu đang được chuẩn bị</h2><p>Vui lòng tải lại sau ít giây.</p></div>}
