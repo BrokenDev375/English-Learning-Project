@@ -10,5 +10,8 @@ public interface UnitJpaRepository extends JpaRepository<UnitEntity, Long>, JpaS
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select item from UnitEntity item where item.id = :id")
     Optional<UnitEntity> lockById(@Param("id") long id);
+    @Query("select coalesce(max(u.roundNumber),0) from UnitEntity u")
+    int maxRoundNumber();
+    boolean existsByRoundNumberAndIdNot(int roundNumber, long id);
     Optional<UnitEntity> findBySeedKey(String seedKey);
 }

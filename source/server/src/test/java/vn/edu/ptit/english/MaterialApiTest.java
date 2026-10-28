@@ -206,9 +206,10 @@ class MaterialApiTest {
     private long insert(String sql,Object...values){var query=em.createNativeQuery(sql);for(int i=0;i<values.length;i++)query.setParameter(i+1,values[i]);query.executeUpdate();return ((Number)em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();}
     @Test void referencesProtectDraftAndRetireIncludingAnOldQuestionVersionInAPublishedLesson()throws Exception{
         var client=new Client().login(author);var root=create(client,reading("Referenced"));long materialId=root.path("id").asLong(),materialVersion=root.path("draftVersionId").asLong();
-        long topic=body(client.send("POST","/api/author/topics",Map.of("requestId",key(),"code","reference-topic","name","Topic","description",""))).path("id").asLong();
-        long objective=body(client.send("POST","/api/author/objectives",Map.of("requestId",key(),"topicId",topic,"code","reference-objective","name","Objective","description",""))).path("id").asLong();
-        long unit=body(client.send("POST","/api/author/units",Map.of("requestId",key(),"topicId",topic,"title","Unit","description","","stage",1,"sortOrder",0))).path("id").asLong();
+        var manager=new Client().login(admin);
+        long topic=body(manager.send("POST","/api/author/topics",Map.of("requestId",key(),"code","reference-topic","name","Topic","description",""))).path("id").asLong();
+        long objective=body(manager.send("POST","/api/author/objectives",Map.of("requestId",key(),"topicId",topic,"code","reference-objective","name","Objective","description",""))).path("id").asLong();
+        long unit=body(manager.send("POST","/api/author/units",Map.of("requestId",key(),"topicId",topic,"title","Unit","description","","stage",1,"sortOrder",0))).path("id").asLong();
         var tx=new TransactionTemplate(transactions);
         long[] reference=tx.execute(status -> {
             long q=insert("INSERT INTO questions(owner_id,origin_key) VALUES (?1,?2)",author.id(),key());

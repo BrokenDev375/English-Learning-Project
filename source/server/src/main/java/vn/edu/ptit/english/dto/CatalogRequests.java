@@ -31,13 +31,19 @@ public final class CatalogRequests {
     public record UnitCreate(@NotNull @Pattern(regexp=UUID) String requestId,
         @NotNull @Min(1) @Max(9007199254740991L) Long topicId,
         @NotBlank @Size(max=160) String title, @NotNull @Size(max=2000) String description,
-        @NotNull @Min(1) Integer stage, @NotNull @Min(0) Integer sortOrder) {
+        @NotNull @Min(1) Integer stage, @NotNull @Min(0) Integer sortOrder,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) @Min(1) Integer roundNumber,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) @Min(1) @Max(9007199254740991L) Long assignedTeacherId,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Boolean clearAssignment) {
         public UnitCreate { title = clean(title); description = clean(description); }
     }
     public record UnitUpdate(@NotNull @Pattern(regexp=UUID) String requestId,
         @NotNull @Min(0) Long baseRevision, @NotNull @Min(1) @Max(9007199254740991L) Long topicId,
         @NotBlank @Size(max=160) String title, @NotNull @Size(max=2000) String description,
-        @NotNull @Min(1) Integer stage, @NotNull @Min(0) Integer sortOrder) {
+        @NotNull @Min(1) Integer stage, @NotNull @Min(0) Integer sortOrder,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) @Min(1) Integer roundNumber,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) @Min(1) @Max(9007199254740991L) Long assignedTeacherId,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Boolean clearAssignment) {
         public UnitUpdate { title = clean(title); description = clean(description); }
     }
 }

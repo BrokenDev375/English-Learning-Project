@@ -106,3 +106,15 @@ M07 không có bảng hoặc migration riêng, dùng V1–V5 hiện có. Statist
 Vòng học dùng Unit/Lesson hiện có. Tiến độ vòng được tổng hợp chỉ đọc từ các Lesson đang công bố và lesson_progress của principal; không thêm bảng điểm hoặc trạng thái vòng. Thêm một bài công bố có thể tăng mẫu số, retire một bài loại bài đó khỏi mẫu số; không xóa lịch sử riêng của học viên.
 
 V9 chỉ DROP/ADD CHECK ck_question_versions_type để nhận ORDERING, giữ nguyên V1–V8. QuestionVersion.content_json chứa tokens [{id,text}], answer_json chứa acceptedOrders [[id,...]]. AttemptAnswer lưu {type:ORDERING,tokenIds:[...]}; display_json.optionIds giữ hoán vị thẻ. Các bảng Attempt/Trial/Submission/receipt/XP hiện có tiếp tục được dùng, không đổi luật thưởng hoặc nội dung Submission cũ. DB demo chưa được migrate trong lượt triển khai này.
+
+## V12 — số thứ tự vòng học
+
+units.round_number INT NOT NULL, CHECK >= 1, UNIQUE toàn hệ thống; entity/API dùng roundNumber. Thứ tự vòng: round_number/id. stage/sort_order giữ cho tương thích, không quyết định lộ trình. units.topic_id và lessons.unit_id tiếp tục biểu diễn chủ đề và bài thuộc vòng, không thêm bảng Vòng trùng Unit.
+
+Backfill giữ số của các vòng đang công bố theo thứ tự cũ, rồi cấp số cho vòng chưa công bố/retire. Sửa số chỉ cập nhật Unit và revision qua receipt, không đổi liên kết hoặc lịch sử học/XP. Số không bắt buộc liên tiếp; không tự đánh lại khi công bố/retire. Xem [quy ước](docs/TEACHER_ROUND_TERMINOLOGY.md).
+
+## V13 — phân công và duyệt học liệu
+
+units.assigned_teacher_id nullable FK users, index theo assignee/round_number/id; backfill từ owner TEACHER, giữ người tạo và các trường cũ. content_control một hàng để khóa nhóm ghi biên soạn/duyệt. content_review_requests lưu loại root QUESTION/LESSON, version/revision/token, snapshot_json, trạng thái, người gửi/người xử lý/thời gian/note; generated pending_key unique chỉ khi PENDING. FK tới root và users, không FK version nháp có thể bị bỏ. CHECK chỉ đúng một loại root, trạng thái hợp lệ, mốc xử lý và lý do trả lại. Không đổi bảng học viên/XP/League.
+
+Xem [quy tắc](docs/CONTENT_GOVERNANCE.md) và [kiểm tra](statics/results/content-governance-validation.md).

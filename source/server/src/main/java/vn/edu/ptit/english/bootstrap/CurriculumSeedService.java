@@ -26,7 +26,11 @@ public class CurriculumSeedService {
     private final QuestionJpaRepository questions;private final QuestionVersionJpaRepository questionVersions;private final LessonJpaRepository lessons;private final UnitJpaRepository units;
     private final ObjectiveJpaRepository objectives;private final AssetService files;private final MaterialService materialService;
     private final AuthoringService authoring;private final AccountGuard accounts;private final ObjectMapper json;private final TransactionTemplate tx;
-    public CurriculumSeedService(DemoCurriculum curriculum,MaterialJpaRepository materials,AssetJpaRepository assets,QuestionJpaRepository questions,QuestionVersionJpaRepository questionVersions,LessonJpaRepository lessons,UnitJpaRepository units,ObjectiveJpaRepository objectives,AssetService files,MaterialService materialService,AuthoringService authoring,AccountGuard accounts,ObjectMapper json,PlatformTransactionManager transactions){
+    private final vn.edu.ptit.english.service.impl.AuthoringPublication publication;
+    private final vn.edu.ptit.english.service.impl.ContentGovernance governance;
+    private final RequestReceiptService receipts;
+    public CurriculumSeedService(DemoCurriculum curriculum,MaterialJpaRepository materials,AssetJpaRepository assets,QuestionJpaRepository questions,QuestionVersionJpaRepository questionVersions,LessonJpaRepository lessons,UnitJpaRepository units,ObjectiveJpaRepository objectives,AssetService files,MaterialService materialService,AuthoringService authoring,AccountGuard accounts,ObjectMapper json,PlatformTransactionManager transactions,vn.edu.ptit.english.service.impl.AuthoringPublication publication,vn.edu.ptit.english.service.impl.ContentGovernance governance,RequestReceiptService receipts){
+        this.publication=publication;this.governance=governance;this.receipts=receipts;
         this.curriculum=curriculum;this.materials=materials;this.assets=assets;this.questions=questions;this.questionVersions=questionVersions;this.lessons=lessons;this.units=units;this.objectives=objectives;this.files=files;this.materialService=materialService;this.authoring=authoring;this.accounts=accounts;this.json=json;tx=new TransactionTemplate(transactions);tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
     private String key(String stage,String seed){return UUID.nameUUIDFromBytes(("m02-demo-1.0.0|"+stage+"|"+seed).getBytes(StandardCharsets.UTF_8)).toString();}
@@ -35,7 +39,7 @@ public class CurriculumSeedService {
         for(var spec:curriculum.data().lessons())tx.executeWithoutResult(status->{accounts.lockCurrent(actor);if(objectives.findByCode(spec.objectiveCode()).isEmpty()){var unit=units.findBySeedKey(spec.unitSeedKey()).orElseThrow();objectives.saveAndFlush(new ObjectiveEntity(actor.id(),unit.getTopicId(),spec.objectiveCode(),spec.objectiveName(),spec.data().path("description").asText()));}});
         for(var spec:curriculum.data().materials())tx.executeWithoutResult(status->{accounts.lockCurrent(actor);seedMaterial(spec,actor,counts);});
         // All questions + the lesson + publication + their receipts commit together per lesson.
-        for(var spec:curriculum.data().lessons())tx.executeWithoutResult(status->{accounts.lockCurrent(actor);seedLesson(spec,actor,counts);});
+        for(var spec:curriculum.data().lessons())tx.executeWithoutResult(status->{accounts.lockCurrent(actor);governance.lock();seedLesson(spec,actor,counts);});
         return new Report(counts[0],counts[1],counts[2],counts[3],counts[4],counts[5],counts[6]);
     }
     private MaterialRequests.Input materialInput(DemoCurriculum.Material spec,Long asset){ObjectNode input=spec.data().deepCopy();input.put("requestId",key("material-create",spec.seedKey()));if(asset!=null)input.put("assetId",asset);return MaterialRequests.input(input,false);}
@@ -91,7 +95,13 @@ public class CurriculumSeedService {
             if(old!=null)log.info("Preserving customized legacy lesson {}; creating separate canonical seed",spec.legacyAlias());
             body.put("unitId",unit.getId());body.put("unitBaseRevision",units.findById(unit.getId()).orElseThrow().getRevision());id=authoring.create(AuthoringRequests.lesson(body,false),actor).body().path("id").asLong();counts[4]++;
         }
-        var preview=authoring.preview("lessons",id,actor);authoring.publish("lessons",id,new MaterialRequests.Command(key("lesson-publish",spec.seedKey()),preview.baseRevision(),preview.draftVersionId(),preview.previewToken()),actor);
+        var preview=authoring.preview("lessons",id,actor);
+        var command=new MaterialRequests.Command(key("lesson-publish",spec.seedKey()),preview.baseRevision(),preview.draftVersionId(),preview.previewToken());
+        // Bundled curriculum is a trusted bootstrap import, not a teacher HTTP publication.
+        // Keep the original receipt operation/key so older successful imports replay unchanged.
+        receipts.execute(actor,command.requestId(),"POST /api/author/lessons/"+id+"/publish",command,200,()->{
+            publication.publish("lessons",id,command,actor);return authoring.get("lessons",id,actor);
+        });
         var root=lessons.findById(id).orElseThrow();root.setSeedKey(spec.seedKey());lessons.saveAndFlush(root);
     }
     public record ResourceFile(String name,byte[] bytes) implements MultipartFile {

@@ -3,6 +3,7 @@ package vn.edu.ptit.english.dto;
 import java.time.Instant;
 import java.util.List;
 import vn.edu.ptit.english.dto.CatalogViews.CatalogPage;
+import vn.edu.ptit.english.enums.Role;
 
 /** Read projections only. Never include answers, keys, sessions or storage paths. */
 public final class StatisticsViews {
@@ -35,12 +36,14 @@ public final class StatisticsViews {
     public record Count(String label, long count) {}
     public record Difficulty(String difficulty, Performance performance) {}
     public record Presence(long connectedAccounts, long openConnections, String basis) {}
+    public record OnlineAccount(long id, String fullName, Role role) {}
+    public record OnlinePresence(Instant generatedAt, long connectedAccounts, long openConnections, String basis, List<OnlineAccount> users) {}
     public record AdminOverview(Instant generatedAt, String period, Instant from, Activity activity,
                                 Performance performance, List<Count> roles, List<Count> statuses,
                                 List<Difficulty> difficulties, Presence presence) {}
     public record Question(long questionId, long questionVersionId, int versionNo, String prompt, String type,
                             String difficulty, long learners, Metric first) {}
-    public record TeacherUnit(long unitId, String title, int stage, int sortOrder) {}
+    public record TeacherUnit(long unitId, String title, int stage, int sortOrder, int roundNumber) {}
     public record TeacherOverview(Instant generatedAt, String period, Instant from, Long unitId, long units,
                                   long learnersStarted, Activity activity, Performance performance,
                                   long hintOpenedQuestions, List<Difficulty> difficulties) {}

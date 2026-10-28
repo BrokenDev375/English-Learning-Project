@@ -143,7 +143,7 @@ export default function MaterialEditor({ initial, user, onClose, onChanged, onRo
       {own && <div className="material-actions"><button className="button primary" disabled={locked} onClick={startDraft}>{root.draft ? 'Mở bản nháp' : 'Tạo bản chỉnh sửa'}</button>
         {root.status !== 'RETIRED' && <button className="button secondary" disabled={locked} onClick={() => { void run({ path: '/api/author/materials/' + root.id + '/retire', method: 'POST',
           body: { requestId: requestId(), baseRevision: root.rootRevision }, label: 'ngừng cấp mới', complete: value => received(value, 'Đã ngừng cấp tài liệu cho nội dung mới.') }); }}>Ngừng cấp mới</button>}</div>}
-      {root.status === 'PUBLISHED' && root.published.kind === 'AUDIO' &&
+      {user.role === 'ADMIN' && root.status === 'PUBLISHED' && root.published.kind === 'AUDIO' &&
         <AudioUpdatePanel key={root.published.id} materialId={root.id} disabled={busy || uncertain} onBlockingChange={setAudioUpdating} />}
     </> : <p className="muted">Tài liệu chưa có phiên bản để hiển thị.</p>}
     {preview && editing && <div className="material-preview"><span className="eyebrow">XEM TRƯỚC CHO NGƯỜI HỌC</span>

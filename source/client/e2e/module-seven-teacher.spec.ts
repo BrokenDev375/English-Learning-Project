@@ -1,3 +1,4 @@
+import { fixtureWrite } from './governance-fixtures';
 import { test, expect } from '@playwright/test';
 import type { Page, Browser } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -8,9 +9,8 @@ const env = Object.fromEntries(readFileSync(resolve(process.cwd(), '../../.env')
   .filter(line => line && !line.startsWith('#') && line.includes('=')).map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]));
 const secret = 'TeacherStats@12345';
 async function mutate(page: Page, method: 'POST' | 'PATCH', path: string, body: unknown) {
-  const csrf = await (await page.request.get('/api/auth/csrf')).json();
-  const reply = await page.request.fetch(path, { method, headers: { [csrf.headerName]: csrf.token }, data: body });
-  expect(reply.ok(), await reply.text()).toBeTruthy(); return reply.json();
+  const result = await fixtureWrite(page.request, path, body, method);
+  expect(result.ok(), await result.text()).toBeTruthy(); return result.json();
 }
 const loginApi = (page: Page, email: string, password: string) => mutate(page, 'POST', '/api/auth/login', { email, password });
 async function createTeacher(browser: Browser) {
@@ -58,18 +58,18 @@ test('teacher sees owned Unit results, ignores unassigned practice, and keeps fi
     const detail = await (await student.request.get('/api/units/' + unitId)).json();
     const learn = await submitBlank(student, { mode: 'LEARN', lessonId: detail.lessons[0].id });
     await submitBlank(student, { mode: 'PRACTICE', topicId: detail.unit.topicId, difficulty: 'EASY', count: 2 });
-    await page.getByRole('combobox', { name: 'Unit của tôi', exact: true }).selectOption(String(unitId));
+    await page.getByRole('combobox', { name: 'Vòng đấu của tôi', exact: true }).selectOption(String(unitId));
     const cards = page.getByLabel('Tổng quan học liệu', { exact: true });
     await expect(cards.locator('article').filter({ hasText: 'Lượt đã nộp trong khoảng' }).locator('strong')).toHaveText(String(before.activity.submittedAttempts + 1));
     const after = await (await page.request.get('/api/teacher/statistics?unitId=' + unitId)).json();
     expect(after.performance.first.total).toBe(before.performance.first.total + learn.items.length);
-    await expect(page.getByRole('combobox', { name: 'Unit của tôi', exact: true }).locator('option')).not.toContainText([foreignTitle]);
+    await expect(page.getByRole('combobox', { name: 'Vòng đấu của tôi', exact: true }).locator('option')).not.toContainText([foreignTitle]);
     expect((await page.request.get('/api/teacher/statistics?unitId=' + foreignUnit)).status()).toBe(404);
     await page.getByRole('combobox', { name: 'Thống kê theo', exact: true }).selectOption('OBJECTIVE');
     await page.getByRole('combobox', { name: 'Khoảng kết quả', exact: true }).selectOption('7D');
     await page.getByRole('combobox', { name: 'Độ khó câu hỏi', exact: true }).selectOption('HARD');
     await page.reload();
-    await expect(page.getByRole('combobox', { name: 'Unit của tôi', exact: true })).toHaveValue(String(unitId));
+    await expect(page.getByRole('combobox', { name: 'Vòng đấu của tôi', exact: true })).toHaveValue(String(unitId));
     await expect(page.getByRole('combobox', { name: 'Khoảng kết quả', exact: true })).toHaveValue('7D');
     await page.goBack(); await expect(page.getByRole('combobox', { name: 'Khoảng kết quả', exact: true })).toHaveValue('ALL');
     await page.goForward(); await expect(page.getByRole('combobox', { name: 'Khoảng kết quả', exact: true })).toHaveValue('7D');
@@ -83,7 +83,7 @@ test('teacher sees owned Unit results, ignores unassigned practice, and keeps fi
 test('teacher without Units sees empty results and cannot read student or admin statistics', async ({ page, browser }) => {
   const email = await createTeacher(browser); await loginApi(page, email, secret); await page.goto('/#/statistics');
   await expect(page.getByRole('heading', { name: 'Thống kê học liệu.' })).toBeVisible();
-  await expect(page.getByText('Bạn chưa có Unit. Tạo Unit trong Quản lý học liệu để bắt đầu.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Bạn chưa được phân công vòng đấu. Quản trị viên phân công vòng để bạn biên soạn và theo dõi kết quả.', { exact: true })).toBeVisible();
   await expect(page.getByText('Chưa có bài học trong phạm vi này.', { exact: true })).toBeVisible();
   expect((await page.request.get('/api/me/statistics')).status()).toBe(403);
   expect((await page.request.get('/api/admin/statistics')).status()).toBe(403);
@@ -96,7 +96,7 @@ test('foreign Unit deep link and network errors show failure without revealing f
   await expect(page.getByRole('alert').first()).toBeVisible();
   await expect(page.getByLabel('Tổng quan học liệu', { exact: true })).toHaveCount(0);
   await expect(page.locator('body')).not.toContainText(foreignTitle);
-  await page.getByRole('combobox', { name: 'Unit của tôi', exact: true }).selectOption('');
+  await page.getByRole('combobox', { name: 'Vòng đấu của tôi', exact: true }).selectOption('');
   await expect(page.getByLabel('Tổng quan học liệu', { exact: true })).toBeVisible();
   await page.route('**/api/teacher/statistics?*', route => route.abort());
   await page.getByRole('button', { name: 'Cập nhật số liệu', exact: true }).click();

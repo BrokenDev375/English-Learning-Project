@@ -48,10 +48,12 @@ public class ContentRepositoryImpl implements ContentRepository {
     static Predicate like(CriteriaBuilder cb,Expression<String> column,String q){String escaped=q.toLowerCase(Locale.ROOT).replace("!","!!").replace("%","!%").replace("_","!_");return cb.like(cb.lower(column),"%"+escaped+"%",'!');}
     private <R> Specification<R> bank(Filter f,long actor,boolean admin,boolean lesson){return (root,query,cb)->{
         var draft=root.join("draft",JoinType.LEFT);var published=root.join("published",JoinType.LEFT);var p=new ArrayList<Predicate>();p.add(cb.or(cb.isNotNull(draft.get("id")),cb.isNotNull(published.get("id"))));
-        if(f.scope().equals("OWN"))p.add(cb.equal(root.get("ownerId"),actor));
+        Predicate assigned=cb.equal(root.get("ownerId"),actor);
+        if(lesson&&!admin){var s=query.subquery(Long.class);var u=s.from(UnitEntity.class);s.select(u.get("id")).where(cb.equal(u.get("assignedTeacherId"),actor));assigned=root.get("unitId").in(s);}
+        if(f.scope().equals("OWN"))p.add(assigned);
         if(f.scope().equals("PUBLISHED")){p.add(cb.isNotNull(published.get("id")));p.add(cb.isNull(root.get("retiredAt")));}
         if(f.status()!=null)switch(f.status()){case "DRAFT"->{p.add(cb.isNull(published.get("id")));p.add(cb.isNull(root.get("retiredAt")));}case "PUBLISHED"->{p.add(cb.isNotNull(published.get("id")));p.add(cb.isNull(root.get("retiredAt")));}case "RETIRED"->p.add(cb.isNotNull(root.get("retiredAt")));}
-        Predicate privateDraft=cb.and(admin?cb.conjunction():cb.equal(root.get("ownerId"),actor),cb.isNotNull(draft.get("id")));
+        Predicate privateDraft=cb.and(admin?cb.conjunction():assigned,cb.isNotNull(draft.get("id")));
         if(f.scope().equals("PUBLISHED"))privateDraft=cb.disjunction();
         String title=lesson?"title":"prompt";var selected=cb.<String>selectCase().when(privateDraft,draft.get(title)).otherwise(published.get(title));if(!f.q().isBlank())p.add(like(cb,selected,f.q()));
         if(lesson){if(f.unitId()!=null)p.add(cb.equal(root.get("unitId"),f.unitId()));if(f.topicId()!=null){var sub=query.subquery(Long.class);var unit=sub.from(UnitEntity.class);sub.select(unit.get("id")).where(cb.equal(unit.get("topicId"),f.topicId()));p.add(root.get("unitId").in(sub));}}
@@ -68,6 +70,6 @@ public class ContentRepositoryImpl implements ContentRepository {
         exists.select(lesson.get("id")).where(p.toArray(Predicate[]::new));var result=new ArrayList<Predicate>();result.add(cb.exists(exists));if(!q.isBlank())result.add(like(cb,root.get(kind.equals("unit")?"title":"name"),q));if(topic!=null)result.add(cb.equal(root.get("topicId"),topic));return cb.and(result.toArray(Predicate[]::new));};}
     public Page<TopicEntity> publicTopics(String q,int page,int size){return topics.findAll(visible(q,null,"topic"),PageRequest.of(page,size,Sort.by("id")));}
     public Page<ObjectiveEntity> publicObjectives(String q,Long topic,int page,int size){return objectives.findAll(visible(q,topic,"objective"),PageRequest.of(page,size,Sort.by("id")));}
-    public List<UnitEntity> allPublicUnits(){return units.findAll(visible("",null,"unit"),Sort.by("stage","sortOrder","id"));}
-    public Page<UnitEntity> publicUnits(String q,Long topic,int page,int size){return units.findAll(visible(q,topic,"unit"),PageRequest.of(page,size,Sort.by("stage","sortOrder","id")));}
+    public List<UnitEntity> allPublicUnits(){return units.findAll(visible("",null,"unit"),Sort.by("roundNumber","id"));}
+    public Page<UnitEntity> publicUnits(String q,Long topic,int page,int size){return units.findAll(visible(q,topic,"unit"),PageRequest.of(page,size,Sort.by("roundNumber","id")));}
 }

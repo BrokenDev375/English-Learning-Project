@@ -22,7 +22,7 @@ test.beforeAll(async ({ request }) => {
   expect(created.status()).toBe(201);
   const user = await created.json() as { id: number };
   const promoted = await request.patch('/api/admin/users/' + user.id + '/role', {
-    headers: { [token.headerName]: token.token }, data: { role: 'TEACHER' },
+    headers: { [token.headerName]: token.token }, data: { role: 'ADMIN' },
   });
   expect(promoted.status()).toBe(200);
 });
@@ -54,17 +54,17 @@ test('author creates topic, objective and unit, edits and reloads saved content'
   await page.getByLabel('Tên mục tiêu', { exact: true }).fill('Dùng từ mới trong ngữ cảnh');
   await page.getByRole('button', { name: 'Lưu thay đổi', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Đã lưu' })).toContainText('Đã lưu Dùng từ mới');
-  await page.getByRole('tab', { name: 'Unit', exact: true }).click();
-  await page.getByRole('button', { name: '+ Thêm unit', exact: true }).click();
+  await page.getByRole('tab', { name: 'Vòng đấu', exact: true }).click();
+  await page.getByRole('button', { name: '+ Thêm vòng đấu', exact: true }).click();
   await page.getByRole('combobox', { name: 'Chủ đề', exact: true }).selectOption({ label: name });
-  await page.getByLabel('Tên Unit', { exact: true }).fill('Unit kiểm thử ' + code);
-  await page.getByLabel('Chặng học', { exact: true }).fill('2');
+  await page.getByLabel('Tên vòng đấu', { exact: true }).fill('Unit kiểm thử ' + code);
+  await expect(page.getByLabel('Số thứ tự vòng', { exact: true })).toHaveValue('');
   await page.getByRole('button', { name: 'Lưu thay đổi', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Đã lưu' })).toContainText('Đã lưu Unit kiểm thử');
   await page.getByLabel('Tìm học liệu', { exact: true }).fill(code);
   await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
   await page.getByRole('button', { name: 'Sửa Unit kiểm thử ' + code, exact: true }).click();
-  await page.getByLabel('Tên Unit', { exact: true }).fill('Unit đã sửa ' + code);
+  await page.getByLabel('Tên vòng đấu', { exact: true }).fill('Unit đã sửa ' + code);
   await page.getByRole('button', { name: 'Lưu thay đổi', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Unit đã sửa ' + code, exact: true })).toBeVisible();
   await page.reload();
@@ -133,12 +133,12 @@ test('stale editor preserves input and does not overwrite a newer change', async
 
 test('catalog and editor fit a mobile screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await authorLogin(page, 'teacher@english.local');
+  await authorLogin(page);
   await expect(page.getByRole('heading', { name: 'Sinh hoạt hằng ngày — Bắt đầu', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.screenshot({ path: 'test-results/module-2-catalog-mobile.png', fullPage: true });
-  await page.getByRole('button', { name: '+ Thêm unit', exact: true }).click();
-  await expect(page.getByLabel('Tên Unit', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+ Thêm vòng đấu', exact: true }).click();
+  await expect(page.getByLabel('Tên vòng đấu', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.getByRole('button', { name: 'Hủy', exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });

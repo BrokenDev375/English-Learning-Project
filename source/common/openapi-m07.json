@@ -725,6 +725,39 @@
           }
         }
       }
+    },
+    "/api/admin/statistics/presence": {
+      "get": {
+        "operationId": "adminOnlinePresence",
+        "summary": "ADMIN: current unique online accounts and connections",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current in-memory heartbeat snapshot; private, no-store. No learning aggregates or data writes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlinePresence"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED / SESSION_REVOKED"
+          },
+          "403": {
+            "description": "FORBIDDEN"
+          },
+          "503": {
+            "description": "DATABASE_UNAVAILABLE"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1526,7 +1559,8 @@
           "unitId",
           "title",
           "stage",
-          "sortOrder"
+          "sortOrder",
+          "roundNumber"
         ],
         "properties": {
           "unitId": {
@@ -1544,6 +1578,12 @@
           "sortOrder": {
             "type": "integer",
             "minimum": 0
+          },
+          "roundNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Persistent global round number. Lower numbers are learned first; unique across all units, including unpublished units."
           }
         }
       },
@@ -1776,6 +1816,69 @@
             "type": "integer",
             "format": "int64",
             "minimum": 0
+          }
+        }
+      },
+      "OnlinePresence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "connectedAccounts",
+          "openConnections",
+          "basis",
+          "users"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "connectedAccounts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "openConnections": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "basis": {
+            "type": "string",
+            "const": "OPEN_AUTHENTICATED_SOCKETS"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnlineAccount"
+            }
+          }
+        }
+      },
+      "OnlineAccount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "fullName",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "STUDENT",
+              "TEACHER",
+              "ADMIN"
+            ]
           }
         }
       }

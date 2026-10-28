@@ -39,3 +39,7 @@ Xem [kế hoạch](M07_IMPLEMENTATION_PLAN.md), [API](../source/common/M07_API.m
 - M05LearnerRewardsReader tái sử dụng GET service M05 với principal gốc: tổng XP/cấp độ/streak, chỉ huy hiệu đã nhận, tuần hiện tại nếu đã tham gia và tối đa 5 tuần chốt gần nhất. GET hồ sơ không sync, thưởng, tạo tuần hoặc join; hỗ trợ level kiểu long như M05.
 - Snapshot kết nối quản trị chỉ đếm socket mở trong cửa sổ heartbeat M06, nhiều tab tính một tài khoản. Không đếm kết nối hết liveness và không suy ra số người đang làm bài.
 - Backend: 265/266 ở lượt đầy đủ, lỗi duy nhất do tên bảng trong fixture mới; sửa fixture rồi cả 3/3 ca tích hợp thưởng qua. Tổng cộng **266 ca backend khác nhau đã qua qua các lượt**, không phải một lượt 266/266 duy nhất. Browser **91/91 PASS** trong một lượt, **4.7 phút**. Build TypeScript/Vite và manager **9/9 PASS**. Chi tiết tại biên bản M07. Không thay migration V1–V8, không ghi test vào demo.
+
+## Người đang online — 28/10/2026
+
+ADMIN có một danh sách tên/vai trò trong Quản lý tài khoản, mỗi tài khoản một dòng; bỏ ô lặp ở Trang chủ/Thống kê, các nút cập nhật và đoạn giải thích. API users chỉ ADMIN, đọc batch ACTIVE từ snapshot socket còn heartbeat. WebSocket PRESENCE_CHANGED cập nhật ngay, giữ đối soát/reconnect/fallback và thay danh sách theo ID. Không migration. Xem [kiểm tra danh sách](../statics/results/admin-online-list-validation.md); các mốc trước tại [online ban đầu](../statics/results/admin-online-validation.md) và [WebSocket](../statics/results/admin-presence-live-validation.md).

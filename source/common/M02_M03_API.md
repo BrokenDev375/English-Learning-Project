@@ -14,7 +14,7 @@ Cập nhật M03 ngày 19/10: đã có API và runner UI cho học/luyện tập
 - DTO từ chối trường lạ. Các trường nullable vẫn phải có mặt nếu schema ghi required; dùng null, không dùng chuỗi rỗng thay ID.
 - Trang: `{items,totalElements,page,size,totalPages}`, page bắt đầu 0, size 1–50 (mặc định 20), q tối đa 100 ký tự tại endpoint có q.
 - Danh sách author mặc định scope=OWN. Bank Material/Question/Lesson thêm scope=PUBLISHED để dùng lại nội dung đang công bố và scope=ALL chỉ cho ADMIN. Unit scope=ALL cũng chỉ ADMIN; Topic/Objective scope=ALL cho TEACHER/ADMIN vì là danh mục chung, quyền sửa vẫn own/ADMIN. Scope không có trong enum endpoint bị 400; TEACHER xin ALL trái quyền bị 403.
-- Thứ tự: Unit theo stage/sortOrder/id; Lesson theo sortOrder/id; author bank theo id giảm; Attempt theo updatedAt/id giảm. Mục tiêu và nguồn không có HTML tùy ý.
+- Thứ tự: Unit theo roundNumber/id; Lesson theo sortOrder/id; author bank theo id giảm; Attempt theo updatedAt/id giảm. Mục tiêu và nguồn không có HTML tùy ý.
 - Public topics/objectives chỉ hiện mục được nội dung đang công bố sử dụng; author lists thấy danh mục để biên soạn. Unit public có ít nhất một bài active published.
 - Danh sách chỉ trả summary; chi tiết qua endpoint ID. Với root người khác, chỉ trả phiên bản công bố; draftVersion/draftVersionId bị ẩn thành null.
 - Response cá nhân/author dùng Cache-Control private, no-store. Không log payload có answerKey/transcript/đáp án học viên.
@@ -223,7 +223,7 @@ Sửa quyền liên quan: Lesson mới thuộc chủ Unit kể cả khi ADMIN t�
 
 ## Mở rộng vòng học và ORDERING — 25/10/2026
 
-GET `/api/me/rounds?q=&topicId=&page=0&size=20`: chỉ STUDENT, cookie/session hiện hành, Cache-Control private/no-store, chỉ đọc REPEATABLE_READ. q tối đa 100 ký tự, topicId là ID hợp lệ, page ≥ 0, size 1–50. Trả CatalogPage<RoundProgress>; mỗi hàng có unit, totalLessons, completedLessons, startedLessons, state (NOT_STARTED/IN_PROGRESS/COMPLETED), nextLessonId nullable. Unit sắp theo stage/sortOrder/id; bài theo sortOrder/id. Đếm riêng principal, chỉ các Lesson có published và chưa retire. COMPLETED khi tổng > 0 và mọi bài có progress COMPLETED; nextLessonId là bài chưa hoàn thành đầu tiên. Unit không có bài công bố bị loại như learner catalog hiện tại. Công bố thêm bài/retire làm thay đổi mẫu số hiện tại, không xóa tiến độ lịch sử. GET không đồng bộ ôn hoặc thưởng. TEACHER/ADMIN 403, chưa đăng nhập 401, query sai 400.
+GET `/api/me/rounds?q=&topicId=&page=0&size=20`: chỉ STUDENT, cookie/session hiện hành, Cache-Control private/no-store, chỉ đọc REPEATABLE_READ. q tối đa 100 ký tự, topicId là ID hợp lệ, page ≥ 0, size 1–50. Trả CatalogPage<RoundProgress>; mỗi hàng có unit, totalLessons, completedLessons, startedLessons, state (NOT_STARTED/IN_PROGRESS/COMPLETED), nextLessonId nullable. Unit sắp theo roundNumber/id; bài theo sortOrder/id. Đếm riêng principal, chỉ các Lesson có published và chưa retire. COMPLETED khi tổng > 0 và mọi bài có progress COMPLETED; nextLessonId là bài chưa hoàn thành đầu tiên. Unit không có bài công bố bị loại như learner catalog hiện tại. Công bố thêm bài/retire làm thay đổi mẫu số hiện tại, không xóa tiến độ lịch sử. GET không đồng bộ ôn hoặc thưởng. TEACHER/ADMIN 403, chưa đăng nhập 401, query sai 400.
 
 ORDERING giữ schemaVersion=1 và dùng migration V9 mở rộng CHECK type. Draft nhận tối đa 20 tokens và 10 acceptedOrders; các ID/text vẫn kiểm tra kiểu/độ dài. Xuất bản yêu cầu 2–20 ID duy nhất, text không trắng và 1–10 thứ tự đúng; mỗi thứ tự chứa đủ mỗi token ID đúng một lần. ID tối đa 40 ký tự, text tối đa 100. acceptedOrders thuộc answerKey, không cấp trong PublicQuestion hoặc snapshot.
 
@@ -241,10 +241,40 @@ Client dùng pending Operation kind=complete trong cùng journal làm bài M06, 
 
 ## Bản đồ và khóa vòng — 26/10/2026
 
-RoundProgress thêm number (integer ≥1), locked (boolean), prerequisiteUnitId, prerequisiteRoundNumber và prerequisiteTitle (nullable). Thứ tự toàn cục là Unit.stage/sortOrder/id của Unit có Lesson đang công bố. Số thứ tự và điều kiện mở khóa tính trước q/topicId/page/size. Tìm kiếm và phân trang giữ hành vi catalog hiện hành. GET `/api/me/rounds/{id}` trả một RoundProgress; quyền/session/cache như danh sách, ID sai 400, vòng không còn công bố 404, không tự ghi tiến độ.
+RoundProgress thêm number (integer ≥1), locked (boolean), prerequisiteUnitId, prerequisiteRoundNumber và prerequisiteTitle (nullable). Thứ tự toàn cục là Unit.roundNumber/id của Unit có Lesson đang công bố. Số thứ tự và điều kiện mở khóa tính trước q/topicId/page/size. Tìm kiếm và phân trang giữ hành vi catalog hiện hành. GET `/api/me/rounds/{id}` trả một RoundProgress; quyền/session/cache như danh sách, ID sai 400, vòng không còn công bố 404, không tự ghi tiến độ.
 
 Vòng COMPLETED được chơi lại. Vòng khác bị khóa nếu có bất kỳ vòng trước chưa hoàn thành; prerequisite chỉ vòng chưa hoàn thành đầu tiên cần làm. Tất cả Lesson đang công bố của vòng trước cần progress COMPLETED; không yêu cầu điểm tối thiểu. Bài mới/retire làm thay đổi mẫu số hiện tại theo luật vòng học.
 
 POST `/api/attempts` mode LEARN kiểm tra khóa tại server sau actor lock và khóa Lesson, trước khi tạo Attempt/exposure/progress. Vòng bị khóa trả 409 ROUND_LOCKED kèm thông báo vòng cần hoàn thành, không ghi receipt thành công. Sau khi mở khóa có thể gửi lại request chưa thành công. Lượt đang IN_PROGRESS đã tồn tại theo cùng selection vẫn được tiếp tục trước bước kiểm tra khóa; replay receipt vẫn đi trước kiểm tra trạng thái. Đây là tương thích dữ liệu đang làm, không cấp quyền tạo lượt mới vượt vòng. PRACTICE/REVIEW không bị khóa và không tăng tiến độ vòng.
 
 Số vòng không lưu vào Submission và không thay đổi FIRST/điểm/XP. API mới không cấp khóa đáp án. Không migration, không backfill hoặc tự hoàn thành bài cũ.
+
+### V12 — số vòng lưu cố định
+
+Unit thêm roundNumber (INT dương, tối đa 2147483647, duy nhất toàn hệ thống kể cả vòng chưa công bố). number trong RoundProgress bằng unit.roundNumber, không đánh lại từ tập công bố, trang hoặc bộ lọc. roundNumber quyết định thứ tự và prerequisite; stage/sortOrder vẫn được đọc/ghi để tương thích nhưng không còn quyết định thứ tự vòng.
+
+POST/PUT author units nhận roundNumber tùy chọn. POST bỏ trống/null: max hiện tại + 1; PUT bỏ trống/null: giữ số cũ. DTO bỏ trường null khi băm receipt để replay payload cũ giữ nguyên hash. Request/response receipt đã lưu không được viết lại. Số đã dùng trả 409 ROUND_NUMBER_CONFLICT (kể cả tranh chấp unique index); revision/quyền sở hữu và requestId vẫn như cũ. Lỗi không tạo receipt thành công. Khi tạo đồng thời với số tự động, bên bị xung đột có thể gửi lại để chọn số tiếp theo.
+
+Số có thể có khoảng trống. Đổi sang số trống để di chuyển vòng; đổi chỗ hai vòng đang chiếm số cần một số tạm còn trống. Không tự đánh lại các vòng của tác giả khác. ID Unit/Lesson, Attempt, kết quả, XP và tiến độ lịch sử không đổi. Số trên kết quả cũ không được viết lại; khóa vòng mới được tính theo thứ tự hiện tại, vòng hoàn thành luôn mở.
+
+V12 backfill các Unit có bài công bố chưa retire trước, giữ stage/sortOrder/id cũ để bảo toàn số học viên đang thấy; các Unit còn lại theo sau. Không sửa migration cũ. Seed chỉ cấp số khi tạo mới, không ghi đè số tác giả đã sửa.
+
+Response replay của receipt tạo/sửa Unit trước V12 có thể thiếu roundNumber (LegacyUnitReceipt); body cũ giữ nguyên và có Idempotent-Replayed. UI tải lại catalog sau lưu; các GET và thao tác mới luôn trả roundNumber. Không suy số mới từ nội dung response cũ.
+
+## V13 — quản lý lộ trình và duyệt học liệu
+
+ADMIN tạo/sửa topics/objectives/units, phân công giáo viên qua assignedTeacherId; clearAssignment=true bỏ phân công, không gửi cùng assignedTeacherId khác null. Thiếu/null các trường mới khi cập nhật giữ phân công hiện tại. Chỉ chọn ACTIVE TEACHER. ownerId giữ người tạo. GET author units scope=OWN: giáo viên lấy vòng được giao; ADMIN lấy vòng do mình tạo. Lesson bank OWN tương ứng bài trong vòng được giao cho giáo viên và bài do ADMIN tạo khi người gọi là ADMIN. ADMIN ALL giữ mọi tác giả.
+
+GET /api/author/teachers?page=0&size=20: chỉ ADMIN, CatalogPage<{id,fullName}>, không email/hash. POST author {questions|lessons}/{id}/publish và /retire, POST materials/{id}/audio-update: ADMIN cho ghi mới; receipt thành công cũ vẫn replay. Giáo viên quản lý nguyên liệu Material của mình như cũ. Lesson ownerId là người tạo; canEdit của server lấy theo Unit.assignedTeacherId, quyền câu hỏi/tài liệu theo người tạo hoặc ADMIN.
+
+POST /api/author/{questions|lessons}/{id}/submit-review: body Publish (requestId, draftVersionId, baseRevision, previewToken), 201 {review,content}. Chỉ quản lý hiện tại, yêu cầu preview không lỗi và token/revision còn đúng. Lưu snapshot + một yêu cầu PENDING, đóng băng nháp; không công bố. Root/summary tác giả thêm canEdit và review nullable; trường mới có thể vắng trên replay trước V13. Metadata review không lộ qua bản công bố đọc bởi giáo viên khác.
+
+GET /api/author/reviews?state=PENDING&page=0&size=20 (state ALL/PENDING/APPROVED/RETURNED/WITHDRAWN), GET /reviews/{id}: chỉ tác giả/phụ trách hiện tại hoặc ADMIN. Trả Review hoặc Detail {review,snapshot,stale,canWithdraw}; snapshot gồm preview tại lúc gửi và materials đầy đủ. ROOT quyền được kiểm tra lại khi đọc, không chỉ so submittedBy.
+
+POST /api/author/reviews/{id}/{approve|return|withdraw}: {requestId,baseRevision,note?}, 200 Review, revision của yêu cầu. approve/return chỉ ADMIN; return cần note không trắng ≤2000 ký tự. withdraw theo quyền quản lý hiện tại. Quyết định được ghi người xử lý/thời gian; snapshot cũ giữ nguyên. APPROVED công bố đúng token/version đã gửi cùng transaction. Bản cũ vẫn dùng đến khi duyệt; history Attempts/Submission/XP không viết lại. Câu hỏi chờ riêng được duyệt cùng nếu nằm trong closure bài được duyệt.
+
+409 REVIEW_PENDING khi cố sửa/bỏ nháp hoặc công bố trực tiếp một root chờ duyệt; PREVIEW_STALE khi phụ thuộc/token đổi; ASSIGNMENT_CHANGED khi người phụ trách đổi; REVIEW_FINISHED khi đã quyết định; REVISION_CONFLICT và REQUEST_ID_REUSED giữ luật cũ. Lỗi không commit receipt/thay đổi công bố dở. Hàng đợi đánh stale cả khi phụ thuộc không còn đủ điều kiện. Một root chỉ có một PENDING bằng unique key.
+
+GET /api/author/versions/{questions|materials}/{id}: giải quyết chính xác version cho editor. Chỉ TEACHER/ADMIN; sở hữu, công bố đang được phép hoặc dependency đã thực sự được Lesson trong vòng đang phân công tham chiếu. Không cấp quyền sửa root của tác giả khác và không dùng cho STUDENT. File private theo dependency được đọc cùng phạm vi, thu hồi khi bỏ phân công.
+
+Chi tiết nghiệp vụ tại [phân công và duyệt học liệu](../../docs/CONTENT_GOVERNANCE.md). Quyền lịch sử công bố trước V13 được giữ, không tạo hàng duyệt giả cho dữ liệu cũ.

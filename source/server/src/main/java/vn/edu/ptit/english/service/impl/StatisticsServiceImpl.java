@@ -80,6 +80,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override public CatalogPage<Lesson> lessons(int page, int size, UserPrincipal actor) {
         require(Role.STUDENT, actor); pagination(page, size); return repository.lessons(actor.id(), page, size);
     }
+    @Override public OnlinePresence presence(UserPrincipal actor) {
+        require(Role.ADMIN, actor);
+        var live = connections.onlineSnapshot();
+        var users = repository.onlineAccounts(live.userIds());
+        return new OnlinePresence(Instant.now(), users.size(), live.openConnections(), "OPEN_AUTHENTICATED_SOCKETS", users);
+    }
     @Override public AdminOverview admin(String period, UserPrincipal actor) {
         require(Role.ADMIN, actor); Instant now = Instant.now(), from = since(period, now);
         var difficulties = List.of("EASY", "MEDIUM", "HARD").stream().map(d -> new Difficulty(d,

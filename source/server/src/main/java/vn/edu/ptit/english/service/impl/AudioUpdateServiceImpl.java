@@ -20,12 +20,13 @@ import static vn.edu.ptit.english.dto.MaterialRequests.invalid;
 @Transactional(readOnly=true,isolation=Isolation.READ_COMMITTED)
 public class AudioUpdateServiceImpl implements AudioUpdateService {
     private final ContentRepository content;
+    private final ContentGovernance governance;
     private final MaterialRepository materials;
     private final AccountGuard accounts;
     private final RequestReceiptService receipts;
     private final AuthoringPublication publication;
     public AudioUpdateServiceImpl(ContentRepository content,MaterialRepository materials,AccountGuard accounts,
-        RequestReceiptService receipts,AuthoringPublication publication){
+        RequestReceiptService receipts,AuthoringPublication publication,ContentGovernance governance){this.governance=governance;
         this.content=content;this.materials=materials;this.accounts=accounts;this.receipts=receipts;this.publication=publication;
     }
     private record Plan(MaterialEntity material,MaterialVersionEntity target,AudioUpdateData.Preview view,
@@ -164,6 +165,7 @@ public class AudioUpdateServiceImpl implements AudioUpdateService {
     public RequestReceiptService.Result apply(long id,AudioUpdateData.Request input,UserPrincipal actor){
         AssetServiceImpl.author(actor);
         return receipts.execute(actor,input.requestId(),"POST /api/author/materials/"+id+"/audio-update",input,200,()->{
+            ContentGovernance.admin(actor);governance.lock();
             var before=plan(id,actor);
             validateSelection(before,input);
             var locked=dependencies(before,input);
