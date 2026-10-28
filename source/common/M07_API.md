@@ -10,6 +10,7 @@ Cập nhật 24/10/2026. Cookie session của M01, xác thực lại quyền tà
 | /api/me/statistics/breakdown | STUDENT | period, groupBy=TOPIC/OBJECTIVE, page=0, size=20 |
 | /api/me/statistics/lessons | STUDENT | page=0, size=10 |
 | /api/admin/statistics | ADMIN | period |
+| /api/admin/statistics/presence | ADMIN | Không có |
 | /api/admin/statistics/questions | ADMIN | period, difficulty=EASY/MEDIUM/HARD (tùy chọn), page=0, size=20 |
 | /api/teacher/statistics | TEACHER | period, unitId (tùy chọn) |
 | /api/teacher/statistics/units | TEACHER | page=0, size=20 |
@@ -60,14 +61,22 @@ presence={connectedAccounts,openConnections,basis:OPEN_AUTHENTICATED_SOCKETS}. C
 
 Question item: questionId,questionVersionId,versionNo,prompt,type,difficulty,learners,first (Metric). Chỉ câu có ít nhất một FIRST sai; sắp số sai giảm dần, questionVersionId tăng dần để phân trang ổn định trên một snapshot. learners đếm distinct user có FIRST trên phiên bản đó trong bài đã nộp trong khoảng, kể cả người trả lời đúng/bỏ trống. Không chứa người nào đã trả lời gì, answerKey, explanation hoặc transcript. Câu ít mẫu không mặc định là câu kém chất lượng.
 
+## Người đang online
+
+GET /api/admin/statistics/presence trả {generatedAt,connectedAccounts,openConnections,basis:OPEN_AUTHENTICATED_SOCKETS,users:[{id,fullName,role}]}. Chỉ ADMIN hiện hành; no-store/private. users chỉ có tài khoản ACTIVE với socket còn mở và còn heartbeat, mỗi ID một lần, sắp theo tên không phân biệt hoa/thường rồi ID. Không trả email, password, session, đáp án hoặc dữ liệu học riêng. STUDENT/TEACHER không đọc được endpoint hoặc nhận subscription PRESENCE.
+
+LiveConnections.onlineSnapshot chụp tập ID và số kết nối từ cùng danh sách socket. Repository đọc một batch tài khoản theo các ID này, lọc ACTIVE; connectedAccounts bằng users.length. Không truy vấn tổng hợp bài nộp hoặc ghi DB, không migration. Snapshot RAM và dữ liệu tài khoản không phải cùng một transaction snapshot. Thông báo WebSocket vẫn chỉ chứa version/type và không có danh tính.
+
+Giao diện chỉ đặt một danh sách online trong Quản lý tài khoản, ngay dưới tiêu đề; mỗi dòng gồm tên và vai trò. Không còn ô online ở Trang chủ/Thống kê, không nút cập nhật, thời gian đo hoặc đoạn giải thích. WebSocket PRESENCE_CHANGED và ACK đăng ký kích hoạt đọc mới, thay danh sách hiện tại thay vì nối thêm; lỗi giữ bản cũ và báo ngắn. Giữ tự đối soát sau reconnect/focus và fallback HTTP khi subscription chưa sẵn sàng.
+
 ## TeacherOverview và phạm vi Unit
 
 - Mọi truy vấn teacher lọc bằng Unit.ownerId = principal.id. unitId bỏ trống nghĩa là tất cả Unit của chính giảng viên; unitId <= 0/không phải số trả 400, Unit người khác hoặc không tồn tại cùng trả 404. Không nhận teacherId/ownerId để chọn người khác.
 - Quan sát học tập chỉ lấy mode LEARN có LessonVersion đã chốt thuộc Lesson trong Unit được phép. Câu dùng chung ở Unit khác không kéo số liệu vào đây, kể cả câu do chính giảng viên tạo. Ngược lại, câu của tác giả khác được dùng trong Unit mình vẫn tính lượt học của Unit mình. PRACTICE/REVIEW chưa có Unit nguồn nên không được suy ngược từ câu hỏi để gán Unit.
 - TeacherOverview: generatedAt,period,from,unitId,units,learnersStarted,activity,performance,hintOpenedQuestions,difficulties. units là số Unit trong phạm vi; learnersStarted là distinct user có LEARN trong phạm vi, toàn thời gian. activity/performance/difficulties dùng kiểu chung; activity.modes chỉ có LEARN. activity.submittedAttempts và learnersWithSubmissions theo khoảng, activeAttempts hiện tại, completedLessons là tổng cặp user/lesson COMPLETED toàn thời gian.
 - hintOpenedQuestions đếm AttemptQuestion có hintOpenedAt trong các bài đã nộp của khoảng chọn, mỗi item tối đa một. performance giữ nguyên FIRST/hỗ trợ/câu mới/cũ/làm lại/chữa; retry/correction tính đến generatedAt của những bài đó.
-- /units trả CatalogPage<TeacherUnit>: unitId,title,stage,sortOrder; tất cả Unit mình sở hữu, kể cả chưa có bài. Sắp stage,sortOrder,unitId tăng dần.
-- /lessons trả CatalogPage<TeacherLesson>: lessonId,unitId,unitTitle,title,learnersStarted,activeAttempts,submittedAttempts,completedLearners,hintOpenedQuestions,performance. Tên theo LessonVersion có versionNo mới nhất (có thể là draft); số liệu gồm mọi phiên bản của root. Giữ bài retire. completedLearners là số cặp user/lesson COMPLETED của bài đó, không tăng khi học lại. Sắp Unit stage/order/id rồi Lesson order/id.
+- /units trả CatalogPage<TeacherUnit>: unitId,title,stage,sortOrder,roundNumber; tất cả Unit mình sở hữu, kể cả chưa có bài. Sắp roundNumber,unitId tăng dần.
+- /lessons trả CatalogPage<TeacherLesson>: lessonId,unitId,unitTitle,title,learnersStarted,activeAttempts,submittedAttempts,completedLearners,hintOpenedQuestions,performance. Tên theo LessonVersion có versionNo mới nhất (có thể là draft); số liệu gồm mọi phiên bản của root. Giữ bài retire. completedLearners là số cặp user/lesson COMPLETED của bài đó, không tăng khi học lại. Sắp Unit roundNumber/id rồi Lesson order/id.
 - /questions dùng QuestionPage chung, chỉ FIRST sai trong bài đã nộp thuộc phạm vi; tách từng QuestionVersion, hỗ trợ difficulty và phân trang, không lộ kết quả từng người.
 - /breakdown dùng BreakdownPage chung, nhóm TOPIC/OBJECTIVE theo metadata QuestionVersion đã chốt trong phạm vi Unit. Chỉ nhóm có FIRST trong bài đã nộp.
 - Không trả danh tính học viên, userId, Attempt ID, đáp án, explanation, transcript hoặc reward cá nhân. Xem số tổng hợp của Unit không cấp quyền đọc snapshot/lịch sử của từng học viên.
@@ -85,3 +94,5 @@ Question item: questionId,questionVersionId,versionNo,prompt,type,difficulty,lea
 Schema máy đọc: [openapi-m07.json](openapi-m07.json). Nguồn: [M02/M03](M02_M03_API.md), [M04](M04_API.md).
 
 Tích hợp main 20652a7 vào M07 ngày 25/10/2026. LearnerRewardsReader giữ principal để dịch vụ M05 kiểm tra quyền phiên hiện hành; không nhận userId khác từ query. Giao diện hồ sơ có liên kết sang phần thưởng và bảng tuần.
+
+V13: phạm vi TEACHER lấy theo Unit.assignedTeacherId hiện tại, không lấy ownerId người tạo. Khi chuyển phân công, giáo viên mới xem số liệu lịch sử trong vòng được giao; người cũ không đọc số liệu vòng đó nữa. Không đổi hàng progress/Attempt/XP hoặc dữ liệu tổng hợp gốc. OWN của các bank tác giả thay đổi tương ứng cho giáo viên; xem [quy tắc V13](../../docs/CONTENT_GOVERNANCE.md).

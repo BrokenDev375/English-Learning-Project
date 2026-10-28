@@ -51,7 +51,7 @@ class CatalogApiTest {
     @BeforeEach void fixtures() {
         receipts.deleteAllInBatch(); units.deleteAllInBatch(); objectives.deleteAllInBatch(); topics.deleteAllInBatch(); userEntities.deleteAllInBatch();
         String hash = passwords.encode("TestPass@123");
-        author=users.create("author@test.local",hash,"Tác giả Một",Role.TEACHER);
+        author=users.create("author@test.local",hash,"Tác giả Một",Role.ADMIN);
         other=users.create("other@test.local",hash,"Tác giả Hai",Role.TEACHER);
         admin=users.create("admin@test.local",hash,"Quản trị viên",Role.ADMIN);
         learner=users.create("learner@test.local",hash,"Người học",Role.STUDENT);
@@ -82,6 +82,46 @@ class CatalogApiTest {
     Map<String,Object> unit(long topicId,String title,int stage,int order){return Map.of("requestId",key(),"topicId",topicId,"title",title,"description","Mô tả","stage",stage,"sortOrder",order);}
     Map<String,Object> edit(String requestId,long revision,String name){return Map.of("requestId",requestId,"baseRevision",revision,"name",name,"description","Đã chỉnh sửa");}
 
+    Map<String,Object> withNumber(Map<String,Object> input,int number) {var result=new HashMap<>(input);result.put("roundNumber",number);return result;}
+    @Test void persistentNumbersValidateOwnershipRevisionsDuplicatesAndReplay() throws Exception {
+        var c=new Client().login(author);var outsider=new Client().login(other);
+        long topic=createTopic(c,"round-order");
+        var create=withNumber(unit(topic,"Round",9,8),7);
+        var first=c.send("POST","/api/author/units",create);
+        assertThat(first.statusCode()).isEqualTo(201);long id=body(first).path("id").asLong();
+        assertThat(body(first).path("roundNumber").asInt()).isEqualTo(7);
+        var duplicate=new Client().login(admin).send("POST","/api/author/units",withNumber(unit(topic,"Duplicate",1,0),7));
+        assertThat(duplicate.statusCode()).isEqualTo(409);assertThat(body(duplicate).path("code").asText()).isEqualTo("ROUND_NUMBER_CONFLICT");
+        for(Object bad:List.of(0,-1,1.5,2147483648L)) {
+            var invalid=new HashMap<>(unit(topic,"Invalid",1,0));invalid.put("roundNumber",bad);
+            assertThat(c.send("POST","/api/author/units",invalid).statusCode()).isEqualTo(400);
+        }
+        var update=withNumber(unit(topic,"Renumbered",9,8),3);update.put("baseRevision",0);
+        assertThat(outsider.send("PUT","/api/author/units/"+id,update).statusCode()).isEqualTo(403);
+        var saved=c.send("PUT","/api/author/units/"+id,update);assertThat(saved.statusCode()).isEqualTo(200);
+        assertThat(body(saved).path("roundNumber").asInt()).isEqualTo(3);assertThat(body(saved).path("revision").asInt()).isEqualTo(1);
+        assertThat(body(c.send("PUT","/api/author/units/"+id,update))).isEqualTo(body(saved));
+        var stale=new HashMap<>(update);stale.put("requestId",key());
+        assertThat(c.send("PUT","/api/author/units/"+id,stale).statusCode()).isEqualTo(409);
+        assertThat(body(c.send("POST","/api/author/units",create))).isEqualTo(body(first));
+        var old=unit(topic,"Old client",1,0);
+        assertThat(json.valueToTree(json.convertValue(old,vn.edu.ptit.english.dto.CatalogRequests.UnitCreate.class)).has("roundNumber")).isFalse();
+        var auto=c.send("POST","/api/author/units",old);assertThat(auto.statusCode()).isEqualTo(201);
+        assertThat(body(auto).path("roundNumber").asInt()).isEqualTo(4);
+        var legacy=new HashMap<>(unit(topic,"Old update",1,0));legacy.put("baseRevision",1);
+        assertThat(body(c.send("PUT","/api/author/units/"+id,legacy)).path("roundNumber").asInt()).isEqualTo(3);
+        assertThat(units.count()).isEqualTo(2);
+    }
+    @Test void concurrentRoundNumbersAcrossAdministratorsCommitOnlyOnce() throws Exception {
+        var a=new Client().login(author);var b=new Client().login(admin);long topic=createTopic(a,"number-race");
+        var pool=Executors.newFixedThreadPool(2);
+        try {
+            var x=pool.submit(()->a.send("POST","/api/author/units",withNumber(unit(topic,"One",1,0),5)));
+            var y=pool.submit(()->b.send("POST","/api/author/units",withNumber(unit(topic,"Two",1,0),5)));
+            assertThat(List.of(x.get(30,TimeUnit.SECONDS).statusCode(),y.get(30,TimeUnit.SECONDS).statusCode())).containsExactlyInAnyOrder(201,409);
+            assertThat(units.count()).isEqualTo(1);
+        } finally {pool.shutdownNow();}
+    }
     @Test void authenticationRolesCsrfAndStrictInputAreEnforced() throws Exception {
         assertThat(new Client().request("GET","/api/author/topics",null,false).statusCode()).isEqualTo(401);
         var student=new Client().login(learner);
@@ -108,7 +148,7 @@ class CatalogApiTest {
         var shared=two.send("GET","/api/author/topics?scope=ALL",null);
         assertThat(body(shared).path("totalElements").asLong()).isEqualTo(1);
         assertThat(shared.headers().firstValue("Cache-Control").orElse("")).contains("no-store","private");
-        assertThat(two.send("PUT","/api/author/topics/"+id,edit(key(),0,"Không được sửa")).statusCode()).isEqualTo(404);
+        assertThat(two.send("PUT","/api/author/topics/"+id,edit(key(),0,"Không được sửa")).statusCode()).isEqualTo(403);
         var updated=manager.send("PUT","/api/author/topics/"+id,edit(key(),0,"Quản trị sửa"));
         assertThat(updated.statusCode()).isEqualTo(200);assertThat(body(updated).path("ownerId").asLong()).isEqualTo(author.id());
         assertThat(two.send("GET","/api/author/units?scope=ALL",null).statusCode()).isEqualTo(403);
@@ -134,9 +174,9 @@ class CatalogApiTest {
         var objective=Map.of("requestId",key(),"topicId",topicId,"code","daily-verbs","name","Các động từ hằng ngày","description","");
         var created=client.send("POST","/api/author/objectives",objective);assertThat(created.statusCode()).isEqualTo(201);
         long objectiveId=body(created).path("id").asLong();
-        assertThat(client.send("POST","/api/author/units",unit(topicId,"Muộn",2,0)).statusCode()).isEqualTo(201);
-        assertThat(client.send("POST","/api/author/units",unit(topicId,"Thứ hai",1,1)).statusCode()).isEqualTo(201);
-        assertThat(client.send("POST","/api/author/units",unit(topicId,"Đầu tiên",1,0)).statusCode()).isEqualTo(201);
+        assertThat(client.send("POST","/api/author/units",withNumber(unit(topicId,"Muộn",2,0),30)).statusCode()).isEqualTo(201);
+        assertThat(client.send("POST","/api/author/units",withNumber(unit(topicId,"Thứ hai",1,1),20)).statusCode()).isEqualTo(201);
+        assertThat(client.send("POST","/api/author/units",withNumber(unit(topicId,"Đầu tiên",1,0),10)).statusCode()).isEqualTo(201);
         var list=body(client.send("GET","/api/author/units?topicId="+topicId+"&size=2",null));
         assertThat(list.path("items").get(0).path("title").asText()).isEqualTo("Đầu tiên");
         assertThat(list.path("totalPages").asInt()).isEqualTo(2);
@@ -181,19 +221,19 @@ class CatalogApiTest {
         long first=createTopic(one,"first-topic"), second=createTopic(one,"second-topic");
         var created=one.send("POST","/api/author/units",unit(first,"Unit đầu",1,0));
         long id=body(created).path("id").asLong();var update=new HashMap<>(unit(second,"Unit sửa",1,1));update.put("baseRevision",0);
-        assertThat(two.send("PUT","/api/author/units/"+id,update).statusCode()).isEqualTo(404);
+        assertThat(two.send("PUT","/api/author/units/"+id,update).statusCode()).isEqualTo(403);
         assertThat(one.send("PUT","/api/author/units/"+id,update).statusCode()).isEqualTo(200);
         assertThat(units.findById(id).orElseThrow().getTopicId()).isEqualTo(second);
         var objective=one.send("POST","/api/author/objectives",Map.of("requestId",key(),"topicId",first,"code","first-objective","name","Mục tiêu","description",""));
         long objectiveId=body(objective).path("id").asLong();
-        assertThat(two.send("PUT","/api/author/objectives/"+objectiveId,edit(key(),0,"Sửa trái quyền")).statusCode()).isEqualTo(404);
+        assertThat(two.send("PUT","/api/author/objectives/"+objectiveId,edit(key(),0,"Sửa trái quyền")).statusCode()).isEqualTo(403);
     }
     @Test void demoCatalogCanRunAgainWithoutDuplicatingOrResettingEdits() throws Exception {
-        var initializer=new CatalogDemoInitializer(users,topics,objectives,units,guard,author.email());
+        var initializer=new CatalogDemoInitializer(users,topics,objectives,units,guard,other.email());
         var tx=new TransactionTemplate(transactions);
         tx.executeWithoutResult(status -> initializer.run(new DefaultApplicationArguments()));
         var unit=units.findBySeedKey("m02-catalog-daily-routines").orElseThrow();
-        tx.executeWithoutResult(status -> {var item=units.findById(unit.getId()).orElseThrow();item.update(item.getTopicId(),"Tên đã sửa","Giữ lại",1,0);units.save(item);});
+        tx.executeWithoutResult(status -> {var item=units.findById(unit.getId()).orElseThrow();item.update(item.getTopicId(),"Tên đã sửa","Giữ lại",1,0,item.getRoundNumber());units.save(item);});
         tx.executeWithoutResult(status -> initializer.run(new DefaultApplicationArguments()));
         assertThat(topics.count()).isEqualTo(3);assertThat(objectives.count()).isEqualTo(3);assertThat(units.count()).isEqualTo(3);
         assertThat(units.findById(unit.getId()).orElseThrow().view().title()).isEqualTo("Tên đã sửa");

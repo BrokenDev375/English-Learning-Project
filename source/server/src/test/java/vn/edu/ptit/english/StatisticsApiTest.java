@@ -44,6 +44,7 @@ class StatisticsApiTest {
     @Autowired AttemptRepository attempts;
     @Autowired PasswordEncoder passwords;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired vn.edu.ptit.english.security.LiveConnections live;
     TransactionTemplate tx;
     UserRecord alice, bob, teacher, admin;
     long topic, objective, secondObjective, lesson, lessonVersion, unitId;
@@ -62,7 +63,7 @@ class StatisticsApiTest {
             var o = new ObjectiveEntity(teacher.id(), topic, prefix + "-a", "Present simple", "");
             var o2 = new ObjectiveEntity(teacher.id(), topic, prefix + "-b", "Vocabulary", "");
             em.persist(o); em.persist(o2); em.flush(); objective = o.getId(); secondObjective = o2.getId();
-            var unit = new UnitEntity(teacher.id(), topic, "Unit M07", "", 1, 0); em.persist(unit); em.flush();
+            var unit = new UnitEntity(teacher.id(), topic, "Unit M07", "", 1, 0,((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1); em.persist(unit); em.flush();
             unitId = unit.getId();
             var slots = new ArrayList<Slot>();
             for (int i = 0; i < 6; i++) {
@@ -146,6 +147,42 @@ class StatisticsApiTest {
             assertThat(response.body()).doesNotContain("SECRET_", "answerKey", "passwordHash", "storageKey", "securityVersion");
             return json.readTree(response.body());
         }
+    }
+    @Test void adminPresenceIsPrivateReadOnlyAndRestrictedToCurrentAdmins() throws Exception {
+        String path = "/api/admin/statistics/presence";
+        assertThat(new Client().get(path).statusCode()).isEqualTo(401);
+        for (var user : List.of(alice, teacher)) assertThat(new Client().login(user).get(path).statusCode()).isEqualTo(403);
+        var data = new Client().login(admin).read(path);
+        assertThat(data.size()).isEqualTo(5);
+        assertThat(data.path("users").isArray()).isTrue();
+        assertThat(data.path("users").size()).isEqualTo(data.path("connectedAccounts").asInt());
+        assertThat(data.path("basis").asText()).isEqualTo("OPEN_AUTHENTICATED_SOCKETS");
+        assertThat(Instant.parse(data.path("generatedAt").asText())).isBeforeOrEqualTo(Instant.now());
+        assertThat(data.path("connectedAccounts").asLong()).isGreaterThanOrEqualTo(0);
+        assertThat(data.path("openConnections").asLong()).isGreaterThanOrEqualTo(data.path("connectedAccounts").asLong());
+    }
+    @Test void adminPresenceListsEachActiveConnectedAccountOnceWithoutSensitiveFields() throws Exception {
+        var first=org.mockito.Mockito.mock(org.springframework.web.socket.WebSocketSession.class);
+        var second=org.mockito.Mockito.mock(org.springframework.web.socket.WebSocketSession.class);
+        var locked=org.mockito.Mockito.mock(org.springframework.web.socket.WebSocketSession.class);
+        org.mockito.Mockito.when(first.getId()).thenReturn("online-alice-1"); org.mockito.Mockito.when(first.isOpen()).thenReturn(true);
+        org.mockito.Mockito.when(second.getId()).thenReturn("online-alice-2"); org.mockito.Mockito.when(second.isOpen()).thenReturn(true);
+        org.mockito.Mockito.when(locked.getId()).thenReturn("online-bob"); org.mockito.Mockito.when(locked.isOpen()).thenReturn(true);
+        live.attach(first,vn.edu.ptit.english.security.UserPrincipal.from(alice),"online-test");
+        live.attach(second,vn.edu.ptit.english.security.UserPrincipal.from(alice),"online-test");
+        live.attach(locked,vn.edu.ptit.english.security.UserPrincipal.from(bob),"online-test");
+        try {
+            var c=new Client().login(admin); var data=c.read("/api/admin/statistics/presence");
+            assertThat(data.path("users")).hasSize(2); assertThat(data.path("openConnections").asInt()).isEqualTo(3);
+            var ids=new java.util.HashSet<Long>(); data.path("users").forEach(u->{ids.add(u.path("id").asLong());assertThat(u.size()).isEqualTo(3);assertThat(u.path("fullName").asText()).isNotBlank();assertThat(u.path("role").asText()).isEqualTo("STUDENT");});
+            assertThat(ids).containsExactlyInAnyOrder(alice.id(),bob.id());
+            assertThat(data.toString()).doesNotContain("email","password","securityVersion");
+            tx.executeWithoutResult(s->em.find(UserEntity.class,bob.id()).changeStatus(AccountStatus.LOCKED));
+            var updated=c.read("/api/admin/statistics/presence");assertThat(updated.path("users")).hasSize(1);
+            assertThat(updated.path("users").get(0).path("id").asLong()).isEqualTo(alice.id());
+            org.mockito.Mockito.when(first.isOpen()).thenReturn(false); org.mockito.Mockito.when(second.isOpen()).thenReturn(false);
+            assertThat(c.read("/api/admin/statistics/presence").path("users")).isEmpty();
+        } finally { live.detach("online-alice-1");live.detach("online-alice-2");live.detach("online-bob"); }
     }
     @Test void emptyStatisticsHaveNullRatesAndUnavailableRewardsWithoutWritingData() throws Exception {
         var c = new Client().login(alice);
@@ -253,7 +290,7 @@ class StatisticsApiTest {
     }
     long[] additionalLesson(long unitOwner, long lessonOwner, String title) {
         return tx.execute(s -> {
-            var u = new UnitEntity(unitOwner, topic, title + " Unit", "", 1, 1); em.persist(u); em.flush();
+            var u = new UnitEntity(unitOwner, topic, title + " Unit", "", 1, 1, ((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1); em.persist(u); em.flush();
             var l = new LessonEntity(lessonOwner, u.getId(), 0); em.persist(l); em.flush();
             var v = new LessonVersionEntity(l.getId(), 1, new Lesson(title, "", node("[]"), List.of(objective),
                 List.of(new Slot(questions.get(2), "INDEPENDENT", 0))));

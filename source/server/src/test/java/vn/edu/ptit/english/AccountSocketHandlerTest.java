@@ -77,6 +77,44 @@ class AccountSocketHandlerTest {
         assertThat(send(student, "SUBSCRIBE", Map.of("resource", "LEAGUE", "attemptId", 42)).path("code").asText()).isEqualTo("INVALID_SUBSCRIPTION");
         assertThat(send(student, "SUBSCRIBE", Map.of("resource", "UNKNOWN")).path("code").asText()).isEqualTo("INVALID_SUBSCRIPTION");
         assertThat(send(teacher, "SUBSCRIBE", Map.of("resource", "GAMIFICATION")).path("code").asText()).isEqualTo("FORBIDDEN");
+        assertThat(send(student, "SUBSCRIBE", Map.of("resource", "PRESENCE")).path("code").asText()).isEqualTo("FORBIDDEN");
+        assertThat(send(teacher, "SUBSCRIBE", Map.of("resource", "PRESENCE")).path("code").asText()).isEqualTo("FORBIDDEN");
+        var admin = connect("admin", 3, Role.ADMIN);
+        assertThat(send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE", "userId", 2)).path("code").asText()).isEqualTo("INVALID_SUBSCRIPTION");
+    }
+    @Test void onlySubscribedAdminsReceivePresenceChangesAndHeartbeatDoesNotBroadcastUnchangedCounts() throws Exception {
+        var admin = connect("admin", 1, Role.ADMIN);
+        send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE")); admin.messages().clear();
+        var owner = connect("owner", 2, Role.STUDENT); connect("other-tab", 2, Role.STUDENT);
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,3));
+        assertThat(admin.messages()).hasSize(2).allSatisfy(m -> { assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"); assertThat(m.size()).isEqualTo(2); });
+        assertThat(owner.messages()).extracting(m -> m.path("type").asText()).containsExactly("CONNECTED");
+        admin.messages().clear(); clock.advance(800); send(admin, "HEARTBEAT", Map.of());
+        assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("ACK");
+        admin.messages().clear(); clock.advance(300); live.sweep();
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
+        assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("PRESENCE_CHANGED");
+        send(admin, "UNSUBSCRIBE", Map.of("resource", "PRESENCE")); admin.messages().clear();
+        connect("new-owner", 3, Role.STUDENT); assertThat(admin.messages()).isEmpty();
+    }
+    @Test void closingHttpSessionAndRevokingAccessPublishTheNewPresence() throws Exception {
+        var admin = connect("admin", 1, Role.ADMIN); send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE"));
+        connect("owner", 2, Role.STUDENT); connect("owner-tab", 2, Role.STUDENT); admin.messages().clear();
+        var session = mock(jakarta.servlet.http.HttpSession.class); when(session.getId()).thenReturn("http-owner-tab");
+        live.sessionDestroyed(new jakarta.servlet.http.HttpSessionEvent(session));
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,2));
+        live.accessChanged(new AccountAccessChanged(2));
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
+        assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("PRESENCE_CHANGED", "PRESENCE_CHANGED");
+    }
+    @Test void failedAdminRecipientIsRemovedAndRemainingAdminsAreNotifiedWithoutRecursiveBroadcast() throws Exception {
+        var admin = connect("admin", 1, Role.ADMIN); send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE"));
+        var failed = connect("failed", 2, Role.ADMIN); send(failed, "SUBSCRIBE", Map.of("resource", "PRESENCE")); admin.messages().clear();
+        doThrow(new java.io.IOException("test disconnect")).when(failed.socket()).sendMessage(any());
+        connect("owner", 3, Role.STUDENT);
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,2));
+        assertThat(admin.messages()).isNotEmpty().allSatisfy(m -> assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"));
+        verify(failed.socket()).close(any(CloseStatus.class));
     }
     @Test void rewardSubscriptionDoesNotBypassHeartbeatExpiry() throws Exception {
         var client = connect("expiring", 1, Role.STUDENT);

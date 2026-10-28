@@ -29,6 +29,7 @@ public class AuthorCatalogController {
         @RequestParam(defaultValue="OWN") String scope, @RequestParam(required=false) Long topicId,
         @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,
         @AuthenticationPrincipal UserPrincipal actor) { return read(service.objectives(q,scope,topicId,page,size,actor)); }
+    @GetMapping("/teachers") public ResponseEntity<?> teachers(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,@AuthenticationPrincipal UserPrincipal actor){return read(service.teachers(page,size,actor));}
     @GetMapping("/units") public ResponseEntity<CatalogPage<Unit>> units(@RequestParam(defaultValue="") String q,
         @RequestParam(defaultValue="OWN") String scope, @RequestParam(required=false) Long topicId,
         @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,

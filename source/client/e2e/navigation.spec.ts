@@ -6,8 +6,8 @@ import { resolve } from 'node:path';
 const env = Object.fromEntries(readFileSync(resolve(process.cwd(), '../../.env'), 'utf8').split(/\r?\n/).filter(line => line && !line.startsWith('#') && line.includes('=')).map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]));
 async function signIn(page: Page, student = false, path = '/') {
   await page.goto(path);
-  await page.getByLabel('Email', { exact: true }).fill(student ? env.DEMO_STUDENT_EMAIL ?? 'student@english.local' : env.DEMO_TEACHER_EMAIL ?? 'teacher@english.local');
-  await page.getByLabel('Mật khẩu', { exact: true }).fill(student ? env.DEMO_STUDENT_PASSWORD ?? 'Student@12345' : env.DEMO_TEACHER_PASSWORD ?? 'Teacher@12345');
+  await page.getByLabel('Email', { exact: true }).fill(student ? env.DEMO_STUDENT_EMAIL ?? 'student@english.local' : env.BOOTSTRAP_ADMIN_EMAIL);
+  await page.getByLabel('Mật khẩu', { exact: true }).fill(student ? env.DEMO_STUDENT_PASSWORD ?? 'Student@12345' : env.BOOTSTRAP_ADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Đăng xuất', exact: true })).toBeVisible();
 }
@@ -17,9 +17,9 @@ test('browser Back and Forward traverse the sidebar and catalog tabs, including 
   await signIn(page); await content(page);
   await page.getByRole('tab', { name: 'Chủ đề', exact: true }).click();
   await page.getByRole('tab', { name: 'Mục tiêu học', exact: true }).click();
-  await page.getByRole('tab', { name: 'Unit', exact: true }).click();
+  await page.getByRole('tab', { name: 'Vòng đấu', exact: true }).click();
   const length = await page.evaluate(() => history.length);
-  await page.getByRole('tab', { name: 'Unit', exact: true }).click();
+  await page.getByRole('tab', { name: 'Vòng đấu', exact: true }).click();
   expect(await page.evaluate(() => history.length)).toBe(length);
   await page.goBack(); await expect(page.getByRole('tab', { name: 'Mục tiêu học', exact: true })).toHaveAttribute('aria-selected', 'true');
   await page.goBack(); await expect(page.getByRole('tab', { name: 'Chủ đề', exact: true })).toHaveAttribute('aria-selected', 'true');
@@ -32,10 +32,10 @@ test('browser Back and Forward traverse the sidebar and catalog tabs, including 
 
 test('catalog forms and material details can be revisited with Back, Forward and direct URLs', async ({ page }) => {
   await signIn(page); await content(page);
-  await page.getByRole('button', { name: '+ Thêm unit', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Thêm unit', exact: true })).toBeVisible();
-  await page.goBack(); await expect(page.getByRole('heading', { name: 'Thêm unit', exact: true })).toHaveCount(0);
-  await page.goForward(); await expect(page.getByRole('heading', { name: 'Thêm unit', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '+ Thêm vòng đấu', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Thêm vòng đấu', exact: true })).toBeVisible();
+  await page.goBack(); await expect(page.getByRole('heading', { name: 'Thêm vòng đấu', exact: true })).toHaveCount(0);
+  await page.goForward(); await expect(page.getByRole('heading', { name: 'Thêm vòng đấu', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Hủy', exact: true }).click();
   await page.getByRole('button', { name: 'Tài liệu', exact: true }).click();
   await page.getByLabel('Tìm tài liệu', { exact: true }).fill('A day with Linh');
@@ -65,8 +65,8 @@ test('question and lesson forms and Unit ordering restore their screens after hi
     await page.reload(); await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Về danh sách', exact: true }).click();
   }
-  await page.getByRole('combobox', { name: 'Unit', exact: true }).selectOption({ label: 'Sinh hoạt hằng ngày — Bắt đầu' });
-  await page.getByRole('button', { name: 'Sắp xếp bài trong Unit đã chọn →', exact: true }).click();
+  const publicRounds = await (await page.request.get('/api/units?size=50')).json(); const selectedRound = publicRounds.items.find((u: { id: number; title: string }) => u.title === 'Sinh hoạt hằng ngày — Bắt đầu'); expect(selectedRound).toBeTruthy(); await page.getByRole('combobox', { name: 'Vòng đấu', exact: true }).selectOption(String(selectedRound.id));
+  await page.getByRole('button', { name: 'Sắp xếp bài trong vòng đấu đã chọn →', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Sinh hoạt hằng ngày — Bắt đầu', exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('heading', { name: 'Sinh hoạt hằng ngày — Bắt đầu', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Về danh sách bài', exact: true }).click();

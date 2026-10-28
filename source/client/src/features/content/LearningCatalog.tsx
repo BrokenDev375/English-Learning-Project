@@ -11,6 +11,7 @@ import RoundMap, { RoundRules } from '../learning/RoundMap';
 import type { RoundProgress } from '../learning/journey';
 import '../content/materials.css';
 import '../content/authoring.css';
+import { roundHeading } from './roundNumbering';
 import '../learning/journey.css';
 interface LessonSummary { id: number; title: string; description: string; objectiveIds: number[]; questionCounts: { guided: number; independent: number; reviewVariant: number } }
 interface Detail { unit: Unit; lessons: LessonSummary[] }
@@ -46,7 +47,8 @@ export default function LessonCatalog({ student, start, disabled }: { student: b
       .then(async ([unit, lesson]) => {
         const id = unit?.unit.id ?? lesson?.lesson.unitId;
         const round = student && id ? await api<RoundProgress>('/api/me/rounds/' + id) : null;
-        if (live) { setDetail(unit); setIntro(lesson); setRound(round); }
+        const resolvedUnit = unit ?? (lesson ? await api<Detail>('/api/units/' + lesson.lesson.unitId) : null);
+        if (live) { setDetail(resolvedUnit); setIntro(lesson); setRound(round); }
       }).catch(e => { if (live) setError(errorMessage(e)); });
     return () => { live = false; };
   }, [student, unitId, lessonId, refresh]);
@@ -70,22 +72,22 @@ export default function LessonCatalog({ student, start, disabled }: { student: b
       <button className="button primary" onClick={() => navigate({ unit: String(round.prerequisiteUnitId), lesson: null })}>Về vòng đang mở →</button><button className="button secondary" onClick={() => navigate({ unit: null, lesson: null })}>Mở bản đồ vòng chơi</button>
     </div></section>;
   return <section className={intro ? 'lesson-intro-page' : 'round-journey'}>
-    <span className="eyebrow">{student && !intro ? 'CHƠI THEO VÒNG' : 'KHÁM PHÁ NỘI DUNG'}</span><h1>{intro ? intro.lesson.title : detail ? student && round ? 'Vòng ' + round.number + ' · ' + detail.unit.title : detail.unit.title : student ? 'Bản đồ vòng chơi' : 'Bài học tiếng Anh'}<span>.</span></h1>
+    <span className="eyebrow">{student && !intro ? 'CHƠI THEO VÒNG' : !student && (detail || intro) ? roundHeading(loadedDetail?.unit.roundNumber).toUpperCase() : 'KHÁM PHÁ NỘI DUNG'}</span><h1>{intro ? intro.lesson.title : detail ? student && round ? 'Vòng ' + round.number + ' · ' + detail.unit.title : detail.unit.title : student ? 'Bản đồ vòng chơi' : 'Bài học tiếng Anh'}<span>.</span></h1>
     {error && <div className="message error" role="alert">{error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Thử lại</button></div>}
     {intro ? <LessonIntroduction key={intro.lesson.id} intro={intro} progress={progress.find(p => p.lessonId === intro.lesson.id)} progressReady={progressReady} student={student} disabled={disabled} start={start} retryProgress={() => setRefresh(v => v + 1)} /> : detail ? <>
       <p className="muted">{detail.unit.description}</p>
       {student && <article className="panel round-overview"><h2>Tiến độ vòng chơi</h2>{progressReady ? <><RoundMeter totalLessons={detail.lessons.length} completedLessons={completed} /><p>{detail.lessons.length > 0 && completed === detail.lessons.length ? 'Bạn đã hoàn thành tất cả bài trong vòng này. Bạn có thể học lại từng bài.' : 'Chọn một bài bên dưới để chơi. Hoàn thành tất cả bài trong vòng sẽ mở khóa vòng kế tiếp.'}</p>{next && <button className="button primary" disabled={disabled} onClick={() => navigate({ lesson: String(next.id) })}>Chơi bài tiếp theo →</button>}</> : <p role="status">{error ? 'Chưa tải được tiến độ vòng học.' : 'Đang tải tiến độ vòng học…'}</p>}</article>}
       <div className="catalog-grid">{detail.lessons.map((l, index) => <article className="panel catalog-card" key={l.id}><span className="eyebrow">BÀI {index + 1}</span><h2>{l.title}</h2><p className="muted">{l.description}</p><p className="muted">{l.questionCounts.guided} câu hướng dẫn · {l.questionCounts.independent} câu tự làm</p>{progressLabel(l.id)}<button className="link-button" disabled={busy} onClick={() => navigate({ lesson: String(l.id) })}>{student ? 'Chơi bài ' + (index + 1) + ' · ' : 'Xem giới thiệu '}{l.title} →</button></article>)}</div>
-      <div className="material-actions"><button className="button secondary" onClick={() => returnTo({ unit: null, lesson: null })}>{student ? 'Về bản đồ vòng chơi' : 'Về các Unit'}</button></div>
+      <div className="material-actions"><button className="button secondary" onClick={() => returnTo({ unit: null, lesson: null })}>{student ? 'Về bản đồ vòng chơi' : 'Về các vòng đấu'}</button></div>
     </> : <>
       <p className="muted">{student ? 'Bắt đầu ở vòng đang mở. Làm đủ các bài để mở khóa vòng tiếp theo; vòng đã hoàn thành luôn có thể chơi lại.' : 'Chọn chủ đề và xem những bài học đã được công bố.'}</p>
       {student && <RoundRules />}
-      <div className="panel catalog-browser"><form className="filters" onSubmit={event => { event.preventDefault(); setSearch(query.trim()); setPage(0); setRefresh(v => v + 1); }}><label className="search-label">{student ? 'Tìm vòng học' : 'Tìm Unit'}<input value={query} maxLength={100} onChange={event => setQuery(event.target.value)} /></label><label>Chủ đề<select value={topic} onChange={event => { setTopic(event.target.value); setPage(0); }}><option value="">Tất cả chủ đề</option>{topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label><button className="button secondary" disabled={busy}>Tìm kiếm</button></form>
-        {busy ? <p className="table-message" role="status">Đang tải hành trình…</p> : !units?.items.length ? <div className="catalog-empty"><strong>{student ? 'Chưa có vòng chơi phù hợp' : 'Chưa có Unit phù hợp'}</strong><p className="muted">Nội dung đã xuất bản sẽ xuất hiện tại đây.</p></div> : student ? <RoundMap rounds={rounds} disabled={busy || disabled} open={r => navigate({ unit: String(r.unit.id), lesson: null })} /> : <div className="catalog-grid">{units.items.map(u => {
+      <div className="panel catalog-browser"><form className="filters" onSubmit={event => { event.preventDefault(); setSearch(query.trim()); setPage(0); setRefresh(v => v + 1); }}><label className="search-label">{student ? 'Tìm vòng học' : 'Tìm vòng đấu'}<input value={query} maxLength={100} onChange={event => setQuery(event.target.value)} /></label><label>Chủ đề<select value={topic} onChange={event => { setTopic(event.target.value); setPage(0); }}><option value="">Tất cả chủ đề</option>{topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label><button className="button secondary" disabled={busy}>Tìm kiếm</button></form>
+        {busy ? <p className="table-message" role="status">Đang tải hành trình…</p> : !units?.items.length ? <div className="catalog-empty"><strong>{student ? 'Chưa có vòng chơi phù hợp' : 'Chưa có vòng đấu phù hợp'}</strong><p className="muted">Nội dung đã xuất bản sẽ xuất hiện tại đây.</p></div> : student ? <RoundMap rounds={rounds} disabled={busy || disabled} open={r => navigate({ unit: String(r.unit.id), lesson: null })} /> : <div className="catalog-grid">{units.items.map(u => {
           const round = rounds.find(r => r.unit.id === u.id);
-          return <article className="catalog-card round-card" key={u.id}><span className="eyebrow">{student ? 'VÒNG HỌC · ' : ''}CHẶNG {u.stage}</span><h2>{u.title}</h2><p className="muted">{u.description}</p>{student && round && <><span className="round-state">{round.state === 'COMPLETED' ? 'Đã hoàn thành vòng' : round.state === 'IN_PROGRESS' ? 'Đang học' : 'Sẵn sàng bắt đầu'}</span><RoundMeter {...round} /></>}<button className="link-button" disabled={busy} onClick={() => navigate({ unit: String(u.id), lesson: null })}>Xem bài trong {u.title} →</button></article>;
+          return <article className="catalog-card round-card" key={u.id}><span className="eyebrow">{student ? 'VÒNG HỌC' : roundHeading(u.roundNumber).toUpperCase()}</span><h2>{u.title}</h2><p className="muted">{u.description}</p>{student && round && <><span className="round-state">{round.state === 'COMPLETED' ? 'Đã hoàn thành vòng' : round.state === 'IN_PROGRESS' ? 'Đang học' : 'Sẵn sàng bắt đầu'}</span><RoundMeter {...round} /></>}<button className="link-button" disabled={busy} onClick={() => navigate({ unit: String(u.id), lesson: null })}>Xem bài trong {u.title} →</button></article>;
         })}</div>}
-        <div className="pagination"><span>{units?.totalElements ?? 0} {student ? 'vòng học' : 'Unit'}</span><div><button className="button secondary compact" disabled={busy || page === 0} onClick={() => setPage(v => v - 1)}>Trước</button><button className="button secondary compact" disabled={busy || page + 1 >= (units?.totalPages ?? 0)} onClick={() => setPage(v => v + 1)}>Sau</button></div></div>
+        <div className="pagination"><span>{units?.totalElements ?? 0} {student ? 'vòng học' : 'vòng đấu'}</span><div><button className="button secondary compact" disabled={busy || page === 0} onClick={() => setPage(v => v - 1)}>Trước</button><button className="button secondary compact" disabled={busy || page + 1 >= (units?.totalPages ?? 0)} onClick={() => setPage(v => v + 1)}>Sau</button></div></div>
       </div>
     </>}
   </section>;

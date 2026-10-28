@@ -14,6 +14,12 @@ import static vn.edu.ptit.english.enums.AttemptEnums.*;
 public class StatisticsRepositoryImpl implements StatisticsRepository {
     private final EntityManager em;
     public StatisticsRepositoryImpl(EntityManager em) { this.em = em; }
+    @Override public List<OnlineAccount> onlineAccounts(Set<Long> ids) {
+        if (ids.isEmpty()) return List.of();
+        return em.createQuery("select u from UserEntity u where u.id in :ids and u.status=:status order by lower(u.fullName),u.id", vn.edu.ptit.english.entity.UserEntity.class)
+            .setParameter("ids", ids).setParameter("status", vn.edu.ptit.english.enums.AccountStatus.ACTIVE)
+            .getResultList().stream().map(u -> new OnlineAccount(u.getId(), u.getFullName(), u.getRole())).toList();
+    }
     private static final String SUBMISSIONS = " from AttemptEntity a, SubmissionEntity s where s.attemptId=a.id"
         + " and a.submittedAt>=:since and a.submittedAt<=:until";
     private static final String TRIALS = " from AnswerTrialEntity t, AttemptQuestionEntity i, AttemptEntity a,"
@@ -130,7 +136,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     // the question's owner or its current membership in a published lesson.
     private String teacherFilter(Long unitId, Long lessonId) {
         return " and a.mode=:learn and exists (select l.id from LessonVersionEntity v, LessonEntity l, UnitEntity u"
-            + " where v.id=a.lessonVersionId and v.lessonId=l.id and l.unitId=u.id and u.ownerId=:teacherId"
+            + " where v.id=a.lessonVersionId and v.lessonId=l.id and l.unitId=u.id and u.assignedTeacherId=:teacherId"
             + (unitId == null ? "" : " and u.id=:unitId") + (lessonId == null ? "" : " and l.id=:lessonId") + ")";
     }
     private <T> TypedQuery<T> teacherScope(TypedQuery<T> query, long teacherId, Long unitId, Long lessonId) {
@@ -140,21 +146,21 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         return query;
     }
     @Override public boolean ownsUnit(long teacherId, long unitId) {
-        return em.createQuery("select count(u.id) from UnitEntity u where u.ownerId=:teacherId and u.id=:unitId", Long.class)
+        return em.createQuery("select count(u.id) from UnitEntity u where u.assignedTeacherId=:teacherId and u.id=:unitId", Long.class)
             .setParameter("teacherId", teacherId).setParameter("unitId", unitId).getSingleResult() > 0;
     }
     @Override public long teacherUnitCount(long teacherId, Long unitId) {
-        var q = em.createQuery("select count(u.id) from UnitEntity u where u.ownerId=:teacherId"
+        var q = em.createQuery("select count(u.id) from UnitEntity u where u.assignedTeacherId=:teacherId"
             + (unitId == null ? "" : " and u.id=:unitId"), Long.class).setParameter("teacherId", teacherId);
         if (unitId != null) q.setParameter("unitId", unitId);
         return q.getSingleResult();
     }
     @Override public CatalogPage<TeacherUnit> teacherUnits(long teacherId, int page, int size) {
-        var rows = em.createQuery("select u.id,u.title,u.stage,u.sortOrder from UnitEntity u where u.ownerId=:teacherId"
-            + " order by u.stage,u.sortOrder,u.id", Object[].class).setParameter("teacherId", teacherId)
+        var rows = em.createQuery("select u.id,u.title,u.stage,u.sortOrder,u.roundNumber from UnitEntity u where u.assignedTeacherId=:teacherId"
+            + " order by u.roundNumber,u.id", Object[].class).setParameter("teacherId", teacherId)
             .setFirstResult(page * size).setMaxResults(size).getResultList();
         return page(rows.stream().map(r -> new TeacherUnit(number(r[0]), (String) r[1],
-            ((Number) r[2]).intValue(), ((Number) r[3]).intValue())).toList(), teacherUnitCount(teacherId, null), page, size);
+            ((Number) r[2]).intValue(), ((Number) r[3]).intValue(), ((Number) r[4]).intValue())).toList(), teacherUnitCount(teacherId, null), page, size);
     }
     @Override public long teacherLearnersStarted(long teacherId, Long unitId, Long lessonId) {
         return teacherScope(em.createQuery("select count(distinct a.userId) from AttemptEntity a where 1=1"
@@ -168,7 +174,7 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
             + teacherFilter(unitId, lessonId), Long.class).setParameter("state", State.IN_PROGRESS),
             teacherId, unitId, lessonId).getSingleResult();
         var completed = em.createQuery("select count(p.id) from LessonProgressEntity p, LessonEntity l, UnitEntity u"
-            + " where p.id.lessonId=l.id and l.unitId=u.id and u.ownerId=:teacherId and p.state=:completed"
+            + " where p.id.lessonId=l.id and l.unitId=u.id and u.assignedTeacherId=:teacherId and p.state=:completed"
             + (unitId == null ? "" : " and u.id=:unitId") + (lessonId == null ? "" : " and l.id=:lessonId"), Long.class)
             .setParameter("teacherId", teacherId).setParameter("completed", ProgressState.COMPLETED);
         if (unitId != null) completed.setParameter("unitId", unitId);
@@ -214,9 +220,9 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
     @Override public CatalogPage<TeacherLessonInfo> teacherLessons(long teacherId, Long unitId, int page, int size) {
         String source = " from LessonEntity l, UnitEntity u, LessonVersionEntity v where l.unitId=u.id"
             + " and v.lessonId=l.id and v.versionNo=(select max(v2.versionNo) from LessonVersionEntity v2 where v2.lessonId=l.id)"
-            + " and u.ownerId=:teacherId" + (unitId == null ? "" : " and u.id=:unitId");
+            + " and u.assignedTeacherId=:teacherId" + (unitId == null ? "" : " and u.id=:unitId");
         var count = em.createQuery("select count(l.id)" + source, Long.class).setParameter("teacherId", teacherId);
-        var rows = em.createQuery("select l.id,u.id,u.title,v.title" + source + " order by u.stage,u.sortOrder,u.id,l.sortOrder,l.id", Object[].class)
+        var rows = em.createQuery("select l.id,u.id,u.title,v.title" + source + " order by u.roundNumber,u.id,l.sortOrder,l.id", Object[].class)
             .setParameter("teacherId", teacherId).setFirstResult(page * size).setMaxResults(size);
         if (unitId != null) { count.setParameter("unitId", unitId); rows.setParameter("unitId", unitId); }
         return page(rows.getResultList().stream().map(r -> new TeacherLessonInfo(number(r[0]), number(r[1]),

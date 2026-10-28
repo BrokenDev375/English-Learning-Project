@@ -14,6 +14,7 @@ public interface StatisticsRepository {
     CatalogPage<Lesson> lessons(long userId, int page, int size);
     Review review(long userId, Instant now);
     List<Count> users(String field);
+    List<OnlineAccount> onlineAccounts(java.util.Set<Long> ids);
     CatalogPage<Question> questions(Instant since, Instant until, String difficulty, int page, int size);
     boolean ownsUnit(long teacherId, long unitId);
     CatalogPage<TeacherUnit> teacherUnits(long teacherId, int page, int size);

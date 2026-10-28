@@ -1,4 +1,4 @@
-import { api, ApiError } from '../../api';
+import { api } from '../../api';
 import type { CatalogPage, Objective, Topic, Unit } from './catalog';
 import type { MaterialContent, Source } from './materials';
 export type BankKind = 'questions' | 'lessons';
@@ -17,8 +17,10 @@ export interface Stamp { id: number; versionNo: number; revision: number; state:
 export type QuestionVersion = QuestionData & Stamp & { questionId: number };
 export type LessonVersion = LessonData & Stamp & { lessonId: number };
 export type Version = QuestionVersion | LessonVersion;
-export interface ContentRoot { id: number; ownerId: number; rootRevision: number; status: string; draftVersionId: number | null; publishedVersionId: number | null; originKey?: string; unitId?: number; sortOrder?: number; draft: Version | null; published: Version | null }
-export interface Summary { id: number; ownerId: number; rootRevision: number; status: string; draftVersionId: number | null; publishedVersionId: number | null; title?: string; promptExcerpt?: string; type?: keyof typeof questionTypes; difficulty?: keyof typeof difficulties; unitId?: number; sortOrder?: number }
+export interface Review { id: number; kind: 'QUESTION' | 'LESSON'; resourceId: number; title: string; versionId: number; revision: number; state: 'PENDING' | 'APPROVED' | 'RETURNED' | 'WITHDRAWN'; submittedBy: number; submittedByName: string; submittedAt: string; reviewedBy: number | null; reviewedByName: string | null; reviewedAt: string | null; note: string }
+export const reviewStates = { PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', RETURNED: 'Cần chỉnh sửa', WITHDRAWN: 'Đã rút' };
+export interface ContentRoot { canEdit?: boolean; review?: Review | null; id: number; ownerId: number; rootRevision: number; status: string; draftVersionId: number | null; publishedVersionId: number | null; originKey?: string; unitId?: number; sortOrder?: number; draft: Version | null; published: Version | null }
+export interface Summary { canEdit?: boolean; review?: Review | null; id: number; ownerId: number; rootRevision: number; status: string; draftVersionId: number | null; publishedVersionId: number | null; title?: string; promptExcerpt?: string; type?: keyof typeof questionTypes; difficulty?: keyof typeof difficulties; unitId?: number; sortOrder?: number }
 export type MaterialVersion = MaterialContent & Stamp & { materialId: number };
 export interface LessonPreviewData { lesson: LessonVersion; questions: QuestionVersion[]; materials: MaterialVersion[] }
 export interface ContentPreview { resourceId: number; draftVersionId: number; baseRevision: number; previewToken: string; errors: { path: string; code: string; message: string }[]; warnings: string[]; data: QuestionVersion | LessonPreviewData }
@@ -40,9 +42,8 @@ export async function loadChoices(admin: boolean, lessons: boolean): Promise<Cho
   return { topics, objectives, units, materials: materials.versions, materialRoots: materials.roots, questions: questions.versions, questionRoots: questions.roots };
 }
 // Existing lesson slots may use older immutable versions, which are absent from bank summaries.
-export async function historicalVersion<T>(kind: string, id: number, roots: number[]): Promise<T> {
-  for (const root of roots) { try { return await api<T>('/api/author/' + kind + '/' + root + '/versions/' + id); } catch (error) { if (!(error instanceof ApiError && error.status === 404)) throw error; } }
-  throw new Error('Không tìm thấy phiên bản nội dung được phép xem.');
+export async function historicalVersion<T>(kind: string, id: number, _roots: number[]): Promise<T> {
+  return api<T>('/api/author/versions/' + kind + '/' + id);
 }
 export function newQuestion(choices: Choices): QuestionData { const topic = choices.topics[0]?.id ?? 0; return { type: 'SINGLE_CHOICE', topicId: topic, objectiveId: choices.objectives.find(o => o.topicId === topic)?.id ?? 0, difficulty: 'EASY', prompt: '', explanation: '', hint: null, materialVersionId: null, source: { label: 'Tự biên soạn', url: null, license: null }, content: { options: [{ id: 'opt-a', text: '' }, { id: 'opt-b', text: '' }] }, answerKey: { correctOptionId: null } }; }
 export const newLesson = (): LessonData => ({ title: '', description: '', instructions: [{ kind: 'TEXT', text: '' }], objectiveIds: [], questions: [] });

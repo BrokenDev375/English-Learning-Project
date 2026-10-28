@@ -124,4 +124,20 @@ for (const outcome of ['401', 'success']) {
   socket.message({ type: 'GAMIFICATION_CHANGED' }); socket.message({ type: 'LEAGUE_CHANGED' });
   assert.equal(events, 0, 'non-student connection does not subscribe or publish reward events'); manager.stop();
 }
-console.log('PASS: 9 deterministic manager scenarios, including M05/M06 subscriptions, reconnect and obsolete auth callbacks.');
+{
+  const f = fixture(), manager = new f.module.ConnectionManager(7, () => 0);
+  let changed = 0; f.window.addEventListener('presence:changed', () => changed++);
+  manager.watchPresence(true); manager.start();
+  function acknowledge(socket) {
+    socket.message({ type: 'CONNECTED', userId: 7 }); socket.message({ type: 'ACK', requestId: socket.sent.at(-1).requestId });
+    const subscription = socket.sent.find(m => m.resource === 'PRESENCE'); assert.equal(subscription.type, 'SUBSCRIBE');
+    socket.message({ type: 'ACK', requestId: subscription.requestId }); assert.equal(manager.presenceLive, true);
+  }
+  const first = f.sockets[0]; acknowledge(first); assert.equal(changed, 1);
+  first.message({ type: 'PRESENCE_CHANGED' }); assert.equal(changed, 2);
+  await first.close(1006); assert.equal(manager.presenceLive, false); await f.advance(750); acknowledge(f.sockets[1]); assert.equal(changed, 3);
+  first.message({ type: 'PRESENCE_CHANGED' }); assert.equal(changed, 3, 'old connection cannot refresh the new presence session');
+  manager.watchPresence(false); assert.equal(manager.presenceLive, false); assert.equal(f.sockets[1].sent.at(-1).type, 'UNSUBSCRIBE');
+  f.sockets[1].message({ type: 'PRESENCE_CHANGED' }); assert.equal(changed, 3); manager.stop();
+}
+console.log('PASS: 10 deterministic manager scenarios, including admin presence subscribe/ACK/reconnect/unsubscribe and obsolete callbacks.');

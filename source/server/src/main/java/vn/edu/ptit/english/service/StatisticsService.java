@@ -9,6 +9,7 @@ public interface StatisticsService {
     CatalogPage<Breakdown> breakdown(String period, String groupBy, int page, int size, UserPrincipal actor);
     CatalogPage<Lesson> lessons(int page, int size, UserPrincipal actor);
     AdminOverview admin(String period, UserPrincipal actor);
+    OnlinePresence presence(UserPrincipal actor);
     CatalogPage<Question> questions(String period, String difficulty, int page, int size, UserPrincipal actor);
     CatalogPage<TeacherUnit> teacherUnits(int page, int size, UserPrincipal actor);
     TeacherOverview teacher(String period, Long unitId, UserPrincipal actor);

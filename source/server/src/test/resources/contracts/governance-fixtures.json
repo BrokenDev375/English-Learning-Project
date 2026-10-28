@@ -1,0 +1,431 @@
+{
+  "valid": [
+    {
+      "name": "pendingQuestionReview",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 0,
+        "state": "PENDING",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": null,
+        "reviewedByName": null,
+        "reviewedAt": null,
+        "note": ""
+      }
+    },
+    {
+      "name": "approvedQuestionReview",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 1,
+        "state": "APPROVED",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": 3,
+        "reviewedByName": "Admin",
+        "reviewedAt": "2026-10-27T11:00:00Z",
+        "note": "Approved"
+      }
+    },
+    {
+      "name": "returnedWithReason",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 1,
+        "state": "RETURNED",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": 3,
+        "reviewedByName": "Admin",
+        "reviewedAt": "2026-10-27T11:00:00Z",
+        "note": "Please revise the explanation."
+      }
+    },
+    {
+      "name": "immutableReviewSnapshot",
+      "schema": "#/components/schemas/ContentReviewSnapshot",
+      "body": {
+        "resourceId": 1,
+        "draftVersionId": 11,
+        "baseRevision": 0,
+        "previewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "errors": [],
+        "warnings": [],
+        "data": {
+          "id": 11,
+          "questionId": 1,
+          "versionNo": 1,
+          "revision": 0,
+          "state": "DRAFT",
+          "schemaVersion": 1,
+          "type": "SINGLE_CHOICE",
+          "topicId": 1,
+          "objectiveId": 1,
+          "difficulty": "EASY",
+          "prompt": "What time?",
+          "explanation": "Seven.",
+          "hint": "Look for seven.",
+          "materialVersionId": null,
+          "content": {
+            "options": [
+              {
+                "id": "a",
+                "text": "Seven"
+              },
+              {
+                "id": "b",
+                "text": "Eight"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "a"
+          },
+          "source": {
+            "label": "Self authored",
+            "url": null,
+            "license": null
+          }
+        },
+        "materials": []
+      }
+    },
+    {
+      "name": "pendingDetail",
+      "schema": "#/components/schemas/ContentReviewDetail",
+      "body": {
+        "review": {
+          "id": 1,
+          "kind": "QUESTION",
+          "resourceId": 1,
+          "title": "What time?",
+          "versionId": 11,
+          "revision": 0,
+          "state": "PENDING",
+          "submittedBy": 2,
+          "submittedByName": "Teacher",
+          "submittedAt": "2026-10-27T10:00:00Z",
+          "reviewedBy": null,
+          "reviewedByName": null,
+          "reviewedAt": null,
+          "note": ""
+        },
+        "snapshot": {
+          "resourceId": 1,
+          "draftVersionId": 11,
+          "baseRevision": 0,
+          "previewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "errors": [],
+          "warnings": [],
+          "data": {
+            "id": 11,
+            "questionId": 1,
+            "versionNo": 1,
+            "revision": 0,
+            "state": "DRAFT",
+            "schemaVersion": 1,
+            "type": "SINGLE_CHOICE",
+            "topicId": 1,
+            "objectiveId": 1,
+            "difficulty": "EASY",
+            "prompt": "What time?",
+            "explanation": "Seven.",
+            "hint": "Look for seven.",
+            "materialVersionId": null,
+            "content": {
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Seven"
+                },
+                {
+                  "id": "b",
+                  "text": "Eight"
+                }
+              ]
+            },
+            "answerKey": {
+              "correctOptionId": "a"
+            },
+            "source": {
+              "label": "Self authored",
+              "url": null,
+              "license": null
+            }
+          },
+          "materials": []
+        },
+        "stale": false,
+        "canWithdraw": true
+      }
+    },
+    {
+      "name": "queuePage",
+      "schema": "#/components/schemas/ContentReviewPage",
+      "body": {
+        "items": [
+          {
+            "id": 1,
+            "kind": "QUESTION",
+            "resourceId": 1,
+            "title": "What time?",
+            "versionId": 11,
+            "revision": 0,
+            "state": "PENDING",
+            "submittedBy": 2,
+            "submittedByName": "Teacher",
+            "submittedAt": "2026-10-27T10:00:00Z",
+            "reviewedBy": null,
+            "reviewedByName": null,
+            "reviewedAt": null,
+            "note": ""
+          },
+          {
+            "id": 1,
+            "kind": "QUESTION",
+            "resourceId": 1,
+            "title": "What time?",
+            "versionId": 11,
+            "revision": 1,
+            "state": "APPROVED",
+            "submittedBy": 2,
+            "submittedByName": "Teacher",
+            "submittedAt": "2026-10-27T10:00:00Z",
+            "reviewedBy": 3,
+            "reviewedByName": "Admin",
+            "reviewedAt": "2026-10-27T11:00:00Z",
+            "note": "Approved"
+          }
+        ],
+        "totalElements": 2,
+        "totalPages": 1,
+        "page": 0,
+        "size": 20
+      }
+    },
+    {
+      "name": "decisionWithReason",
+      "schema": "#/components/schemas/ContentReviewDecision",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "baseRevision": 0,
+        "note": "Please revise."
+      }
+    },
+    {
+      "name": "teacherPicker",
+      "schema": "#/components/schemas/TeacherAssigneePage",
+      "body": {
+        "items": [
+          {
+            "id": 2,
+            "fullName": "Teacher"
+          }
+        ],
+        "totalElements": 1,
+        "totalPages": 1,
+        "page": 0,
+        "size": 20
+      }
+    },
+    {
+      "name": "assignedRoundCreate",
+      "schema": "#/components/schemas/UnitCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "topicId": 1,
+        "title": "Round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "assignedTeacherId": 2
+      }
+    },
+    {
+      "name": "v12ReceiptHasNumberWithoutAssignee",
+      "schema": "#/components/schemas/LegacyUnitReceipt",
+      "body": {
+        "id": 1,
+        "ownerId": 2,
+        "topicId": 1,
+        "title": "Legacy V12 round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "roundNumber": 7,
+        "revision": 0,
+        "objectiveIds": []
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "pendingCannotAlreadyHaveReviewer",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 0,
+        "state": "PENDING",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": 3,
+        "reviewedByName": null,
+        "reviewedAt": null,
+        "note": ""
+      }
+    },
+    {
+      "name": "finishedNeedsReviewerAndTime",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 0,
+        "state": "APPROVED",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": null,
+        "reviewedByName": null,
+        "reviewedAt": null,
+        "note": ""
+      }
+    },
+    {
+      "name": "returnedNeedsReason",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 1,
+        "state": "RETURNED",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": 3,
+        "reviewedByName": "Admin",
+        "reviewedAt": "2026-10-27T11:00:00Z",
+        "note": "   "
+      }
+    },
+    {
+      "name": "unknownReviewState",
+      "schema": "#/components/schemas/ContentReview",
+      "body": {
+        "id": 1,
+        "kind": "QUESTION",
+        "resourceId": 1,
+        "title": "What time?",
+        "versionId": 11,
+        "revision": 0,
+        "state": "PUBLISHED",
+        "submittedBy": 2,
+        "submittedByName": "Teacher",
+        "submittedAt": "2026-10-27T10:00:00Z",
+        "reviewedBy": null,
+        "reviewedByName": null,
+        "reviewedAt": null,
+        "note": ""
+      }
+    },
+    {
+      "name": "negativeDecisionRevision",
+      "schema": "#/components/schemas/ContentReviewDecision",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "baseRevision": -1
+      }
+    },
+    {
+      "name": "forgedDecisionActor",
+      "schema": "#/components/schemas/ContentReviewDecision",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "baseRevision": 0,
+        "reviewedBy": 99
+      }
+    },
+    {
+      "name": "pickerDoesNotExposeEmail",
+      "schema": "#/components/schemas/TeacherAssignee",
+      "body": {
+        "id": 2,
+        "fullName": "Teacher",
+        "email": "hidden@test.local"
+      }
+    },
+    {
+      "name": "cannotAssignAndClearTogether",
+      "schema": "#/components/schemas/UnitCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "topicId": 1,
+        "title": "Round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "assignedTeacherId": 2,
+        "clearAssignment": true
+      }
+    },
+    {
+      "name": "invalidTeacherIdentifier",
+      "schema": "#/components/schemas/UnitCreate",
+      "body": {
+        "requestId": "00000000-0000-4000-8000-000000000001",
+        "topicId": 1,
+        "title": "Round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "assignedTeacherId": 0
+      }
+    },
+    {
+      "name": "ordinaryUnitMustHaveAssigneeKey",
+      "schema": "#/components/schemas/Unit",
+      "body": {
+        "id": 1,
+        "ownerId": 2,
+        "topicId": 1,
+        "title": "Legacy V12 round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "roundNumber": 7,
+        "revision": 0,
+        "objectiveIds": []
+      }
+    }
+  ]
+}

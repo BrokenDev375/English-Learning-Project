@@ -24,7 +24,7 @@ public class RoundJourneyReader {
         var byUnit=new HashMap<Long,List<LessonEntity>>();
         lessons.forEach(l->byUnit.computeIfAbsent(l.getUnitId(),id->new ArrayList<>()).add(l));
         var result=new ArrayList<RoundProgress>();
-        RoundProgress blocker=null;int number=0;
+        RoundProgress blocker=null;
         for(var unit:units) {
             var rows=byUnit.getOrDefault(unit.getId(),List.of());
             if(rows.isEmpty())continue;
@@ -32,7 +32,7 @@ public class RoundJourneyReader {
             for(var lesson:rows){var p=progress.get(lesson.getId());if(p!=null){started++;if(p.getState()==ProgressState.COMPLETED)completed++;}if(next==null&&(p==null||p.getState()!=ProgressState.COMPLETED))next=lesson.getId();}
             boolean done=completed==rows.size(),locked=!done&&blocker!=null;
             String state=done?"COMPLETED":started>0?"IN_PROGRESS":"NOT_STARTED";
-            var round=new RoundProgress(unit.view(),rows.size(),completed,started,state,next,++number,locked,
+            var round=new RoundProgress(unit.view(),rows.size(),completed,started,state,next,unit.getRoundNumber(),locked,
                 locked?blocker.unit().id():null,locked?blocker.number():null,locked?blocker.unit().title():null);
             result.add(round);
             if(!done&&blocker==null)blocker=round;
