@@ -1,0 +1,10 @@
+.restricted-audio-controls{display:flex;gap:14px;align-items:center;padding:16px;background:#f3f6f2;border-radius:12px}
+.restricted-audio-controls .button{gap:8px;flex-shrink:0}
+.restricted-audio-progress{flex:1;min-width:80px;display:grid;gap:4px}
+.restricted-audio-progress progress{display:block;width:100%;height:8px;accent-color:var(--green);pointer-events:none}
+.restricted-audio-progress span{font-size:12px;color:#52665a;font-variant-numeric:tabular-nums}
+.restricted-audio-note{font-size:12px;color:#52665a;margin:10px 0 0}
+.restricted-audio>audio{display:none}
+.restricted-audio .message{margin-top:12px}
+.restricted-audio button:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+@media(max-width:600px){.restricted-audio-controls{flex-wrap:wrap;padding:14px;gap:12px}.restricted-audio-progress{order:3;flex-basis:100%}.restricted-audio-controls .button{flex:1}}

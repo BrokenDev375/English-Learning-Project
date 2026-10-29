@@ -30,7 +30,7 @@ class EngagementMigrationTest {
                 try(var r=s.executeQuery("SELECT MD5(CAST(result_json AS CHAR)) FROM submissions WHERE id=1")){r.next();submission=r.getString(1);}
             }
             var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(4);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(5);flyway.validate();assertThat(flyway.migrate().migrationsExecuted).isZero();
             try(var c=mysql.createConnection("");var s=c.createStatement()) {
                 try(var r=s.executeQuery("SELECT JSON_UNQUOTE(JSON_EXTRACT(policy_json,'$.activityLevelCurve.type')),JSON_EXTRACT(policy_json,'$.activityLevelCurve.firstStepXp'),JSON_EXTRACT(policy_json,'$.activityLevelCurve.stepIncreaseXp'),JSON_EXTRACT(policy_json,'$.dailyXpCap') FROM gamification_policies WHERE version='m05-p0-v3'")) {
                     r.next();assertThat(r.getString(1)).isEqualTo("INCREASING");assertThat(r.getInt(2)).isEqualTo(10);assertThat(r.getInt(3)).isEqualTo(10);assertThat(r.getInt(4)).isEqualTo(200);

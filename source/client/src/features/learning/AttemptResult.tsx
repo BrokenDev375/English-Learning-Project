@@ -10,7 +10,7 @@ import { useOnline } from '../connection/useOnline';
 import { GameResults } from './GameWorld';
 import { AttemptRewards } from '../gamification/Rewards';
 
-export default function AttemptResult({ session, state }: { session: AttemptSession; state: ReturnType<AttemptSession['getSnapshot']> }) {
+export default function AttemptResult({ session, state, userId }: { session: AttemptSession; state: ReturnType<AttemptSession['getSnapshot']>; userId: number }) {
   const result = state.result!, snapshot = state.snapshot!;
   const [selected, setSelected] = useState(0), [responses, setResponses] = useState<Record<number, Answer | null>>({});
   const online = useOnline();
@@ -28,7 +28,7 @@ export default function AttemptResult({ session, state }: { session: AttemptSess
     <SubmissionReview result={result} snapshot={snapshot} session={session} disabled={disabled} />
     <div className="panel table-wrap"><table><caption className="sr-only">Kết quả lần đầu và khi nộp của từng câu</caption><thead><tr><th>Câu</th><th>Lần đầu</th><th>Khi nộp</th><th>Hỗ trợ ở lần đầu</th></tr></thead><tbody>{result.items.map((f, n) => <tr key={f.attemptQuestionId}><td><button className="link-button" onClick={() => setSelected(n)} aria-label={'Xem và chữa câu ' + (n + 1)}>Câu {n + 1}</button></td><td>{outcomeNames[f.firstOutcome]}{!f.firstResponseComplete && ' · chưa đủ'}</td><td>{outcomeNames[f.finalOutcome]}{!f.finalResponseComplete && ' · chưa đủ'}</td><td>{f.firstSupportUsed ? 'Có sử dụng' : 'Không sử dụng'}</td></tr>)}</tbody></table></div>
     <div className="runner-layout"><nav className="panel question-nav" aria-label="Chọn câu chữa bài">{result.items.map((f, n) => <button key={f.attemptQuestionId} aria-label={'Chữa câu ' + (n + 1)} aria-current={selected === n ? 'step' : undefined} className={selected === n ? 'current' : ''} onClick={() => setSelected(n)}>{n + 1}</button>)}</nav><div className="runner-main">
-      {material && <LearningMaterial key={material.materialVersionId} material={material} />}
+      {material && <LearningMaterial key={material.materialVersionId} material={material} attemptId={snapshot.attemptId} userId={userId} />}
       <article className="panel learning-panel"><span className="eyebrow">CHỮA CÂU {selected + 1}</span><h2>{item.question.prompt}</h2>
         <p><strong>Lần đầu:</strong> {responseText(item.question, fact.firstResponse)} — {outcomeNames[fact.firstOutcome]}</p><p><strong>Khi nộp:</strong> {responseText(item.question, fact.finalResponse)} — {outcomeNames[fact.finalOutcome]}</p>
         <KeyExplanation question={item.question} answerKey={fact.answerKey} explanation={fact.explanation} />

@@ -50,7 +50,7 @@ test.describe('session recovery @idle-short', () => {
     expect((await page.request.get('/api/auth/session')).status()).toBe(401);
     await login(page, email); expect((await page.request.get('/api/auth/session')).status()).toBe(200);
   });
-  test('continuous audio playback cannot renew the idle deadline', async ({ page }) => {
+  test('audio playback and position updates cannot renew the idle deadline', async ({ page }) => {
     await student(page); await lesson(page);
     const id = new URL(page.url()).hash.match(/attempt=(\d+)/)![1];
     const snapshot = await (await page.request.get(`/api/attempts/${id}`)).json();
@@ -62,8 +62,8 @@ test.describe('session recovery @idle-short', () => {
     await audio.evaluate(async element => {
       const player = element as HTMLAudioElement, counters = window as unknown as { idleAudioTicks: number };
       counters.idleAudioTicks = 0; player.addEventListener('timeupdate', () => { counters.idleAudioTicks++; });
-      player.loop = true; await player.play();
     });
+    await page.getByRole('button', { name: 'Nghe lần 1/2', exact: true }).click();
     await expect.poll(() => audio.evaluate(element => { const player = element as HTMLAudioElement; return player.currentTime > 0 && !player.paused; })).toBe(true);
     await expect(page.getByLabel('Email', { exact: true })).toBeVisible({ timeout: 35000 });
     expect(await page.evaluate(() => (window as unknown as { idleAudioTicks: number }).idleAudioTicks)).toBeGreaterThan(10);

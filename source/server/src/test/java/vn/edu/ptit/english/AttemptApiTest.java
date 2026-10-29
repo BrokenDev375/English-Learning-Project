@@ -58,6 +58,7 @@ class AttemptApiTest {
     @Autowired RequestReceiptJpaRepository receipts;
     @MockitoBean ReviewSelectionProvider review;
     @MockitoSpyBean AccountGuard guard;
+    @MockitoSpyBean CatalogRepository audioReceiptRepository;
     TransactionTemplate tx;
     UserRecord student,other,teacher,admin;
     long topic,lesson,lessonVersion,materialVersion,materialRoot,asset;
@@ -105,6 +106,42 @@ class AttemptApiTest {
     }
     @AfterAll static void cleanupFiles()throws IOException {
         try(var paths=Files.walk(FILES)){for(var path:paths.sorted(Comparator.reverseOrder()).toList())Files.deleteIfExists(path);}
+    }
+    @Test void audioLimitIsDurableIdempotentAndDoesNotChangeAttemptRevision()throws Exception {
+        var c=new Client().login(student);var s=start(c);String route=path(s)+"/audio/"+materialVersion;
+        assertThat(ok(c.call("GET",route,null),200).path("playsUsed").asInt()).isZero();
+        String first=key();var one=ok(c.call("POST",route+"/start",Map.of("requestId",first)),200);
+        assertThat(one.path("playsUsed").asInt()).isEqualTo(1);
+        var replay=c.call("POST",route+"/start",Map.of("requestId",first));assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");
+        assertThat(ok(replay,200)).isEqualTo(one);
+        assertThat(ok(c.call("POST",route+"/start",Map.of("requestId",key())),200).path("playsUsed").asInt()).isEqualTo(2);
+        error(c.call("POST",route+"/start",Map.of("requestId",key())),409,"AUDIO_LIMIT_REACHED");
+        var again=new Client().login(student);assertThat(ok(again.call("GET",route,null),200).path("remaining").asInt()).isZero();
+        assertThat(refresh(c,s).path("revision")).isEqualTo(s.path("revision"));noTrials(s);
+    }
+    @Test void concurrentAudioStartsAcrossSessionsCannotExceedTwo()throws Exception {
+        var c=new Client().login(student);var otherSession=new Client().login(student);var s=start(c);String route=path(s)+"/audio/"+materialVersion+"/start";
+        var a=c.http.sendAsync(c.request("POST",route,Map.of("requestId",key())),HttpResponse.BodyHandlers.ofString());
+        var b=otherSession.http.sendAsync(otherSession.request("POST",route,Map.of("requestId",key())),HttpResponse.BodyHandlers.ofString());
+        var d=c.http.sendAsync(c.request("POST",route,Map.of("requestId",key())),HttpResponse.BodyHandlers.ofString());
+        var codes=List.of(a.get().statusCode(),b.get().statusCode(),d.get().statusCode());
+        assertThat(codes).containsExactlyInAnyOrder(200,200,409);
+        assertThat(ok(c.call("GET",path(s)+"/audio/"+materialVersion,null),200).path("playsUsed").asInt()).isEqualTo(2);
+    }
+    @Test void audioQuotaRequiresOwnerPinnedMaterialCsrfAndStudent()throws Exception {
+        var c=new Client().login(student);var s=start(c);String route=path(s)+"/audio/"+materialVersion;
+        assertThat(new Client().call("GET",route,null).statusCode()).isEqualTo(401);
+        assertThat(new Client().login(other).call("GET",route,null).statusCode()).isEqualTo(404);
+        assertThat(new Client().login(teacher).call("GET",route,null).statusCode()).isEqualTo(403);
+        assertThat(c.call("GET",path(s)+"/audio/9999999",null).statusCode()).isEqualTo(404);
+        String token=c.csrf;c.csrf=null;assertThat(c.call("POST",route+"/start",Map.of("requestId",key())).statusCode()).isEqualTo(403);c.csrf=token;
+        assertThat(c.call("POST",route+"/start",Map.of("requestId",key(),"playsUsed",0)).statusCode()).isEqualTo(400);
+    }
+    @Test void failedAudioReceiptRollsBackConsumedPlay()throws Exception {
+        var c=new Client().login(student);var s=start(c);String route=path(s)+"/audio/"+materialVersion;
+        doThrow(new org.springframework.dao.DataAccessResourceFailureException("audio receipt test")).when(audioReceiptRepository).save(any(RequestReceiptEntity.class));
+        assertThat(c.call("POST",route+"/start",Map.of("requestId",key())).statusCode()).isEqualTo(503);
+        assertThat(ok(c.call("GET",route,null),200).path("playsUsed").asInt()).isZero();
     }
     String key(){return UUID.randomUUID().toString();}
     JsonNode node(String value){try{return json.readTree(value);}catch(Exception e){throw new IllegalArgumentException(e);}}

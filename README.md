@@ -43,6 +43,8 @@ LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave serve
 
 ## Phiên không tương tác và giám sát quản trị
 
+Phần nghe trong lượt làm/chữa bài hiện **không cho tua, tối đa hai lượt bắt đầu phát mỗi đoạn audio trong một Attempt**. Pause/nghe tiếp không trừ thêm; câu dùng chung audio dùng chung lượt, reload không hoàn lại lượt đã bắt đầu. Bộ đếm lưu server bằng migration V14; không cần reset volume. Xem [quy tắc nghe và API](docs/AUDIO_LISTENING_POLICY.md).
+
 Mọi vai trò tự hết phiên sau **5 phút không tương tác**, cảnh báo trước **30 giây** và có nút **Tiếp tục làm việc**. Heartbeat, polling, autosave và audio phát liên tục không tự gia hạn. Các tab cùng phiên dùng chung deadline; các phiên đăng nhập riêng độc lập. Khi hết phiên, nháp/journal đã lưu tại máy được giữ để đúng user đăng nhập lại và tiếp tục; đây là luồng khác với đăng xuất chủ động có purge. Nếu ghi local bị lỗi hoặc quá thời gian chờ, thông báo nêu rõ phần chưa xác nhận lưu.
 
 ADMIN vào **Quản lý tài khoản → Giám sát hoạt động** để xem số tài khoản online/đang học/đang ôn/không tương tác, lọc tên/email/vai trò/chức năng và mở **Xem phiên**. Chi tiết có thời gian đăng nhập, tương tác, hạn phiên, kết nối và từng tab; cùng tài khoản nhiều tab vẫn chỉ có một dòng. **Khóa** dùng luồng quản trị hiện có và thu hồi mọi phiên của tài khoản; mở khóa cần đăng nhập mới. Khi mất phản hồi thao tác, giao diện GET đối soát hoặc yêu cầu **Kiểm tra trạng thái**, không tự gửi lại mutation chưa rõ kết quả. Dữ liệu lỗi giữ lần đọc gần nhất và có nhãn chưa cập nhật.

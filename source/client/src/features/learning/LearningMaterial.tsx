@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { Material } from './types';
-export default function LearningMaterial({ material: m, savedSeconds, restoreVersion = 0, onPosition }: { material: Material; savedSeconds?: number; restoreVersion?: number; onPosition?: (seconds: number) => void }) {
+import RestrictedAudio from './RestrictedAudio';
+export default function LearningMaterial({ material: m, savedSeconds, restoreVersion = 0, onPosition, attemptId, userId }: { material: Material; savedSeconds?: number; restoreVersion?: number; onPosition?: (seconds: number) => void; attemptId?: number; userId?: number }) {
   const audio = useRef<HTMLAudioElement>(null);
   const restore = useRef(savedSeconds);
   const latestSaved = useRef(savedSeconds);
@@ -27,7 +28,7 @@ export default function LearningMaterial({ material: m, savedSeconds, restoreVer
   return <article className="material-presentation learning-material"><h2>{m.title}</h2>
     {m.kind === 'READING' && <p className="reading-text">{m.readingText}</p>}
     {m.kind !== 'AUDIO' && m.asset && <figure><img key={retry} src={m.asset.url + (retry ? '?retry=' + retry : '')} alt={m.altText ?? ''} onError={() => setFailed(true)} />{m.caption && <figcaption>{m.caption}</figcaption>}</figure>}
-    {m.kind === 'AUDIO' && m.asset && <><audio ref={audio} controls preload="metadata" aria-label={m.title} src={m.asset.url} onError={() => setFailed(true)}
+    {m.kind === 'AUDIO' && m.asset && attemptId !== undefined && userId !== undefined ? <RestrictedAudio material={m} attemptId={attemptId} userId={userId} onPosition={onPosition} /> : m.kind === 'AUDIO' && m.asset && <><audio ref={audio} controls preload="metadata" aria-label={m.title} src={m.asset.url} onError={() => setFailed(true)}
       onLoadedMetadata={() => clamp(true)} onSeeking={() => { clamp(); record(); }} onPause={record}
       onPlay={() => { const p = audio.current; if (p && p.currentTime >= bounds(p).end) p.currentTime = bounds(p).start; clamp(); }}
       onTimeUpdate={() => { const p = audio.current; if (!p) return; if (p.currentTime >= bounds(p).end) { p.pause(); clamp(); } record(); }} />
