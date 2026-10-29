@@ -41,6 +41,12 @@ M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu c�
 
 LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave server; journal giữ request qua reload, socket có reconnect/heartbeat và presence nhiều tab. Xem [tiến độ M06](docs/M06_PROGRESS.md), [cách thử](docs/M06_MANUAL_TEST_CASES.md), [kết quả kiểm tra](statics/results/module-6-validation.md). Chưa có PWA/login offline hoặc tải trước toàn bộ audio.
 
+## Phiên không tương tác — bổ sung bước 0–2
+
+Mọi vai trò tự hết phiên sau **5 phút không tương tác**, cảnh báo trước **30 giây** và có nút **Tiếp tục làm việc**. Heartbeat, polling, autosave và audio phát liên tục không tự gia hạn. Các tab cùng phiên dùng chung deadline; các phiên đăng nhập riêng độc lập. Khi hết phiên, nháp/journal đã lưu tại máy được giữ để đúng user đăng nhập lại và tiếp tục; đây là luồng khác với đăng xuất chủ động có purge. Nếu ghi local bị lỗi hoặc quá thời gian chờ, thông báo nêu rõ phần chưa xác nhận lưu.
+
+Backend và client cần được rebuild cùng nhau; client cũ không có tracker sẽ hết phiên dù vẫn mở trang. Cấu hình `SESSION_IDLE_TIMEOUT_SECONDS` (300), `SESSION_IDLE_WARNING_SECONDS` (30), `SESSION_IDLE_SWEEP_MS` (5000) có mặc định trong Compose, không cần ghi lại mật khẩu hoặc reset volume. Bước 3–4 giám sát hoạt động chi tiết cho admin chưa triển khai. Xem [tiến độ](docs/ADMIN_SESSION_MONITORING_PROGRESS.md), [API](source/common/ADMIN_SESSION_MONITORING_API.md), [kiểm tra](statics/results/admin-session-step012-validation.md).
+
 ## M04 — ôn tập cá nhân
 
 Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và lý do cần ôn. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.

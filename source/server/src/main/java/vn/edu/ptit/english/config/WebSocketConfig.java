@@ -17,9 +17,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final AccountSocketHandler handler;
     private final AccountGuard guard;
     private final String[] origins;
+    private final SessionActivityRegistry activity;
     public WebSocketConfig(AccountSocketHandler handler, AccountGuard guard,
-        @Value("${app.socket.allowed-origins}") String[] origins) {
+        @Value("${app.socket.allowed-origins}") String[] origins, SessionActivityRegistry activity) {
         this.handler = handler; this.guard = guard; this.origins = origins;
+        this.activity=activity;
     }
     @org.springframework.context.annotation.Bean
     public org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean socketContainer() {
@@ -38,6 +40,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                         || !(request instanceof ServletServerHttpRequest servlet)) return false;
                     var session = servlet.getServletRequest().getSession(false);
                     if (session == null) return false;
+                    if (!activity.current(session.getId())) return false;
                     guard.requireCurrent(actor);
                     attributes.put("actor", actor);
                     attributes.put("httpSessionId", session.getId());

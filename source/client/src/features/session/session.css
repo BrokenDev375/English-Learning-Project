@@ -1,0 +1,5 @@
+.session-warning { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; align-items: center; gap: 20px; max-width: min(620px, calc(100vw - 40px)); padding: 20px 24px; border: 1px solid #b58a2c; border-radius: 12px; background: #fff9e9; color: #473918; box-shadow: 0 8px 24px #30250c24; }
+.session-warning p { margin: 6px 0 0; font-size: .94rem; line-height: 1.5; }
+.session-warning strong { font-size: 1.05rem; }
+.session-warning button { flex-shrink: 0; }
+@media (max-width: 600px) { .session-warning { left: 12px; right: 12px; bottom: 12px; max-width: none; flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; } }

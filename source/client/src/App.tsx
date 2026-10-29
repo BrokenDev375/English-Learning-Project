@@ -1,5 +1,6 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { api, ApiError, errorMessage, resetCsrf } from './api';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { api, ApiError, errorMessage, resetCsrf, advanceAuthentication, authenticationEpoch } from './api';
+import IdleSession from './features/session/IdleSession';
 import type { User } from './types';
 import { roleNames } from './types';
 import { Brand, formatDate, initials } from './components/Brand';
@@ -8,7 +9,7 @@ import AdminAccounts from './features/admin/AdminAccounts';
 import ContentWorkspace from './features/content/ContentWorkspace';
 import StudentHome from './features/learning/StudentHome';
 import LearningWorkspace from './features/learning/LearningWorkspace';
-import { activateLearningUser, clearLearningSessions, hasUnsavedLearning, hasStoredUnsavedLearning, hasUnpersistedLearning, prepareLearningUser, forgetLearningUser } from './features/learning/session';
+import { activateLearningUser, clearLearningSessions, hasUnsavedLearning, hasStoredUnsavedLearning, hasUnpersistedLearning, prepareLearningUser, forgetLearningUser, suspendLearningUser } from './features/learning/session';
 import { startConnections, subscribeConnection, connectionSnapshot } from './features/connection/manager';
 import RewardsDashboard from './features/gamification/Rewards';
 import Leaderboards from './features/gamification/Leaderboards';
@@ -21,6 +22,7 @@ import { navigate, useRouteParam } from './navigation';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); const [notice, setNotice] = useState('');
+  const expiring = useRef(false);
   const [routeView] = useRouteParam('view', 'home');
   const [learningTab] = useRouteParam('tab', 'catalog');
   const [contentArea] = useRouteParam('area', 'catalog');
@@ -30,7 +32,7 @@ export default function App() {
   const connection = useSyncExternalStore(subscribeConnection, connectionSnapshot); const connected = connection === 'connected'; const [busy, setBusy] = useState(false);
   async function restore() {
     setLoading(true); setNotice('');
-    try { const current = await api<User>('/api/auth/me', 'GET', undefined, true); await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); }
+    try { const current = await api<User>('/api/auth/me', 'GET', undefined, true); advanceAuthentication(); expiring.current = false; await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); }
     catch (failure) { if (!(failure instanceof ApiError && failure.status === 401)) setNotice(errorMessage(failure)); }
     finally { setLoading(false); }
   }
@@ -42,7 +44,14 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
   useEffect(() => {
-    const expired = () => { setUser(null); if (!window.location.hash.startsWith('#/learning')) setView('home', true); resetCsrf(); setNotice('Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.'); };
+    const expired = async (event: Event) => {
+      const detail = (event as CustomEvent<{ code?: string; epoch?: number }>).detail;
+      if (expiring.current || (detail?.epoch !== undefined && detail.epoch !== authenticationEpoch())) return;
+      expiring.current = true; advanceAuthentication();
+      const warning = await suspendLearningUser();
+      setUser(null); if (!window.location.hash.startsWith('#/learning')) setView('home', true);
+      setNotice((detail?.code === 'SESSION_IDLE_TIMEOUT' ? 'Phiên làm việc đã hết hạn do không tương tác trong 5 phút. Vui lòng đăng nhập lại.' : 'Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.') + warning);
+    };
     window.addEventListener('session-expired', expired);
     return () => window.removeEventListener('session-expired', expired);
   }, []);
@@ -54,12 +63,12 @@ export default function App() {
   async function logout() {
     if ((hasUnsavedLearning() || (user && await hasStoredUnsavedLearning(user.id))) && !window.confirm('Có thay đổi hoặc thao tác học chưa được xác nhận. Đăng xuất sẽ bỏ dữ liệu chưa đồng bộ trong phiên này. Bạn vẫn muốn đăng xuất?')) return;
     setBusy(true);
-    try { await api('/api/auth/logout', 'POST'); let warning = ''; try { await clearLearningSessions(); } catch (e) { warning = errorMessage(e); } resetCsrf(); setUser(null); setView('home', true); setNotice(warning); }
+    try { await api('/api/auth/logout', 'POST'); advanceAuthentication(); let warning = ''; try { await clearLearningSessions(); } catch (e) { warning = errorMessage(e); } resetCsrf(); setUser(null); setView('home', true); setNotice(warning); }
     catch (failure) { setNotice(errorMessage(failure)); } finally { setBusy(false); }
   }
   if (loading) return <div className="loading-screen"><Brand /><p>Đang mở không gian học tập…</p></div>;
-  if (!user) return <AuthPage notice={notice} retry={() => void restore()} onLogin={async current => { await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); setNotice(''); if (view === 'home') setView(current.role === 'ADMIN' ? 'admin' : 'home', true); }} />;
-  return <div className="app-layout">
+  if (!user) return <AuthPage notice={notice} retry={() => void restore()} onLogin={async current => { advanceAuthentication(); expiring.current = false; await prepareLearningUser(current.id).catch(e => setNotice(errorMessage(e))); setUser(current); setNotice(''); if (view === 'home') setView(current.role === 'ADMIN' ? 'admin' : 'home', true); }} />;
+  return <div className="app-layout"><IdleSession key={user.id} />
     <aside className="sidebar"><Brand /><span className="nav-label">KHÔNG GIAN CỦA BẠN</span>
       <nav aria-label="Điều hướng chính">
         <button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}><span aria-hidden="true">⌂</span>Trang chủ</button>

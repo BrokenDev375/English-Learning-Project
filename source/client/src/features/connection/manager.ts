@@ -100,9 +100,11 @@ export class ConnectionManager {
       // A restart/failed handshake often closes with 1006, not the explicit 1008.
       // A focus/online event may start a replacement while this check awaits HTTP.
       // Only the current connection generation may expire auth or schedule retries.
-      void event;
+      if (event.reason === 'IDLE_TIMEOUT') {
+        publish('auth-required'); window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: 'SESSION_IDLE_TIMEOUT' } })); return;
+      }
       try { const user = await api<{ id: number }>('/api/auth/me', 'GET', undefined, true); if (!current()) return; if (user.id !== this.userId) throw new ApiError(401, 'USER_CHANGED', 'Tài khoản đã thay đổi.'); }
-      catch (e) { if (!current()) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new Event('session-expired')); return; } }
+      catch (e) { if (!current()) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: e.code } })); return; } }
       if (current()) this.retry = window.setTimeout(() => { if (current()) this.connect(); }, Math.min(connectionConfig.maxBackoffMs, connectionConfig.backoffMs * 2 ** Math.min(this.retries++, 5)) * (0.75 + this.random() * 0.25));
     };
   }

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 
 class LiveConnectionsTest {
     static class Time extends Clock {
-        Instant time = Instant.parse("2026-10-21T00:00:00Z");
+        volatile Instant time = Instant.parse("2026-10-21T00:00:00Z");
         public ZoneId getZone(){return ZoneOffset.UTC;} public Clock withZone(ZoneId zone){return this;}
         public Instant instant(){return time;} void advance(long millis){time=time.plusMillis(millis);}
     }

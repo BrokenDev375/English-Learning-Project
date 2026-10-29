@@ -48,7 +48,13 @@ abstract class GamificationFixture {
         public ZoneId getZone(){return ZoneOffset.UTC;} public Clock withZone(ZoneId zone){return this;}
         public Instant instant(){return current.get();} void set(String at){current.set(Instant.parse(at));}
     }
-    @TestConfiguration static class TimeConfig { @Bean @Primary TestClock rewardTestClock(){return new TestClock();} }
+    @TestConfiguration static class TimeConfig {
+        @Bean @Primary TestClock rewardTestClock(){return new TestClock();}
+        // These scenarios advance business dates by days/weeks, not real user inactivity.
+        @Bean @Primary vn.edu.ptit.english.security.SessionActivityRegistry rewardSessionActivity() {
+            return new vn.edu.ptit.english.security.SessionActivityRegistry(Clock.systemUTC(),300,30);
+        }
+    }
     @LocalServerPort int port;
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;

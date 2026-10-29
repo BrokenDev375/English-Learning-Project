@@ -8,6 +8,7 @@ import LearningMaterial from './LearningMaterial';
 import AttemptResult from './AttemptResult';
 import { GameWorld, sameGameAnswer } from './GameWorld';
 import { useOnline } from '../connection/useOnline';
+import { publishLearningContext } from '../session/tracker';
 
 export default function AttemptRunner({ id, userId }: { id: number; userId: number }) {
   const session = useMemo(() => sessionFor(userId, id), [userId, id]);
@@ -16,6 +17,9 @@ export default function AttemptRunner({ id, userId }: { id: number; userId: numb
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const online = useOnline();
   useEffect(() => { void session.load(); }, [session]);
+  useEffect(() => {
+    if (s) return publishLearningContext(id, s.state === 'SUBMITTED' ? 'RESULT' : s.mode === 'REVIEW' ? 'REVIEW' : 'LEARN');
+  }, [id, s?.state, s?.mode]);
   const disabled = state.busy || !!pending || !!conflict || state.loginRequired || state.loading;
   const answerOf = (item: Item) => draft?.answers.find(a => a.attemptQuestionId === item.attemptQuestionId)?.response ?? null;
   if (!s || !draft) return <section className="panel learning-panel"><h1>Mở lượt làm</h1><p role={state.error ? 'alert' : 'status'}>{state.error || 'Đang khôi phục bài làm…'}</p>{state.loginRequired && <button className="button secondary" onClick={() => window.dispatchEvent(new Event('session-expired'))}>Đăng nhập lại</button>}<button className="button secondary" disabled={state.loading} onClick={() => void session.load()}>Thử tải lại</button><button className="link-button" onClick={() => navigate({ attempt: null })}>Về danh sách</button></section>;
