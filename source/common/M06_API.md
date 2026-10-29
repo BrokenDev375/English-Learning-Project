@@ -88,3 +88,11 @@ Nhận ACK cũ không được làm mất draft generation mới hơn. GET SUBMI
 - M04 sync dùng requestId bền vững và ledger hiện hành, tối đa 10 batch/lượt gọi; submit đã xác nhận kích hoạt sync, lỗi sync không đổi kết quả nộp. Dashboard vẫn báo pendingSubmissions theo server.
 
 IndexedDB có thể bị trình duyệt xóa; dirty draft/pending không được coi là backup đảm bảo. XP/M05 và dashboard presence M07 không được triển khai trong M06.
+
+## Online quản trị qua WebSocket
+
+Chỉ ADMIN hiện hành được SUBSCRIBE/UNSUBSCRIBE {version:1,type,requestId,resource:"PRESENCE"}; envelope đúng bốn trường, requestId UUID như subscription resource M05. STUDENT/TEACHER bị từ chối FORBIDDEN; thêm userId/attemptId hoặc trường lạ bị từ chối. LiveConnections còn kiểm tra vai trò trên socket khi bật subscription.
+
+Server phát {version:1,type:"PRESENCE_CHANGED"} cho các admin đã đăng ký và còn liveness khi snapshot số tài khoản/số kết nối thay đổi: attach, detach/transport error, đóng HTTP session, thu hồi quyền, hết heartbeat hoặc socket gửi lỗi bị loại. Nhiều tab cùng user chỉ tăng số kết nối. Heartbeat bình thường không phát sự kiện nếu số đếm không đổi. Sweep gộp các kết nối hết hạn thành một lần đối soát. Sự kiện không chứa danh tính, số liệu học tập hoặc ACK nghiệp vụ.
+
+Client watchPresence dùng ConnectionManager chung, đợi ACK SUBSCRIBE rồi GET /api/admin/statistics/presence; sự kiện mới kích hoạt GET ngay. Reconnect tự đăng ký lại và đọc snapshot để bù sự kiện bị bỏ lỡ. Bỏ panel thì UNSUBSCRIBE; sự kiện từ socket cũ/đã bỏ đăng ký bị bỏ qua. Khi subscription hoạt động không polling 30 giây; HTTP fallback 30 giây chỉ khi kênh trực tiếp chưa sẵn sàng. Không yêu cầu tăng tần suất heartbeat. Mất mạng đột ngột vẫn phụ thuộc timeout/sweep để server phát hiện trước khi phát thay đổi.

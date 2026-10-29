@@ -38,8 +38,8 @@ public class CatalogDemoInitializer implements ApplicationRunner {
             objectives.save(new ObjectiveEntity(owner,topic.getId(),objectiveCode,objective,description));
         String seedKey = "m02-catalog-"+code;
         if (units.findBySeedKey(seedKey).isEmpty()) {
-            var unit = new UnitEntity(owner,topic.getId(),name+" — Bắt đầu",description,1,order);
-            unit.setSeedKey(seedKey); units.save(unit);
+            var unit = new UnitEntity(owner,topic.getId(),name+" — Bắt đầu",description,1,order,Math.addExact(units.maxRoundNumber(),1));
+            unit.setSeedKey(seedKey); units.saveAndFlush(unit);
         }
     }
 }

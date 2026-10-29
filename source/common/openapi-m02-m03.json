@@ -884,7 +884,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN creates global curriculum structure. Teacher authors cannot create new structure; old committed receipts may replay unchanged."
       }
     },
     "/api/author/topics/{id}": {
@@ -1003,7 +1004,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN edits global curriculum structure with revision/receipt protection. Unit creator ownerId remains unchanged; assignedTeacherId controls teacher lesson authoring/statistics."
       }
     },
     "/api/author/objectives": {
@@ -1260,7 +1262,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN creates global curriculum structure. Teacher authors cannot create new structure; old committed receipts may replay unchanged."
       }
     },
     "/api/author/objectives/{id}": {
@@ -1379,7 +1382,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN edits global curriculum structure with revision/receipt protection. Unit creator ownerId remains unchanged; assignedTeacherId controls teacher lesson authoring/statistics."
       }
     },
     "/api/author/units": {
@@ -1547,11 +1551,18 @@
         ],
         "responses": {
           "201": {
-            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId.",
+            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId. Replays of receipts committed before V12 may return the preserved body without roundNumber; reload the catalog to obtain the current number.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Unit"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Unit"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LegacyUnitReceipt"
+                    }
+                  ]
                 }
               }
             }
@@ -1636,7 +1647,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN creates global curriculum structure. Teacher authors cannot create new structure; old committed receipts may replay unchanged."
       }
     },
     "/api/author/units/{id}": {
@@ -1654,11 +1666,18 @@
         ],
         "responses": {
           "200": {
-            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId.",
+            "description": "Thành công. Replay giữ status/body gốc; xem quy tắc requestId. Replays of receipts committed before V12 may return the preserved body without roundNumber; reload the catalog to obtain the current number.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Unit"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Unit"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LegacyUnitReceipt"
+                    }
+                  ]
                 }
               }
             }
@@ -1755,7 +1774,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN edits global curriculum structure with revision/receipt protection. Unit creator ownerId remains unchanged; assignedTeacherId controls teacher lesson authoring/statistics."
       },
       "get": {
         "operationId": "m02m03_15",
@@ -4315,7 +4335,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN only for new writes. Pre-V13 successful receipts still replay before changed content permissions. Pending reviews must be resolved first."
       }
     },
     "/api/author/questions/{id}/retire": {
@@ -4434,7 +4455,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN only for new writes. Pre-V13 successful receipts still replay before changed content permissions. Pending reviews must be resolved first."
       }
     },
     "/api/author/lessons": {
@@ -5532,7 +5554,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN only for new writes. Pre-V13 successful receipts still replay before changed content permissions. Pending reviews must be resolved first."
       }
     },
     "/api/author/lessons/{id}/retire": {
@@ -5651,7 +5674,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ADMIN only for new writes. Pre-V13 successful receipts still replay before changed content permissions. Pending reviews must be resolved first."
       }
     },
     "/api/author/questions/{id}/copy": {
@@ -7463,7 +7487,7 @@
             }
           }
         },
-        "description": "Một transaction và một receipt. Tối đa 100 câu + 100 bài; phải chọn đủ requiredQuestionIds cho từng bài. contentConfirmed=true xác nhận đã kiểm tra đáp án/transcript. Không ghi đè nháp hoặc sửa nội dung của người khác. PREVIEW_STALE nếu có thay đổi sau GET. Replay requestId/payload trả kết quả cũ kể cả preview đã hết hiệu lực sau lần áp dụng thành công."
+        "description": "ADMIN only for applying updates to published questions/lessons. Existing drafts are never overwritten. Old successful receipts remain replayable."
       }
     },
     "/api/me/rounds": {
@@ -7831,6 +7855,1164 @@
           }
         ]
       }
+    },
+    "/api/author/teachers": {
+      "get": {
+        "operationId": "listActiveTeacherAssignees",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherAssigneePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "description": "ADMIN only. Active teachers for assignment; returns no emails or password fields."
+      }
+    },
+    "/api/author/reviews": {
+      "get": {
+        "operationId": "listContentReviews",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ALL",
+                "PENDING",
+                "APPROVED",
+                "RETURNED",
+                "WITHDRAWN"
+              ],
+              "default": "PENDING"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReviewPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "description": "ADMIN sees all; TEACHER sees questions they created and lessons in currently assigned Units. Current account/session required."
+      }
+    },
+    "/api/author/reviews/{id}": {
+      "get": {
+        "operationId": "getContentReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/author/questions/{id}/submit-review": {
+      "post": {
+        "operationId": "submitQuestionsForReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "Present with true when replaying the exact stored response.",
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "review": {
+                      "$ref": "#/components/schemas/ContentReview"
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/QuestionRoot"
+                    }
+                  },
+                  "required": [
+                    "review",
+                    "content"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Publish"
+              }
+            }
+          }
+        },
+        "description": "Current manager submits the exact validated preview. Draft freezes while pending; the previous published version remains available. Idempotent receipt returns the original review and content snapshot."
+      }
+    },
+    "/api/author/lessons/{id}/submit-review": {
+      "post": {
+        "operationId": "submitLessonsForReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "Present with true when replaying the exact stored response.",
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "review": {
+                      "$ref": "#/components/schemas/ContentReview"
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/LessonRoot"
+                    }
+                  },
+                  "required": [
+                    "review",
+                    "content"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Publish"
+              }
+            }
+          }
+        },
+        "description": "Current manager submits the exact validated preview. Draft freezes while pending; the previous published version remains available. Idempotent receipt returns the original review and content snapshot."
+      }
+    },
+    "/api/author/reviews/{id}/approve": {
+      "post": {
+        "operationId": "approveContentReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "Present with true when replaying the exact stored response.",
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentReviewDecision"
+              }
+            }
+          }
+        },
+        "description": "Receipt and review revision protected. ADMIN only; a return requires a nonblank reason. Approval validates the stored preview token and dependency closure."
+      }
+    },
+    "/api/author/reviews/{id}/return": {
+      "post": {
+        "operationId": "returnContentReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "Present with true when replaying the exact stored response.",
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ContentReviewDecision"
+                  },
+                  {
+                    "required": [
+                      "note"
+                    ],
+                    "properties": {
+                      "note": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "\\S"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "description": "Receipt and review revision protected. ADMIN only; a return requires a nonblank reason. Approval validates the stored preview token and dependency closure."
+      }
+    },
+    "/api/author/reviews/{id}/withdraw": {
+      "post": {
+        "operationId": "withdrawContentReview",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": [],
+            "Csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "Present with true when replaying the exact stored response.",
+                "schema": {
+                  "const": "true"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentReviewDecision"
+              }
+            }
+          }
+        },
+        "description": "Receipt and review revision protected. Current content manager withdraws to edit again. History and submitted snapshot remain unchanged."
+      }
+    },
+    "/api/author/versions/questions/{id}": {
+      "get": {
+        "operationId": "readAuthorQuestionVersion",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionVersion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Author roles only. Own/admin versions, active published versions, or exact private dependencies already referenced by a currently assigned lesson. No edit grant for the foreign question/material root."
+      }
+    },
+    "/api/author/versions/materials/{id}": {
+      "get": {
+        "operationId": "readAuthorMaterialVersion",
+        "tags": [
+          "Content governance"
+        ],
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private response; never grants learner access before approval.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialVersion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Lỗi theo bảng mã trong tài liệu API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Author roles only. Own/admin versions, active published versions, or exact private dependencies already referenced by a currently assigned lesson. No edit grant for the foreign question/material root."
+      }
     }
   },
   "components": {
@@ -8182,6 +9364,21 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "roundNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Persistent global round number. Lower numbers are learned first; unique across all units, including unpublished units."
+          },
+          "assignedTeacherId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Current primary teacher. ownerId remains the original creator; only ADMIN may assign an active TEACHER."
           }
         },
         "required": [
@@ -8193,7 +9390,9 @@
           "stage",
           "sortOrder",
           "revision",
-          "objectiveIds"
+          "objectiveIds",
+          "roundNumber",
+          "assignedTeacherId"
         ]
       },
       "UnitCreate": {
@@ -8226,6 +9425,31 @@
           "sortOrder": {
             "type": "integer",
             "minimum": 0
+          },
+          "roundNumber": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Persistent global round number. Lower numbers are learned first; unique across all units, including unpublished units. Optional: create appends after the maximum; update preserves the existing number when omitted or null."
+          },
+          "assignedTeacherId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Current primary teacher. ownerId remains the original creator; only ADMIN may assign an active TEACHER."
+          },
+          "clearAssignment": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "ADMIN only. true removes the current assignee; cannot be combined with a non-null assignedTeacherId. Omission preserves the existing assignment on update."
           }
         },
         "required": [
@@ -8235,6 +9459,24 @@
           "description",
           "stage",
           "sortOrder"
+        ],
+        "allOf": [
+          {
+            "not": {
+              "required": [
+                "assignedTeacherId",
+                "clearAssignment"
+              ],
+              "properties": {
+                "assignedTeacherId": {
+                  "type": "integer"
+                },
+                "clearAssignment": {
+                  "const": true
+                }
+              }
+            }
+          }
         ]
       },
       "UnitUpdate": {
@@ -8271,6 +9513,31 @@
           "sortOrder": {
             "type": "integer",
             "minimum": 0
+          },
+          "roundNumber": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Persistent global round number. Lower numbers are learned first; unique across all units, including unpublished units. Optional: create appends after the maximum; update preserves the existing number when omitted or null."
+          },
+          "assignedTeacherId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Current primary teacher. ownerId remains the original creator; only ADMIN may assign an active TEACHER."
+          },
+          "clearAssignment": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "ADMIN only. true removes the current assignee; cannot be combined with a non-null assignedTeacherId. Omission preserves the existing assignment on update."
           }
         },
         "required": [
@@ -8281,6 +9548,24 @@
           "description",
           "stage",
           "sortOrder"
+        ],
+        "allOf": [
+          {
+            "not": {
+              "required": [
+                "assignedTeacherId",
+                "clearAssignment"
+              ],
+              "properties": {
+                "assignedTeacherId": {
+                  "type": "integer"
+                },
+                "clearAssignment": {
+                  "const": true
+                }
+              }
+            }
+          }
         ]
       },
       "LessonOrder": {
@@ -10932,6 +12217,21 @@
                 "type": "null"
               }
             ]
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "Current server permission. Lessons follow the Unit assignment; questions follow their creator. Optional only on pre-V13 receipt replays."
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentReview"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest review of the visible current version, shown only to its current managers. Optional on legacy receipts."
           }
         },
         "required": [
@@ -11016,6 +12316,21 @@
                 "type": "null"
               }
             ]
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "Current server permission. Lessons follow the Unit assignment; questions follow their creator. Optional only on pre-V13 receipt replays."
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentReview"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest review of the visible current version, shown only to its current managers. Optional on legacy receipts."
           }
         },
         "required": [
@@ -13264,6 +14579,21 @@
             "type": "string",
             "maxLength": 200,
             "minLength": 0
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "Current server permission. Lessons follow the Unit assignment; questions follow their creator. Optional only on pre-V13 receipt replays."
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentReview"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest review of the visible current version, shown only to its current managers. Optional on legacy receipts."
           }
         },
         "required": [
@@ -13336,6 +14666,21 @@
           "sortOrder": {
             "type": "integer",
             "minimum": 0
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "Current server permission. Lessons follow the Unit assignment; questions follow their creator. Optional only on pre-V13 receipt replays."
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContentReview"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latest review of the visible current version, shown only to its current managers. Optional on legacy receipts."
           }
         },
         "required": [
@@ -13753,7 +15098,7 @@
           "prerequisiteRoundNumber",
           "prerequisiteTitle"
         ],
-        "description": "Global published order stage/sortOrder/id before filtering. Completed rounds stay open; otherwise any earlier incomplete round locks this one."
+        "description": "Published units ordered by persistent roundNumber before filtering. number equals unit.roundNumber. Completed rounds stay open; otherwise any earlier incomplete round locks this one. Numbering can contain gaps."
       },
       "RoundProgressPage": {
         "type": "object",
@@ -13826,6 +15171,544 @@
           "lessonId",
           "lessonCompleted"
         ]
+      },
+      "LegacyUnitReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "ownerId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "topicId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "stage": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "objectiveIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "roundNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Persistent global round number. Lower numbers are learned first; unique across all units, including unpublished units."
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "topicId",
+          "title",
+          "description",
+          "stage",
+          "sortOrder",
+          "revision",
+          "objectiveIds"
+        ],
+        "description": "Immutable author-unit receipt committed before V13: roundNumber may be present (V12); assignedTeacherId is absent. Ordinary reads/new writes use Unit."
+      },
+      "ContentReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "enum": [
+              "QUESTION",
+              "LESSON"
+            ]
+          },
+          "resourceId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "versionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "RETURNED",
+              "WITHDRAWN"
+            ]
+          },
+          "submittedBy": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "submittedByName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewedBy": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reviewedByName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 160
+          },
+          "reviewedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "resourceId",
+          "title",
+          "versionId",
+          "revision",
+          "state",
+          "submittedBy",
+          "submittedByName",
+          "submittedAt",
+          "reviewedBy",
+          "reviewedByName",
+          "reviewedAt",
+          "note"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "state"
+              ],
+              "properties": {
+                "state": {
+                  "const": "PENDING"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "reviewedBy": {
+                  "type": "null"
+                },
+                "reviewedByName": {
+                  "type": "null"
+                },
+                "reviewedAt": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "reviewedBy": {
+                  "type": "integer"
+                },
+                "reviewedByName": {
+                  "type": "string"
+                },
+                "reviewedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "state"
+              ],
+              "properties": {
+                "state": {
+                  "const": "RETURNED"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "note": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ContentReviewQuestionSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "draftVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "previewToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "data": {
+            "$ref": "#/components/schemas/QuestionVersion"
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialVersion"
+            }
+          }
+        },
+        "required": [
+          "resourceId",
+          "draftVersionId",
+          "baseRevision",
+          "previewToken",
+          "errors",
+          "warnings",
+          "data",
+          "materials"
+        ]
+      },
+      "ContentReviewLessonSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "draftVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "previewToken": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lesson": {
+                "$ref": "#/components/schemas/LessonVersion"
+              },
+              "questions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QuestionVersion"
+                },
+                "minItems": 0,
+                "maxItems": 100
+              },
+              "materials": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MaterialVersion"
+                },
+                "minItems": 0,
+                "maxItems": 100
+              }
+            },
+            "required": [
+              "lesson",
+              "questions",
+              "materials"
+            ]
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialVersion"
+            }
+          }
+        },
+        "required": [
+          "resourceId",
+          "draftVersionId",
+          "baseRevision",
+          "previewToken",
+          "errors",
+          "warnings",
+          "data",
+          "materials"
+        ]
+      },
+      "ContentReviewSnapshot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ContentReviewQuestionSnapshot"
+          },
+          {
+            "$ref": "#/components/schemas/ContentReviewLessonSnapshot"
+          }
+        ]
+      },
+      "ContentReviewDetail": {
+        "type": "object",
+        "properties": {
+          "review": {
+            "$ref": "#/components/schemas/ContentReview"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ContentReviewSnapshot"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "canWithdraw": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "review",
+          "snapshot",
+          "stale",
+          "canWithdraw"
+        ],
+        "additionalProperties": false
+      },
+      "ContentReviewDecision": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "requestId",
+          "baseRevision"
+        ],
+        "additionalProperties": false
+      },
+      "ContentReviewPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentReview"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "additionalProperties": false
+      },
+      "TeacherAssignee": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "id",
+          "fullName"
+        ],
+        "additionalProperties": false
+      },
+      "TeacherAssigneePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherAssignee"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "totalElements",
+          "page",
+          "size",
+          "totalPages"
+        ],
+        "additionalProperties": false
       },
       "ReadingActivityText": {
         "type": "object",

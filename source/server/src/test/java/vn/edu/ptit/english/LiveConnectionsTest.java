@@ -31,6 +31,15 @@ class LiveConnectionsTest {
         assertThat(live.presence(1).online()).isTrue();assertThat(live.presence(2).online()).isFalse();
         clock.advance(701);assertThat(live.presence(1).online()).isFalse();
     }
+    @Test void adminSnapshotDeduplicatesAccountsAndExcludesClosedOrExpiredSocketsBeforeSweep() {
+        socket("a",1);socket("b",1);socket("c",2);
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,3));
+        clock.advance(800);live.heartbeat("b");clock.advance(300);
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
+        var closed=socket("d",3);when(closed.isOpen()).thenReturn(false);
+        assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
+        live.detach("b");assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(0,0));
+    }
     @Test void malformedTrafficCannotKeepSocketAliveAndFloodIsBounded() throws Exception {
         var a=socket("a",1);clock.advance(1001);assertThat(live.allowMessage("a")).isFalse();verify(a).close(any());
         var b=socket("b",2);for(int i=0;i<120;i++)assertThat(live.allowMessage("b")).isTrue();

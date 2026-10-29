@@ -63,6 +63,7 @@ class AttemptApiTest {
     long topic,lesson,lessonVersion,materialVersion,materialRoot,asset;
     List<Long> questionVersions=new ArrayList<>();
     String prefix;
+    int firstRoundNumber;
     @BeforeEach void fixture() throws Exception {
         when(review.select(anyLong(),anyString(),nullable(Long.class),anyInt())).thenReturn(null);
         tx=new TransactionTemplate(transactions); questionVersions.clear(); prefix=UUID.randomUUID().toString();
@@ -76,7 +77,8 @@ class AttemptApiTest {
             admin=users.create(prefix+"a@test.local",hash,"Admin",Role.ADMIN);
             var t=new TopicEntity(teacher.id(),prefix,"Topic","");em.persist(t);em.flush();topic=t.getId();
             var obj=new ObjectiveEntity(teacher.id(),topic,prefix,"Objective","");em.persist(obj);em.flush();
-            var unit=new UnitEntity(teacher.id(),topic,"Unit","",1,0);em.persist(unit);em.flush();
+            firstRoundNumber=((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1;
+            var unit=new UnitEntity(teacher.id(),topic,"Unit","",1,0,firstRoundNumber);em.persist(unit);em.flush();
             var a=new AssetEntity(teacher.id(),prefix,"fixture.wav","audio/wav",64,"0".repeat(64));em.persist(a);em.flush();asset=a.getId();
             var m=new MaterialEntity(teacher.id());em.persist(m);em.flush();materialRoot=m.getId();
             var mv=new MaterialVersionEntity(m.getId(),1,new MaterialData("AUDIO","Audio",null,asset,"SECRET_TRANSCRIPT",null,null,java.math.BigDecimal.ZERO,null,new MaterialData.Source("Test",null,null)));
@@ -579,18 +581,36 @@ class AttemptApiTest {
         var v=new LessonVersionEntity(l.getId(),1,source.getPublished().data());em.persist(v);em.flush();l.initialDraft(v);l.publish();return l.getId();
     }
     long[] laterRound() {
-        return tx.execute(t->{var u=new UnitEntity(teacher.id(),topic,"Later round","",2,0);em.persist(u);em.flush();return new long[]{u.getId(),addRoundLesson(u.getId(),0)};});
+        return tx.execute(t->{var u=new UnitEntity(teacher.id(),topic,"Later round","",2,0,firstRoundNumber+1);em.persist(u);em.flush();return new long[]{u.getId(),addRoundLesson(u.getId(),0)};});
+    }
+    @Test void persistedNumbersDriveLocksAfterRenumberingWithoutChangingHistoricalProgress()throws Exception {
+        var next=laterRound();var c=new Client().login(student);var first=start(c);
+        ok(c.call("POST",path(first)+"/submit",fullAnswers(first)),200);
+        var before=ok(c.call("GET",path(first)+"/result",null),200);
+        long firstUnit=tx.execute(t->em.find(LessonEntity.class,lesson).getUnitId());
+        tx.executeWithoutResult(t->{var u=em.find(UnitEntity.class,firstUnit);u.update(u.getTopicId(),"Renumbered","",99,99,firstRoundNumber+10);});
+        var rows=ok(c.call("GET","/api/me/rounds?size=50",null),200).path("items");
+        assertThat(rows.get(0).path("unit").path("id").asLong()).isEqualTo(next[0]);
+        assertThat(rows.get(0).path("number").asInt()).isEqualTo(firstRoundNumber+1);assertThat(rows.get(0).path("locked").asBoolean()).isFalse();
+        assertThat(rows.get(1).path("number").asInt()).isEqualTo(firstRoundNumber+10);assertThat(rows.get(1).path("completedLessons").asInt()).isEqualTo(1);
+        assertThat(rows.get(1).path("locked").asBoolean()).isFalse();
+        assertThat(ok(c.call("GET",path(first)+"/result",null),200)).isEqualTo(before);
+        var fresh=new Client().login(other);
+        var filtered=ok(fresh.call("GET","/api/me/rounds?q=Renumbered",null),200).path("items").get(0);
+        assertThat(filtered.path("number").asInt()).isEqualTo(firstRoundNumber+10);assertThat(filtered.path("locked").asBoolean()).isTrue();
+        assertThat(filtered.path("prerequisiteRoundNumber").asInt()).isEqualTo(firstRoundNumber+1);
+        error(fresh.call("POST","/api/attempts",learn()),409,"ROUND_LOCKED");
     }
     @Test void locksUseTheWholeJourneyBeforeFilteringAndBlockDirectCreateUntilAllLessonsComplete()throws Exception {
         var next=laterRound();var c=new Client().login(student);
         long firstUnit=tx.execute(t->em.find(LessonEntity.class,lesson).getUnitId());
         long extra=tx.execute(t->addRoundLesson(firstUnit,1));
         var locked=ok(c.call("GET","/api/me/rounds/"+next[0],null),200);
-        assertThat(locked.path("number").asInt()).isEqualTo(2);assertThat(locked.path("locked").asBoolean()).isTrue();
+        assertThat(locked.path("number").asInt()).isEqualTo(firstRoundNumber+1);assertThat(locked.path("locked").asBoolean()).isTrue();
         assertThat(locked.path("prerequisiteUnitId").asLong()).isEqualTo(firstUnit);
         for(String query:List.of("q=Later","topicId="+topic+"&q=Later","page=1&size=1")) {
             var filtered=ok(c.call("GET","/api/me/rounds?"+query,null),200).path("items").get(0);
-            assertThat(filtered.path("locked").asBoolean()).isTrue();assertThat(filtered.path("number").asInt()).isEqualTo(2);
+            assertThat(filtered.path("locked").asBoolean()).isTrue();assertThat(filtered.path("number").asInt()).isEqualTo(firstRoundNumber+1);
         }
         var create=Map.of("requestId",key(),"mode","LEARN","lessonId",next[1]);
         error(c.call("POST","/api/attempts",create),409,"ROUND_LOCKED");
@@ -625,7 +645,7 @@ class AttemptApiTest {
         ok(c.call("GET","/api/me/rounds/0",null),400);ok(c.call("GET","/api/me/rounds/999999",null),404);
         assertThat(c.call("GET",url,null).headers().firstValue("Cache-Control").orElse("")).contains("private","no-store");
         tx.executeWithoutResult(t->em.find(LessonEntity.class,lesson).retire());
-        var unlocked=ok(c.call("GET",url,null),200);assertThat(unlocked.path("number").asInt()).isEqualTo(1);assertThat(unlocked.path("locked").asBoolean()).isFalse();
+        var unlocked=ok(c.call("GET",url,null),200);assertThat(unlocked.path("number").asInt()).isEqualTo(firstRoundNumber+1);assertThat(unlocked.path("locked").asBoolean()).isFalse();
         ok(c.call("POST","/api/attempts",Map.of("requestId",key(),"mode","LEARN","lessonId",next[1])),201);
     }
     @Test void roundReadsRejectOtherRolesAndInvalidFilters()throws Exception {

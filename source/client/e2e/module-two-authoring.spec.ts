@@ -1,3 +1,4 @@
+import { fixtureWrite } from './governance-fixtures';
 import { test, expect } from '@playwright/test';
 import type { APIRequestContext, Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -10,15 +11,14 @@ const prefix = 'e2e-authoring-' + stamp;
 type Root = { id: number; rootRevision: number; draftVersionId: number; originKey: string; draft: Record<string, unknown> & { id: number; revision: number } };
 const slots: Root[][] = [[], []];
 async function post(request: APIRequestContext, path: string, data: unknown, method = 'POST') {
-  const csrf = await (await request.get('/api/auth/csrf')).json() as { token: string; headerName: string };
-  const response = await request.fetch(path, { method, headers: { [csrf.headerName]: csrf.token }, data });
+  const response = await fixtureWrite(request, path, data, method);
   expect(response.ok(), await response.text()).toBeTruthy(); return await response.json();
 }
 test.beforeAll(async ({ request }) => {
   email = prefix + '@english.local';
   await post(request, '/api/auth/login', { email: env.BOOTSTRAP_ADMIN_EMAIL, password: env.BOOTSTRAP_ADMIN_PASSWORD });
   const user = await post(request, '/api/auth/register', { email, password: 'Teacher@12345', fullName: 'Tác giả kiểm thử câu và bài' });
-  await post(request, '/api/admin/users/' + user.id + '/role', { role: 'TEACHER' }, 'PATCH');
+  await post(request, '/api/admin/users/' + user.id + '/role', { role: 'ADMIN' }, 'PATCH');
   await post(request, '/api/auth/login', { email, password: 'Teacher@12345' });
   topicId = (await post(request, '/api/author/topics', { requestId: randomUUID(), code: prefix, name: 'Chủ đề ' + prefix, description: '' })).id;
   objectiveId = (await post(request, '/api/author/objectives', { requestId: randomUUID(), code: prefix, topicId, name: 'Mục tiêu ' + prefix, description: '' })).id;
@@ -71,7 +71,7 @@ async function save(page: Page) { await page.getByRole('button', { name: 'Lưu b
 async function publish(page: Page, kind: string) { await page.getByRole('button', { name: 'Xem trước', exact: true }).click(); await page.getByRole('button', { name: 'Xuất bản ' + kind, exact: true }).click(); await expect(page.getByRole('status')).toContainText('Đã xuất bản ' + kind); }
 async function newLesson(page: Page, group: number) {
   await page.getByRole('button', { name: '+ Thêm bài học', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Unit của bài học', exact: true }).selectOption(String(unitId));
+  await page.getByRole('combobox', { name: 'Vòng đấu của bài học', exact: true }).selectOption(String(unitId));
   await page.getByRole('textbox', { name: 'Tên bài học', exact: true }).fill(prefix + '-lesson-' + group);
   await page.getByRole('checkbox', { name: 'Mục tiêu ' + prefix, exact: true }).check();
   await page.getByRole('textbox', { name: 'Nội dung khối 1', exact: true }).fill('Read, listen and answer.');
@@ -129,7 +129,7 @@ test('dependency changes reject stale lesson preview and a fresh preview can pub
   await publish(page, 'bài học');
 });
 test('unit lesson order can be changed and saved', async ({ page }) => {
-  await login(page, 'Bài học'); await page.getByRole('combobox', { name: 'Unit', exact: true }).selectOption(String(unitId)); await page.getByRole('button', { name: 'Sắp xếp bài trong Unit đã chọn →', exact: true }).click();
+  await login(page, 'Bài học'); await page.getByRole('combobox', { name: 'Vòng đấu', exact: true }).selectOption(String(unitId)); await page.getByRole('button', { name: 'Sắp xếp bài trong vòng đấu đã chọn →', exact: true }).click();
   await expect(page.locator('.lesson-slot')).toHaveCount(2); await page.getByRole('button', { name: 'Đưa bài 2 lên', exact: true }).click(); await page.getByRole('button', { name: 'Lưu thứ tự bài', exact: true }).click(); await expect(page.getByRole('status')).toContainText('Đã lưu thứ tự bài học.');
 });
 test('published question from another author can be copied with the same origin', async ({ page }) => {

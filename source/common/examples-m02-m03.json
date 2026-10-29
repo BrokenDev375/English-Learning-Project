@@ -703,6 +703,21 @@
         "message": "Bản nháp trên server đã thay đổi. Tải snapshot để đối soát.",
         "fieldErrors": {}
       }
+    },
+    {
+      "name": "legacyUnitReceiptBeforeV12",
+      "schema": "#/components/schemas/LegacyUnitReceipt",
+      "body": {
+        "id": 1,
+        "ownerId": 1,
+        "topicId": 1,
+        "title": "Preserved round",
+        "description": "",
+        "stage": 1,
+        "sortOrder": 0,
+        "revision": 0,
+        "objectiveIds": []
+      }
     }
   ]
 }

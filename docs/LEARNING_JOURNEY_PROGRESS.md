@@ -5,7 +5,7 @@ Phạm vi được thống nhất ngày 25/10/2026, nền main `69fb0d1`. Một 
 ## Quy tắc đã triển khai
 
 - [x] STUDENT xem Unit thành vòng học, có số bài đã hoàn thành/tổng bài và nút mở bài chưa hoàn thành tiếp theo theo thứ tự.
-- [x] Vòng được đánh số theo thứ tự Unit stage/sortOrder/id trên toàn bộ nội dung đang công bố. Chỉ mở vòng chưa hoàn thành đầu tiên; hoàn thành tất cả Lesson trong vòng sẽ mở vòng sau. Vòng đã hoàn thành vẫn chơi lại được; không khóa theo điểm hoặc lịch.
+- [x] Vòng có roundNumber lưu cố định trong DB; sắp theo roundNumber/id trên toàn bộ nội dung đang công bố. Chỉ mở vòng chưa hoàn thành đầu tiên; hoàn thành tất cả Lesson trong vòng sẽ mở vòng sau. Vòng đã hoàn thành vẫn chơi lại được; không khóa theo điểm hoặc lịch.
 - [x] Vòng hoàn thành khi mọi Lesson đang công bố trong vòng có tiến độ COMPLETED của học viên. Bài retire không nằm trong mẫu số; bài mới công bố có thể làm tăng tổng bài. Lịch sử hoàn thành từng bài vẫn giữ nguyên. Unit không có bài công bố không hiện như một vòng đã hoàn thành.
 - [x] Khi cùng một Lesson có phiên bản mới, giữ COMPLETED theo luật M03 và hiển thị thông báo có bản cập nhật; không bắt học viên mất mốc hoàn thành cũ.
 - [x] GET `/api/me/rounds` phân trang/lọc q/topicId, chỉ STUDENT, kiểm tra tài khoản hiện hành, transaction chỉ đọc REPEATABLE_READ. Đọc toàn bộ lộ trình và bulk Lesson/progress trước lọc để xác định khóa; danh sách lọc giữ thứ tự và hành vi catalog hiện hành.
@@ -70,3 +70,13 @@ Thiết kế/giới hạn tại [gameplay](GAMEPLAY_INTEGRATION_PROPOSAL.md), b�
 Source bổ sung cấu trúc bài theo phiên bản: trắc nghiệm → ghép cặp → xếp từ → điền từ → đọc điền từ → đọc hiểu. Mỗi phần có một GUIDED, tổng 6 GUIDED + 12 INDEPENDENT. Đọc điền từ nhập trực tiếp trong đoạn; hai dạng đọc có ví dụ riêng. Bài cũ không tự chuyển cấu trúc; bài mẫu được tạo riêng qua script API có checkpoint. V12 thêm activities_json. Theo yêu cầu chạy tiếp theo, đã build/chạy demo chính 5176/8083, nâng V12 và nạp bài mẫu Unit 6/Lesson 11 tại Vòng 2; giữ nguyên dữ liệu học viên. Chi tiết, phạm vi nghiệm thu và giới hạn tại [tiến độ bài 18 câu](QUESTION_VARIETY_PROGRESS.md) và [biên bản riêng](../statics/results/question-variety-validation.md); các số PASS phía trên là lịch sử trước thay đổi này.
 
 Điều chỉnh tiếp theo: source/bộ mẫu activities-1.1.0 vẫn 18 câu, giảm mỗi phần đọc một câu để thêm hai câu nghe chọn đáp án ở cuối (3/2/2/3/3/3/2, 7 GUIDED + 11 INDEPENDENT). Cấu trúc sáu phần cũ được giữ tương thích. Chưa triển khai phần nghe lên demo Lesson 11; kết quả kiểm tra mới ghi riêng ở biên bản bài 18 câu.
+
+## Tên vòng đấu ở giao diện giáo viên — 27/10/2026
+
+Thống nhất nhãn Unit → Vòng đấu trong quản lý học liệu, chọn vòng cho bài, sắp xếp bài, danh mục công bố và thống kê giáo viên. Bỏ badge Chặng; gom stage/sortOrder vào tùy chọn sắp xếp. Giữ API, dữ liệu và số vòng toàn lộ trình của học viên. Xem [quy ước](TEACHER_ROUND_TERMINOLOGY.md) và [kiểm tra](../statics/results/teacher-round-terminology-validation.md).
+
+Bổ sung số vòng giáo viên ngày 27/10: thẻ và ô chọn vòng hiện số theo toàn bộ danh mục công bố, khớp lộ trình học viên và giữ số khi lọc riêng/tìm kiếm/phân trang. Vòng chưa trong lộ trình hiện Chưa có số; lỗi tải không đoán số. Dùng API công bố hiện có, không đổi backend/DB. Xem [kiểm tra](../statics/results/teacher-round-numbering-validation.md).
+
+Số vòng lưu cố định ngày 27/10 (V12): units.round_number dương/duy nhất; thêm/sửa trực tiếp ở quản lý vòng, tạo mới tự cấp khi để trống. API danh mục, học viên và thống kê cùng dùng roundNumber, bỏ map số tính động. Backfill bảo toàn số công bố hiện tại; draft có số riêng phía sau. Giữ ID/tiến độ/XP/kết quả. Các mô tả không đổi backend/DB ở hai mốc giao diện ngay trên là bằng chứng lịch sử trước V12. Xem [quy ước](TEACHER_ROUND_TERMINOLOGY.md) và [kiểm tra](../statics/results/persistent-round-number-validation.md).
+
+V13 ngày 27/10: ADMIN điều hành cấu trúc lộ trình, số vòng, phân công và duyệt bài/câu hỏi. Giáo viên biên soạn trong vòng được giao, gửi/rút yêu cầu; bản cũ giữ tới khi bản sửa được duyệt. Quyền và thống kê chuyển theo assignedTeacherId, ownerId giữ người tạo. Các mô tả giáo viên tự tạo/sửa vòng trước đây là mốc trước V13. Xem [quy tắc](CONTENT_GOVERNANCE.md), [kiểm tra](../statics/results/content-governance-validation.md).

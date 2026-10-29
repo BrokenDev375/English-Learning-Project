@@ -83,7 +83,7 @@ export default function LessonIntroduction({ intro, progress, progressReady, stu
     <div className="lesson-intro-actions">
       {student && <button className="button primary" disabled={disabled || loading || !!current?.error} onClick={() => start(lessonId)}>{label}</button>}
       {student && current?.latestResult && <button className="button secondary" disabled={disabled} onClick={() => navigate({ attempt: String(current.latestResult) })}>Xem kết quả gần nhất</button>}
-      <button className="button secondary lesson-back" onClick={() => returnTo({ lesson: null })}>{student ? 'Về danh sách bài trong vòng' : 'Về danh sách bài trong Unit'}</button>
+      <button className="button secondary lesson-back" onClick={() => returnTo({ lesson: null })}>{student ? 'Về danh sách bài trong vòng' : 'Về danh sách bài trong vòng đấu'}</button>
     </div>
   </div>;
 }

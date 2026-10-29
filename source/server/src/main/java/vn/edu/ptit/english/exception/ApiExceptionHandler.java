@@ -50,7 +50,9 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(new ApiError("METHOD_NOT_ALLOWED", "Phương thức không được hỗ trợ."));
     }
     @ExceptionHandler(DataIntegrityViolationException.class)
-    ResponseEntity<ApiError> conflict() {
+    ResponseEntity<ApiError> conflict(DataIntegrityViolationException ex) {
+        if (ex.getMostSpecificCause().getMessage() != null && ex.getMostSpecificCause().getMessage().contains("uk_units_round_number"))
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError("ROUND_NUMBER_CONFLICT", "Số thứ tự vòng đã được sử dụng. Hãy chọn số khác hoặc thử tạo lại."));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError("DATA_CONFLICT", "Dữ liệu đã thay đổi hoặc bị trùng. Vui lòng tải lại."));
     }
     @ExceptionHandler(DataAccessException.class)

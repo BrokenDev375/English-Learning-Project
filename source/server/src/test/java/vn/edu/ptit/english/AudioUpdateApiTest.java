@@ -114,16 +114,18 @@ class AudioUpdateApiTest {
     JsonNode publish(Client c,String kind,long id)throws Exception{
         var p=ok(c.call("GET","/api/author/"+kind+"/"+id+"/preview",null),200);
         assertThat(p.path("errors").size()).withFailMessage(p.toString()).isZero();
-        return ok(c.call("POST","/api/author/"+kind+"/"+id+"/publish",Map.of("requestId",key(),
+        return ok(new Client().login(admin).call("POST","/api/author/"+kind+"/"+id+"/publish",Map.of("requestId",key(),
             "draftVersionId",p.path("draftVersionId").asLong(),"baseRevision",p.path("baseRevision").asLong(),
             "previewToken",p.path("previewToken").asText())),200);
     }
     record Fixture(long topic,long objective,long unit,long material,long oldAudio,long newAudio,long lesson,long oldLesson,
         List<Long> questions,List<Long> oldQuestions,List<String> origins) {}
     long[] catalog(Client c)throws Exception{
-        long topic=ok(c.call("POST","/api/author/topics",Map.of("requestId",key(),"code","topic-"+key(),"name","Daily","description","")),201).path("id").asLong();
-        long objective=ok(c.call("POST","/api/author/objectives",Map.of("requestId",key(),"code","obj-"+key(),"topicId",topic,"name","Daily","description","")),201).path("id").asLong();
-        long unit=ok(c.call("POST","/api/author/units",Map.of("requestId",key(),"topicId",topic,"title","Unit","description","","stage",1,"sortOrder",0)),201).path("id").asLong();
+        var manager=new Client().login(admin);var me=ok(c.call("GET","/api/auth/me",null),200);
+        long topic=ok(manager.call("POST","/api/author/topics",Map.of("requestId",key(),"code","topic-"+key(),"name","Daily","description","")),201).path("id").asLong();
+        long objective=ok(manager.call("POST","/api/author/objectives",Map.of("requestId",key(),"code","obj-"+key(),"topicId",topic,"name","Daily","description","")),201).path("id").asLong();
+        var unitInput=new java.util.HashMap<String,Object>(Map.of("requestId",key(),"topicId",topic,"title","Unit","description","","stage",1,"sortOrder",0));if(me.path("role").asText().equals("TEACHER"))unitInput.put("assignedTeacherId",me.path("id").asLong());
+        long unit=ok(manager.call("POST","/api/author/units",unitInput),201).path("id").asLong();
         return new long[]{topic,objective,unit};
     }
     Map<String,Object> question(long topic,long objective,long material,String prompt){
@@ -160,12 +162,12 @@ class AudioUpdateApiTest {
         return new Fixture(f.topic(),f.objective(),f.unit(),f.material(),f.oldAudio(),updated.path("publishedVersionId").asLong(),
             f.lesson(),f.oldLesson(),f.questions(),f.oldQuestions(),f.origins());
     }
-    JsonNode preview(Client c,Fixture f)throws Exception{return ok(c.call("GET","/api/author/materials/"+f.material()+"/audio-update",null),200);}
+    JsonNode preview(Client c,Fixture f)throws Exception{return ok(new Client().login(admin).call("GET","/api/author/materials/"+f.material()+"/audio-update",null),200);}
     Map<String,Object> command(JsonNode p,List<Long> questions,List<Long> lessons){
         return new LinkedHashMap<>(Map.of("requestId",key(),"targetVersionId",p.path("targetVersionId").asLong(),
             "previewToken",p.path("previewToken").asText(),"questionIds",questions,"lessonIds",lessons,"contentConfirmed",true));
     }
-    HttpResponse<String> apply(Client c,Fixture f,Object data)throws Exception{return c.call("POST","/api/author/materials/"+f.material()+"/audio-update",data);}
+    HttpResponse<String> apply(Client c,Fixture f,Object data)throws Exception{return new Client().login(admin).call("POST","/api/author/materials/"+f.material()+"/audio-update",data);}
 
     @Test void updatesSelectedQuestionsAndLessonAtomicallyAndPreservesHistoryAndOrigin()throws Exception{
         var c=new Client().login(teacher);var f=fixture(c);var p=preview(c,f);
@@ -189,18 +191,18 @@ class AudioUpdateApiTest {
         var remaining=preview(c,f);assertThat(remaining.path("questions").isEmpty()).isTrue();assertThat(remaining.path("lessons").isEmpty()).isTrue();
         command.put("requestId",key());assertThat(apply(c,f,command).statusCode()).isEqualTo(409);
     }
-    @Test void respectsOwnershipAndDoesNotOverwriteExistingDrafts()throws Exception{
+    @Test void administratorCanUpdateAnyAuthorButCannotOverwriteExistingDraftsAndTeacherCannotApply()throws Exception{
         var a=new Client().login(teacher);var b=new Client().login(other);var f=fixture(a);
         var borrowed=lesson(b,f.material(),f.oldAudio());
         var root=ok(a.call("GET","/api/author/questions/"+f.questions().get(0),null),200);
         var draft=ok(a.call("POST","/api/author/questions/"+f.questions().get(0)+"/draft",
             Map.of("requestId",key(),"baseRevision",root.path("rootRevision").asLong())),200);
         var p=preview(a,f);
-        assertThat(p.path("foreignQuestionCount").asInt()).isEqualTo(3);assertThat(p.path("foreignLessonCount").asInt()).isEqualTo(1);
+        assertThat(p.path("foreignQuestionCount").asInt()).isZero();assertThat(p.path("foreignLessonCount").asInt()).isZero();
         assertThat(p.path("questions").get(0).path("reason").isTextual()).isTrue();
         assertThat(p.path("lessons").get(0).path("reason").isTextual()).isTrue();
         assertThat(apply(a,f,command(p,List.of(f.questions().get(0)),List.of())).statusCode()).isEqualTo(409);
-        assertThat(apply(a,f,command(p,List.of(borrowed.questions().get(0)),List.of())).statusCode()).isEqualTo(404);
+        assertThat(a.call("POST","/api/author/materials/"+f.material()+"/audio-update",command(p,List.of(borrowed.questions().get(0)),List.of())).statusCode()).isEqualTo(403);
         ok(apply(b,f,command(preview(b,f),borrowed.questions(),List.of(borrowed.lesson()))),200);
         assertThat(reader.activeLesson(f.lesson()).versionId()).isEqualTo(f.oldLesson());
         assertThat(ok(a.call("GET","/api/author/questions/"+f.questions().get(0),null),200).path("draftVersionId")).isEqualTo(draft.path("draftVersionId"));
@@ -244,7 +246,7 @@ class AudioUpdateApiTest {
         var result=ok(apply(c,f,command),200);assertThat(result.path("questions").isEmpty()).isTrue();
         assertThat(result.path("lessons").size()).isEqualTo(1);assertThat(questionVersions.count()).isEqualTo(count);
     }
-    @Test void concurrentOwnerAndAdminUpdatesCreateOnlyOneSetOfVersions()throws Exception{
+    @Test void concurrentAdministratorSessionsCreateOnlyOneSetOfVersions()throws Exception{
         var c=new Client().login(teacher);var administrator=new Client().login(admin);var f=fixture(c);
         var a=command(preview(c,f),f.questions(),List.of(f.lesson()));
         var b=command(preview(administrator,f),f.questions(),List.of(f.lesson()));

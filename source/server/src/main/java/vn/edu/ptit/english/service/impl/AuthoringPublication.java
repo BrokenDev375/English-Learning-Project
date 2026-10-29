@@ -16,8 +16,10 @@ import static vn.edu.ptit.english.service.impl.AuthoringAccess.*;
 @Component
 public class AuthoringPublication {
     private final ContentRepository content;private final MaterialRepository materials;private final CatalogRepository catalog;
-    private final QuestionValidator validator;private final MaterialServiceImpl materialService;
-    public AuthoringPublication(ContentRepository content,MaterialRepository materials,CatalogRepository catalog,QuestionValidator validator,MaterialServiceImpl materialService){this.content=content;this.materials=materials;this.catalog=catalog;this.validator=validator;this.materialService=materialService;}
+    private final QuestionValidator validator;private final MaterialServiceImpl materialService;private final ContentGovernance governance;
+    public AuthoringPublication(ContentRepository content,MaterialRepository materials,CatalogRepository catalog,QuestionValidator validator,MaterialServiceImpl materialService,ContentGovernance governance){this.governance=governance;this.content=content;this.materials=materials;this.catalog=catalog;this.validator=validator;this.materialService=materialService;}
+    private boolean own(CatalogEntity root,UserPrincipal actor){return governance.manages(root,actor);}
+    private void editable(CatalogEntity root,UserPrincipal actor){governance.editable(root,actor);}
     private record Closure(String kind,CatalogEntity root,AuthoredVersion draft,Map<Long,QuestionVersionEntity> questions,Map<Long,MaterialVersionEntity> materials) {}
     private Closure closure(String kind,long id,UserPrincipal actor){
         var questions=new TreeMap<Long,QuestionVersionEntity>();AuthoredVersion draft;CatalogEntity root;
@@ -27,8 +29,8 @@ public class AuthoringPublication {
         var dependencies=new TreeMap<Long,MaterialVersionEntity>();for(var q:questions.values()){checkQuestion(q,actor);Long material=q.data().materialVersionId();if(material!=null){var m=content.materialVersion(material).orElseThrow(AuthoringAccess::missing);checkMaterial(m,actor);dependencies.put(m.getId(),m);}}
         return new Closure(kind,root,draft,questions,dependencies);
     }
-    private void checkQuestion(QuestionVersionEntity v,UserPrincipal actor){var root=content.question(v.getQuestionId(),false).orElseThrow(AuthoringAccess::missing);if(!own(root,actor)&&(!v.getState().equals("PUBLISHED")||root.getRetiredAt()!=null||root.getPublished()==null))throw missing();if(v.getState().equals("DRAFT")&&(root.getDraft()==null||!root.getDraft().getId().equals(v.getId())))throw missing();}
-    private void checkMaterial(MaterialVersionEntity v,UserPrincipal actor){var root=materials.find(v.getMaterialId(),false).orElseThrow(AuthoringAccess::missing);if(!own(root,actor)&&(!v.getState().equals("PUBLISHED")||root.getRetiredAt()!=null||root.getPublished()==null))throw missing();if(v.getState().equals("DRAFT")&&(root.getDraft()==null||!root.getDraft().getId().equals(v.getId())))throw missing();}
+    private void checkQuestion(QuestionVersionEntity v,UserPrincipal actor){var root=content.question(v.getQuestionId(),false).orElseThrow(AuthoringAccess::missing);if(!own(root,actor)&&(!v.getState().equals("PUBLISHED")||root.getRetiredAt()!=null||root.getPublished()==null)&&!governance.knowsQuestion(v.getId(),actor))throw missing();if(v.getState().equals("DRAFT")&&(root.getDraft()==null||!root.getDraft().getId().equals(v.getId())))throw missing();}
+    private void checkMaterial(MaterialVersionEntity v,UserPrincipal actor){var root=materials.find(v.getMaterialId(),false).orElseThrow(AuthoringAccess::missing);if(!own(root,actor)&&(!v.getState().equals("PUBLISHED")||root.getRetiredAt()!=null||root.getPublished()==null)&&!governance.knowsMaterial(v.getId(),actor))throw missing();if(v.getState().equals("DRAFT")&&(root.getDraft()==null||!root.getDraft().getId().equals(v.getId())))throw missing();}
     public void validateQuestionReferences(Question data,UserPrincipal actor){
         catalog.topic(data.topicId(),false).orElseThrow(AuthoringAccess::missing);var objective=catalog.objective(data.objectiveId(),false).orElseThrow(AuthoringAccess::missing);if(objective.view().topicId()!=data.topicId())throw vn.edu.ptit.english.dto.MaterialRequests.invalid("objectiveId","Mục tiêu phải thuộc chủ đề đã chọn.");if(data.materialVersionId()!=null)checkMaterial(content.materialVersion(data.materialVersionId()).orElseThrow(AuthoringAccess::missing),actor);
     }
@@ -49,6 +51,7 @@ public class AuthoringPublication {
         }
         return errors.stream().limit(100).toList();
     }
+    public List<Map<String,Object>> previewMaterials(String kind,long id,UserPrincipal actor){return closure(kind,id,actor).materials.values().stream().map(MaterialVersionEntity::view).toList();}
     public Preview preview(String kind,long id,UserPrincipal actor){var c=closure(kind,id,actor);Object data=c.draft instanceof QuestionVersionEntity q?q.view():Map.of("lesson",((LessonVersionEntity)c.draft).view(),"questions",c.questions.values().stream().map(QuestionVersionEntity::view).toList(),"materials",c.materials.values().stream().map(MaterialVersionEntity::view).toList());return new Preview(id,c.draft.getId(),c.draft.getRevision(),token(c),errors(c,actor),List.of(),data);}
     public void publish(String kind,long id,Command command,UserPrincipal actor){
         var before=closure(kind,id,actor);var lockedMaterials=new TreeSet<Long>();var lockedQuestions=new TreeSet<Long>();before.materials.values().forEach(v->lockedMaterials.add(v.getMaterialId()));before.questions.values().forEach(v->lockedQuestions.add(v.getQuestionId()));

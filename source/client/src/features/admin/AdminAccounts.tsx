@@ -4,6 +4,7 @@ import { api, errorMessage } from '../../api';
 import type { AccountStatus, Role, User, UserPage } from '../../types';
 import { roleNames, statusNames } from '../../types';
 import { formatDate, initials } from '../../components/Brand';
+import AdminPresence from '../statistics/AdminPresence';
 
 type Action = { user: User; kind: 'role'; value: Role } | { user: User; kind: 'status'; value: AccountStatus } | { user: User; kind: 'delete' };
 export default function AdminAccounts({ currentUser }: { currentUser: User }) {
@@ -38,8 +39,8 @@ export default function AdminAccounts({ currentUser }: { currentUser: User }) {
   }
   const actionTitle = !action ? '' : action.kind === 'delete' ? 'Xóa tài khoản?' : action.kind === 'role' ? 'Thay đổi quyền?' : action.value === 'LOCKED' ? 'Khóa tài khoản?' : 'Mở khóa tài khoản?';
   return <section>
-    <div className="page-heading"><div><span className="eyebrow">QUẢN TRỊ</span><h1>Quản lý tài khoản<span>.</span></h1><p className="muted">Quản lý người dùng và quyền truy cập trong hệ thống.</p></div>
-      <button className="button secondary" onClick={() => setRevision(v => v + 1)} disabled={loading}>Tải lại</button></div>
+    <div className="page-heading"><div><span className="eyebrow">QUẢN TRỊ</span><h1>Quản lý tài khoản<span>.</span></h1></div></div>
+    <AdminPresence key={currentUser.id} />
     {message && <div className="message success" role="status">{message}</div>}
     {error && <div className="message error" role="alert">{error}</div>}
     <div className="panel">

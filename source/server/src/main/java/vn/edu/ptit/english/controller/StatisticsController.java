@@ -24,6 +24,9 @@ public class StatisticsController {
     }
     @GetMapping("/api/admin/statistics") public ResponseEntity<?> admin(@RequestParam(defaultValue = "ALL") String period,
         @AuthenticationPrincipal UserPrincipal actor) { return response(service.admin(period, actor)); }
+    @GetMapping("/api/admin/statistics/presence") public ResponseEntity<?> presence(@AuthenticationPrincipal UserPrincipal actor) {
+        return response(service.presence(actor));
+    }
     @GetMapping("/api/admin/statistics/questions") public ResponseEntity<?> questions(@RequestParam(defaultValue = "ALL") String period,
         @RequestParam(required = false) String difficulty, @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal UserPrincipal actor) {

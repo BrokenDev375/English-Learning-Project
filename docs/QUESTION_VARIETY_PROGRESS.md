@@ -25,7 +25,7 @@ Hai câu nghe cuối dùng audio thật `daily-routine.wav` sẵn có trong dự
 
 ## Dữ liệu và tương thích
 
-**V12** thêm cột JSON nullable `lesson_versions.activities_json`. Không sửa V1–V11, không viết lại LessonVersion hoặc Attempt cũ. Bản nháp mới kế thừa activities của phiên bản gốc. Cập nhật audio hàng loạt giữ cấu trúc và remap QuestionVersion ID khi tạo phiên bản mới.
+**V14** (sau tích hợp main ngày 29/10; trước đó là V12 local) thêm cột JSON nullable `lesson_versions.activities_json`. Không sửa V1–V11, không viết lại LessonVersion hoặc Attempt cũ. Bản nháp mới kế thừa activities của phiên bản gốc. Cập nhật audio hàng loạt giữ cấu trúc và remap QuestionVersion ID khi tạo phiên bản mới.
 
 Metadata tác giả chứa nhóm, danh sách QuestionVersion và các phần TEXT/BLANK của đoạn cloze. Các phần ghép lại bằng `____` phải khớp `readingText` của MaterialVersion. Không nhúng đáp án vào metadata này. Snapshot chỉ chiếu các item và material thuộc lượt, thay tham chiếu bằng attemptQuestionId. Với REVIEW/PRACTICE chọn một câu, những ô không thuộc lượt trở thành văn bản `____`, không sinh thêm câu hay đòi thêm đáp án.
 
@@ -68,3 +68,11 @@ Bằng chứng lịch sử trước khi thêm phần nghe: đã có **320 ca bac
 - Lưu/khôi phục theo ID câu; chưa phục hồi vị trí cuộn chính xác của đoạn đọc.
 - Cơ chế nhóm chỉ được bật cho bài có metadata mới hợp lệ. Các bài cũ không tự được phân loại lại theo material hoặc prompt.
 - Chưa mở rộng tất cả bài của ngân hàng, chưa thêm bài viết hoặc đổi chính sách thưởng.
+
+## Tích hợp main — 29/10/2026
+
+Đã tích hợp main `764d846`, giữ số vòng cố định `roundNumber` (V12) và phân công/duyệt (V13). Cột activities chuyển sang **V14**; form chọn vòng giữ số vòng và xóa activities khi đổi vòng. OpenAPI giữ cả hợp đồng duyệt và hoạt động bài học.
+
+Giáo viên soạn bài trong vòng được giao rồi gửi duyệt; ADMIN xuất bản theo luật main mới. Các bước xuất bản trực tiếp bằng TEACHER trong hướng dẫn/biên bản cũ là bằng chứng trước tích hợp. Script `seed-activity-sample.mjs` dùng ADMIN sau tích hợp. Hai script demo cũ `seed-demo-classroom.mjs` và `upgrade-beginner-lesson.mjs` còn theo luồng TEACHER xuất bản trực tiếp; chưa chuyển sang luồng duyệt V13, không dùng để nạp dữ liệu trên bản tích hợp.
+
+DB demo/baseline đã áp dụng V12 activities trước tích hợp có lịch sử Flyway khác V12 số vòng trên main. Không khởi động bản tích hợp trực tiếp với những volume này; giữ backup/volume, chưa thực hiện chuyển lịch sử DB local trong lượt commit/push này. DB mới và DB main chuẩn đến V13 dùng chuỗi V1–V14; kiểm thử migration cần Docker.

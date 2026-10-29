@@ -56,7 +56,7 @@ class AttemptPersistenceTest {
             user=users.create(UUID.randomUUID()+"@m03.test","hash","M03 learner",Role.STUDENT).id();
             var topic=new TopicEntity(user,UUID.randomUUID().toString(),"Topic",""); em.persist(topic); em.flush();
             var objective=new ObjectiveEntity(user,topic.getId(),UUID.randomUUID().toString(),"Objective",""); em.persist(objective); em.flush();
-            var u=new UnitEntity(user,topic.getId(),"Unit","",1,0); em.persist(u); em.flush(); unit=u.getId();
+            var u=new UnitEntity(user,topic.getId(),"Unit","",1,0,((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1); em.persist(u); em.flush(); unit=u.getId();
             origin=UUID.randomUUID().toString(); var q=new QuestionEntity(user,origin); em.persist(q); em.flush();
             var data=new Question("SINGLE_CHOICE",topic.getId(),objective.getId(),"EASY","Choose",node("{\"options\":[{\"id\":\"a\",\"text\":\"A\"},{\"id\":\"b\",\"text\":\"B\"}]}"),node("{\"correctOptionId\":\"b\"}"),"Explanation","Hint",null,new MaterialData.Source("Test",null,null));
             var qv=new QuestionVersionEntity(q.getId(),1,data); em.persist(qv); em.flush(); q.initialDraft(qv); q.publish(); questionVersion=qv.getId();
@@ -83,15 +83,15 @@ class AttemptPersistenceTest {
         assertThat(users.findByEmail("v3-preserved@test.local")).isPresent();
         tx.executeWithoutResult(s -> {
             assertThat(((Number)em.createNativeQuery("SELECT COUNT(*) FROM topics WHERE code='v3-preserved'").getSingleResult()).intValue()).isEqualTo(1);
-            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("12");
+            assertThat(em.createNativeQuery("SELECT version FROM flyway_schema_history WHERE success=1 ORDER BY installed_rank DESC LIMIT 1").getSingleResult()).isEqualTo("14");
         });
     }
     @Test void emptyDatabaseMigratesThroughCurrentVersion() {
         try(var fresh=new MySQLContainer<>("mysql:8.4")) {
             fresh.start();
             var flyway=Flyway.configure().dataSource(fresh.getJdbcUrl(),fresh.getUsername(),fresh.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(12);
-            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("12");
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(14);
+            assertThat(flyway.info().current().getVersion().toString()).isEqualTo("14");
             flyway.validate();
         }
     }

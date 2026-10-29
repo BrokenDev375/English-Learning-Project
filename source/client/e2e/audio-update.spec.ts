@@ -28,8 +28,8 @@ async function fixture(page: Page) {
   cleanup.set(page, created);
   let csrf = await (await page.request.get('/api/auth/csrf')).json();
   const login = await page.request.post('/api/auth/login', { headers: { [csrf.headerName]: csrf.token },
-    data: { email: process.env.E2E_TEACHER_EMAIL ?? local.DEMO_TEACHER_EMAIL ?? 'teacher@english.local',
-      password: process.env.E2E_TEACHER_PASSWORD ?? local.DEMO_TEACHER_PASSWORD ?? 'Teacher@12345' } });
+    data: { email: process.env.E2E_ADMIN_EMAIL ?? local.BOOTSTRAP_ADMIN_EMAIL,
+      password: process.env.E2E_ADMIN_PASSWORD ?? local.BOOTSTRAP_ADMIN_PASSWORD } });
   expect(login.status(), await login.text()).toBe(200);
   csrf = await (await page.request.get('/api/auth/csrf')).json();
   async function call(path: string, data?: unknown, method = 'POST') {

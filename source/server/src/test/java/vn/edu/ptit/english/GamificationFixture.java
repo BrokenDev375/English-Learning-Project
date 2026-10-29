@@ -75,7 +75,7 @@ abstract class GamificationFixture {
             teacher=users.create(prefix+"t@rewards.test",hash,"Teacher",Role.TEACHER);
             var t=new TopicEntity(teacher.id(),prefix,"Topic",""); em.persist(t); em.flush(); topic=t.getId();
             var o=new ObjectiveEntity(teacher.id(),topic,prefix+"o","Objective",""); em.persist(o); em.flush(); objective=o.getId();
-            var u=new UnitEntity(teacher.id(),topic,"Unit","",1,0); em.persist(u); em.flush(); unit=u.getId();
+            var u=new UnitEntity(teacher.id(),topic,"Unit","",1,0,((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1); em.persist(u); em.flush(); unit=u.getId();
             lesson=bank(6);
         });
     }

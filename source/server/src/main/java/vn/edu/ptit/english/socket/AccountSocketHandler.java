@@ -45,11 +45,13 @@ public class AccountSocketHandler extends TextWebSocketHandler {
                 code = "INVALID_MESSAGE";
             } else if (type.equals("SUBSCRIBE") || type.equals("UNSUBSCRIBE")) {
                 if (input.has("resource")) {
-                    if (actor.role() != vn.edu.ptit.english.enums.Role.STUDENT) code = "FORBIDDEN";
+                    boolean presence = input.path("resource").asText().equals("PRESENCE");
+                    if (actor.role() != (presence ? vn.edu.ptit.english.enums.Role.ADMIN : vn.edu.ptit.english.enums.Role.STUDENT)) code = "FORBIDDEN";
                     else if (!input.path("resource").isTextual()
-                        || !java.util.Set.of("GAMIFICATION", "LEAGUE").contains(input.path("resource").asText())
+                        || !java.util.Set.of("GAMIFICATION", "LEAGUE", "PRESENCE").contains(input.path("resource").asText())
                         || input.size() != 4
                         || !requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) code = "INVALID_SUBSCRIPTION";
+                    else if (presence) { if (!connections.subscribePresence(raw.getId(), type.equals("SUBSCRIBE"))) code = "FORBIDDEN"; }
                     else raw.getAttributes().put(input.path("resource").asText().equals("LEAGUE") ? "leagueSubscribed" : "gamificationSubscribed", type.equals("SUBSCRIBE"));
                 } else {
                     var value = input.path("attemptId");

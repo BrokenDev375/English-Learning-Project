@@ -66,7 +66,7 @@ class PersonalReviewApiTest {
             var a = new ObjectiveEntity(teacher.id(), topic, prefix + "a", "Do/does", "");
             var b = new ObjectiveEntity(teacher.id(), topic, prefix + "b", "S/es", "");
             em.persist(a); em.persist(b); em.flush(); objectiveA = a.getId(); objectiveB = b.getId();
-            var unit = new UnitEntity(teacher.id(), topic, "Unit", "", 1, 0); em.persist(unit); em.flush();
+            var unit = new UnitEntity(teacher.id(), topic, "Unit", "", 1, 0,((Number)em.createQuery("select coalesce(max(u.roundNumber),0) from UnitEntity u").getSingleResult()).intValue()+1); em.persist(unit); em.flush();
             lessonA = lesson(unit.getId(), objectiveA, 0);
             lessonB = lesson(unit.getId(), objectiveB, 1);
             lessonA2 = lesson(unit.getId(), objectiveA, 2);

@@ -18,7 +18,9 @@ export class ConnectionManager {
   private deadline?: number;
   private retries = 0;
   private generation = 0;
-  private pending = new Map<string, { timer: number; subscribed?: number }>();
+  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean }>();
+  private presenceWanted = false;
+  private presenceReady = false;
   private resources = new Set<number>();
   private ready = new Set<number>();
   constructor(private userId: number, private random = Math.random, private student = false) {}
@@ -29,17 +31,23 @@ export class ConnectionManager {
   }
   private clear() {
     window.clearTimeout(this.retry); window.clearTimeout(this.deadline); window.clearInterval(this.beat);
-    this.pending.forEach(p => window.clearTimeout(p.timer)); this.pending.clear(); this.ready.clear();
+    this.pending.forEach(p => window.clearTimeout(p.timer)); this.pending.clear(); this.ready.clear(); this.presenceReady = false;
   }
   private wake = () => { recoverLearning(); if (!this.stopped && !this.socket && state !== 'auth-required') { window.clearTimeout(this.retry); this.connect(); } };
   subscribe(id: number) { this.resources.add(id); if (state === 'connected') this.send('SUBSCRIBE', id); }
   unsubscribe(id: number) { this.resources.delete(id); this.ready.delete(id); if (state === 'connected') this.send('UNSUBSCRIBE', id); }
-  private send(type: string, attemptId?: number, resource?: 'GAMIFICATION' | 'LEAGUE') {
+  get presenceLive() { return this.presenceReady && state === 'connected'; }
+  watchPresence(enabled: boolean) {
+    this.presenceWanted = enabled;
+    if (!enabled) { this.presenceReady = false; publish(state); }
+    if (state === 'connected') this.send(enabled ? 'SUBSCRIBE' : 'UNSUBSCRIBE', undefined, 'PRESENCE');
+  }
+  private send(type: string, attemptId?: number, resource?: 'GAMIFICATION' | 'LEAGUE' | 'PRESENCE') {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
     const id = requestId();
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
-    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined });
+    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE' });
     socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}) }));
   }
   private connect() {
@@ -68,9 +76,11 @@ export class ConnectionManager {
             for (const resource of ['GAMIFICATION', 'LEAGUE'] as const) this.send('SUBSCRIBE', undefined, resource);
             window.dispatchEvent(new Event('gamification:changed')); window.dispatchEvent(new Event('league:changed'));
           }
+          if (this.presenceWanted) this.send('SUBSCRIBE', undefined, 'PRESENCE');
           recoverLearning();
         }
         if (command.subscribed) { this.ready.add(command.subscribed); window.dispatchEvent(new CustomEvent('attempt-invalidation', { detail: { attemptId: command.subscribed, revision: -1 } })); }
+        if (command.presence && this.presenceWanted) { this.presenceReady = true; publish(state); window.dispatchEvent(new Event('presence:changed')); }
       } else if (m.type === 'ERROR' && m.requestId) {
         const command = this.pending.get(m.requestId); if (command) window.clearTimeout(command.timer); this.pending.delete(m.requestId);
       } else if (m.type === 'ATTEMPT_CHANGED' && Number.isSafeInteger(m.attemptId) && Number.isSafeInteger(m.revision) && this.ready.has(m.attemptId!)) {
@@ -79,6 +89,8 @@ export class ConnectionManager {
         window.dispatchEvent(new Event('gamification:changed'));
       } else if (this.student && (m.type === 'LEAGUE_CHANGED' || m.type === 'LEADERBOARD_CHANGED')) {
         window.dispatchEvent(new Event('league:changed'));
+      } else if (m.type === 'PRESENCE_CHANGED' && this.presenceWanted && this.presenceReady) {
+        window.dispatchEvent(new Event('presence:changed'));
       }
     };
     socket.onerror = () => socket.close();
@@ -97,9 +109,16 @@ export class ConnectionManager {
 }
 let active: ConnectionManager | null = null;
 const watched = new Map<number, number>();
+let presenceWatchers = 0;
+export const presenceSnapshot = () => active?.presenceLive ?? false;
+export function watchPresence() {
+  presenceWatchers++; if (presenceWatchers === 1) active?.watchPresence(true);
+  return () => { if (--presenceWatchers === 0) active?.watchPresence(false); };
+}
 export function startConnections(userId: number, student = false) {
   active?.stop(); const manager = new ConnectionManager(userId, Math.random, student); active = manager;
   watched.forEach((_, id) => manager.subscribe(id)); manager.start();
+  if (presenceWatchers) manager.watchPresence(true);
   return () => { manager.stop(); if (active === manager) active = null; };
 }
 export function watchAttempt(id: number) {

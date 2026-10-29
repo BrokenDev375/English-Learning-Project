@@ -1,3 +1,5 @@
+> Ghi chú tích hợp 29/10: hướng dẫn và kết quả dưới đây thuộc bản trước V13. Script dùng TEACHER tạo vòng/xuất bản trực tiếp, chưa tương thích luồng phân công/duyệt trên main mới; không chạy --apply trên bản tích hợp.
+
 # Lớp học giả lập để demo bảng xếp hạng
 
 Bộ dữ liệu bổ sung được nạp chủ động bằng `node scripts/seed-demo-classroom.mjs --apply` từ thư mục gốc, sau khi chạy `start-main.cmd`. Mặc định dùng http://localhost:5176. Chạy không có `--apply` chỉ in kế hoạch, không ghi dữ liệu. Script dùng Node.js 24 và các API HTTP hiện có, không cần cài thêm package.

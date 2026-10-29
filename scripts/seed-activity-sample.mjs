@@ -31,7 +31,7 @@ async function call(path, method = 'GET', body, multipart = false) {
 await call('/api/auth/login', 'POST', { email, password });
 const principal = await call('/api/auth/me');
 const actor = principal.user ?? principal;
-assert.ok(['ADMIN', 'TEACHER'].includes(actor.role), 'Cần quyền tác giả.');
+assert.equal(actor.role, 'ADMIN', 'Cần ADMIN để tạo vòng và xuất bản theo luồng phân công/duyệt V13.');
 const scope = createHash('sha256').update(origin.origin + ':' + actor.id + ':' + sampleVersion).digest('hex').slice(0, 16);
 const folder = fileURLToPath(new URL('../.test-state/activity-sample/', import.meta.url));
 mkdirSync(folder, { recursive: true });

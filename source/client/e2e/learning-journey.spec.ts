@@ -1,3 +1,4 @@
+import { fixtureWrite } from './governance-fixtures';
 import { completeEarlierRounds } from './round-fixtures';
 import { test, expect } from '@playwright/test';
 import type { APIRequestContext, Page } from '@playwright/test';
@@ -11,8 +12,7 @@ const stamp = 'journey-' + Date.now(), pass = 'JourneyTest@12345', author = stam
 let unitId: number, lessonId: number;
 const resources: { kind: string; id: number }[] = [];
 async function write(request: APIRequestContext, path: string, data: unknown, method = 'POST') {
-  const csrf = await (await request.get('/api/auth/csrf')).json();
-  const result = await request.fetch(path, { method, headers: { [csrf.headerName]: csrf.token }, data });
+  const result = await fixtureWrite(request, path, data, method);
   expect(result.ok(), await result.text()).toBeTruthy(); return result.json();
 }
 test.beforeAll(async ({ request }) => {
@@ -132,4 +132,56 @@ test('matching cards support keyboard, reassignment, drag and mobile recovery', 
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false); await page.screenshot({ path: 'test-results/journey-matching-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ'); await page.reload(); await expect(page.locator('.matched-pairs li')).toHaveCount(2);
   await page.getByRole('button', { name: 'Bỏ cặp 1', exact: true }).click(); await expect(page.locator('.matched-pairs li')).toHaveCount(1);
+});
+
+test('teacher round numbers match the learner journey and survive own/search filters', async ({ page, browser }) => {
+  await write(page.request, '/api/auth/login', { email: author, password: pass });
+  const root = await (await page.request.get('/api/author/units/' + unitId)).json();
+  const draft = await write(page.request, '/api/author/units', { requestId: randomUUID(), topicId: root.unit.topicId, title: 'Vòng chờ công bố ' + stamp, description: '', stage: 100, sortOrder: 0 });
+  const viewer = await browser.newContext();
+  try {
+    const email = randomUUID() + '@test.local';
+    await write(viewer.request, '/api/auth/register', { email, password: pass, fullName: 'Xem số vòng học viên' });
+    await write(viewer.request, '/api/auth/login', { email, password: pass });
+    const journey = await (await viewer.request.get('/api/me/rounds?size=50')).json();
+    const expected = journey.items.find((r: { unit: { id: number } }) => r.unit.id === unitId).number;
+    expect(expected).toBeGreaterThan(1); expect(journey.items.some((r: { unit: { id: number } }) => r.unit.id === draft.id)).toBe(false);
+    await page.goto('/#/content');
+    const published = page.locator('.catalog-card').filter({ has: page.getByRole('heading', { name: root.unit.title, exact: true }) });
+    await expect(published.locator('.eyebrow')).toHaveText('VÒNG ĐẤU ' + expected);
+    const waiting = page.locator('.catalog-card').filter({ has: page.getByRole('heading', { name: draft.title, exact: true }) });
+    await expect(waiting.locator('.eyebrow')).toHaveText('VÒNG ĐẤU ' + draft.roundNumber);
+    await page.getByLabel('Tìm học liệu', { exact: true }).fill(root.unit.title); await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+    await expect(page.locator('.catalog-card')).toHaveCount(1); await expect(published.locator('.eyebrow')).toHaveText('VÒNG ĐẤU ' + expected);
+    await page.getByRole('button', { name: 'Bài học', exact: true }).click();
+    await expect(page.getByRole('combobox', { name: 'Vòng đấu', exact: true }).locator('option[value="' + unitId + '"]')).toHaveText('Vòng đấu ' + expected + ' · ' + root.unit.title);
+    await page.getByRole('button', { name: 'Thống kê học liệu', exact: true }).click();
+    await expect(page.getByRole('combobox', { name: 'Vòng đấu của tôi', exact: true }).locator('option[value="' + unitId + '"]')).toHaveText('Vòng đấu ' + expected + ' · ' + root.unit.title);
+  } finally { await viewer.close(); }
+});
+
+test('editing a persistent number survives reload and duplicate numbers keep the form editable', async ({ page }) => {
+  await write(page.request, '/api/auth/login', { email: env.BOOTSTRAP_ADMIN_EMAIL, password: env.BOOTSTRAP_ADMIN_PASSWORD });
+  const root = await (await page.request.get('/api/author/units/' + unitId)).json();
+  await page.goto('/#/content?catalogEditor=' + unitId);
+  await expect(page.getByLabel('Số thứ tự vòng', { exact: true })).toHaveValue(String(root.unit.roundNumber));
+  const existing = await (await page.request.get('/api/units?size=50')).json();
+  const taken = existing.items.find((u: { id: number }) => u.id !== unitId).roundNumber;
+  await page.getByLabel('Số thứ tự vòng', { exact: true }).fill(String(taken));
+  await page.getByRole('button', { name: 'Lưu thay đổi', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Số thứ tự vòng đã được sử dụng');
+  await expect(page.getByLabel('Số thứ tự vòng', { exact: true })).toBeEnabled();
+  const changed = 10000 + Math.floor(Math.random() * 100000);
+  await page.getByLabel('Số thứ tự vòng', { exact: true }).fill(String(changed));
+  await page.getByRole('button', { name: 'Lưu thay đổi', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Đã lưu' })).toBeVisible();
+  await page.getByLabel('Tìm học liệu', { exact: true }).fill(root.unit.title);
+  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.catalog-card .eyebrow')).toHaveText('VÒNG ĐẤU ' + changed);
+  await page.goto('/#/content?catalogEditor=' + unitId);
+  await expect(page.getByLabel('Số thứ tự vòng', { exact: true })).toHaveValue(String(changed));
+  await page.reload();
+  await expect(page.getByLabel('Số thứ tự vòng', { exact: true })).toHaveValue(String(changed));
+  const saved = await (await page.request.get('/api/author/units/' + unitId)).json();
+  expect(saved.unit.roundNumber).toBe(changed);
 });

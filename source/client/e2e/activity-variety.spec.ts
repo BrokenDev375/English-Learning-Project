@@ -156,7 +156,7 @@ test('author configures all seven activities and previews inline blanks through 
   test.setTimeout(120000);
   await write(page.request, '/api/auth/login', { email: env.BOOTSTRAP_ADMIN_EMAIL, password: env.BOOTSTRAP_ADMIN_PASSWORD });
   await page.goto('/#/content?area=lessons&item=new');
-  await page.getByRole('combobox', { name: 'Unit của bài học', exact: true }).selectOption(String(sample.unitId));
+  await page.getByRole('combobox', { name: 'Vòng đấu của bài học', exact: true }).selectOption(String(sample.unitId));
   await page.getByLabel('Tên bài học', { exact: true }).fill('Activity editor preview');
   await page.getByRole('checkbox', { name: 'Hiểu và sử dụng tiếng Anh trong sinh hoạt', exact: true }).check();
   await page.getByLabel('Nội dung khối 1', { exact: true }).fill('Read and answer each activity.');
@@ -183,7 +183,7 @@ test('author omits optional kinds and publishes a fifteen-question lesson with c
   test.setTimeout(120000);
   await write(page.request, '/api/auth/login', { email: env.BOOTSTRAP_ADMIN_EMAIL, password: env.BOOTSTRAP_ADMIN_PASSWORD });
   await page.goto('/#/content?area=lessons&item=new');
-  await page.getByRole('combobox', { name: 'Unit của bài học', exact: true }).selectOption(String(sample.unitId));
+  await page.getByRole('combobox', { name: 'Vòng đấu của bài học', exact: true }).selectOption(String(sample.unitId));
   await page.getByLabel('Tên bài học', { exact: true }).fill('Flexible fifteen questions');
   await page.getByRole('checkbox', { name: 'Hiểu và sử dụng tiếng Anh trong sinh hoạt', exact: true }).check();
   await page.getByLabel('Nội dung khối 1', { exact: true }).fill('Choose the activities for this lesson.');

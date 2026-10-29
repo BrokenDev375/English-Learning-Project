@@ -108,3 +108,14 @@ Kiểm tra bàn giao: `git diff --check` đạt; kiểm tra whitespace/UTF-8 c�
 Flyway từ **V11 → V12** thành công; server/MySQL healthy, frontend HTTP 200 và API health đạt. Chạy script bài mẫu với `SAMPLE_BASE_URL=http://localhost:5176`: **Unit 6, Lesson 11, LessonVersion 11**, Vòng 2 theo danh mục hiện tại. API xác nhận sáu hoạt động đúng thứ tự, **6 GUIDED + 12 INDEPENDENT**, 4 REVIEW_VARIANT và đủ hai passage cloze.
 
 Đối chiếu trước/sau: **users 9 → 9, attempts 58 → 58, submissions 47 → 47**. Chỉ thêm học liệu mẫu, không tạo học viên/lượt/kết quả giả hoặc vượt khóa vòng. Checkpoint `.test-state/activity-sample/0ae6f571866778a9.json`; log và số liệu xác nhận ở `.test-state/main-activities-run/`. Demo chính được giữ chạy để người dùng sử dụng.
+
+
+## Kiểm tra sau tích hợp main — 29/10/2026
+
+Main tích hợp: 764d846. Đã giải quyết xung đột tài liệu, form chọn vòng, OpenAPI và kỳ vọng migration; chuyển activities từ V12 local sang V14, giữ nguyên V12/V13 trên main.
+
+- npm run build: PASS (TypeScript và Vite; có cảnh báo chunk lớn hơn 500 kB).
+- npm run test:connection: 10/10 tình huống PASS.
+- mvn -B -ntp -Dtest=LessonActivitiesTest,AttemptActivityProjectionTest test: 10/10 PASS, không failure/error/skip; compile toàn bộ main/test source đạt.
+- Chưa chạy lại browser E2E và migration/MySQL integration: Docker daemon không hoạt động trong lượt này. Không áp dụng số PASS lịch sử cho source tích hợp.
+- Chưa chuyển lịch sử DB local từng áp dụng V12 activities. Giữ nguyên volume và worktree AddQuestionSystem cũ; nhánh tích hợp riêng không sửa các tài nguyên này. Hai script demo dùng TEACHER xuất bản trực tiếp chưa chuyển sang quy trình V13; xem tiến độ để biết giới hạn.
