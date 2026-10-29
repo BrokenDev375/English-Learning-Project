@@ -83,7 +83,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V14
+│   │   │   ├── db/migration/                  Flyway V1–V15
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -226,6 +226,7 @@ Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite trans
 | V8 | league_seasons/group_allocators/groups/members/outbox; FK xp_ledger.season_id, kết quả frozen trên membership; đã áp dụng demo, schema tiếp theo cần migration mới |
 | V9 | Mở rộng CHECK question_versions.type cho ORDERING; không thêm bảng hoặc viết lại dữ liệu; chưa nâng DB demo trong lượt triển khai này |
 | V14 | `lesson_versions.activities_json` nullable: cấu trúc sáu hoạt động của bài nâng cấp 18 câu và ánh xạ đọc điền từ; không sửa lượt/bài cũ. Source đã có V10/V11 cho chính sách M05, xem ghi chú cuối file |
+| V15 | Bài viết cuối Unit: task/version/work/submission/grade riêng; tiêu chí 10 điểm, chấm tay và giữ lịch sử; không đổi Submission/FIRST/XP M03–M05 |
 
 Flyway quản lý schema; Hibernate giữ `ddl-auto=validate`. Không sửa migration đã áp dụng, không dùng create/update để chữa lệch schema. Thay đổi schema tiếp theo cần migration mới. SQL dưới `docs/database/planned/` là tài liệu hợp đồng, không tự chạy thay migration runtime.
 
@@ -458,3 +459,5 @@ Lối vào phân công: ADMIN sidebar Phân công biên soạn mở #/content?ar
 
 
 Tích hợp main ngày 29/10: V12 số vòng cố định và V13 phân công/duyệt giữ nguyên từ main; migration activities của nhánh này chuyển sang V14. Các ghi nhận V12 activities phía trên là lịch sử local trước tích hợp. DB local từng áp dụng V12 activities chưa tương thích lịch sử Flyway mới; không tự repair/xóa volume hoặc chạy startup vào DB đó. Xem docs/QUESTION_VARIETY_PROGRESS.md.
+
+Bài viết cuối vòng ngày 29/10: WritingController → WritingService/impl → WritingRepository/impl → JPA, migration V15. TEACHER theo assignedTeacherId hiện hành hoặc ADMIN đặt/công bố đề viết và chấm; đây là luồng riêng được người dùng đồng ý, không đổi luật duyệt Question/Lesson V13. Chốt WritingVersion khi bắt đầu; Work revision dưới khóa Unit, Submission/Grade bất biến, điểm cộng từ đủ tiêu chí đạt theo bản đề đã chốt. Nộp một lần mở vòng sau, RETURNED không khóa lại; không ghi progress M03/XP/M04/League. RoundJourneyReader đọc bulk task/work và thêm writing tùy chọn; vòng không có đề giữ luật cũ. UI features/writing (TeacherWriting, LearnerWriting, session), tab area=writing mở trang chọn Tạo bài viết/Chấm bài (writingMode=create|grade), WritingTaskEditor và WritingQueue tách riêng; writingSubmission giữ chi tiết chấm qua reload. Thẻ học sinh nằm cuối Unit. Nháp IndexedDB dùng workingDrafts M06 với key writing/user/unit/writer, local 250 ms/server 1500 ms; pending giữ payload/requestId tới replay+GET, 409 so sánh rõ, logout fence/xóa dữ liệu riêng. Xem [thiết kế](docs/UNIT_WRITING.md), [API](source/common/UNIT_WRITING_API.md), [kiểm tra](statics/results/unit-writing-validation.md). Không tự tạo đề mẫu hoặc commit/push.

@@ -251,6 +251,8 @@ Số vòng không lưu vào Submission và không thay đổi FIRST/điểm/XP. 
 
 ## Bài 18 câu và hoạt động đọc — 28/10/2026
 
+Bài viết tự luận cuối Unit dùng luồng và bảng riêng V15, ngoài Attempt/Submission tự chấm M03. Xem [hợp đồng bài viết](UNIT_WRITING_API.md) và [OpenAPI](openapi-writing.json). RoundProgress có `writing` tùy chọn; nộp bài viết mở vòng sau mà không cần đợi giáo viên chấm.
+
 LessonCreate/Update/Version có `activities` tùy chọn, lưu theo LessonVersion bằng V14. Thiếu trường hoặc danh sách rỗng dùng cấu trúc cũ; dữ liệu tính hash receipt bài cũ không tự thêm trường rỗng. Mỗi activity có `id`, `kind`, `questionVersionIds`, `passages`. Mỗi bài chọn 1–7 dạng khác nhau theo thứ tự CHOICE, MATCHING, ORDERING, FILL, READING_CLOZE, READING_CHOICE, LISTENING_CHOICE; được bỏ dạng chưa cần. Tổng **15–20 câu LEARN**, mỗi phần ít nhất hai câu gồm một GUIDED đầu tiên rồi INDEPENDENT; REVIEW_VARIANT nằm ngoài danh sách hoạt động. Xuất bản kiểm tra đúng 15–20 câu duy nhất, role/type/thứ tự và toàn bộ slot; nháp được phép chưa hoàn tất. Cấu trúc sáu và bảy phần cũ đủ 18 câu vẫn hợp lệ.
 
 Mỗi phần đọc nếu có dùng MaterialVersion ví dụ riêng cho GUIDED và một MaterialVersion chính dùng chung cho các INDEPENDENT. LISTENING_CHOICE yêu cầu MaterialVersion AUDIO và 3–6 option/câu; transcript chỉ trả qua feedback/result theo quyền hiện hành. READING_CHOICE yêu cầu đúng bốn option/câu. READING_CLOZE yêu cầu một blank/câu và đủ hai passage. Passage có `materialVersionId`, `parts`; phần TEXT là `{kind:"TEXT",text}`, phần BLANK là `{kind:"BLANK",questionVersionId,blankId}`. Thay từng BLANK bằng `____` rồi nối các phần phải khớp readingText của đúng MaterialVersion; mỗi câu/blank được ánh xạ đúng một lần, không cho tham chiếu ngoài hoạt động/học liệu.

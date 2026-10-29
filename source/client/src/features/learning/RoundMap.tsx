@@ -3,7 +3,7 @@ import { RoundMeter } from './journey';
 
 export function RoundRules() {
   return <div className="round-rules" aria-label="Cách mở vòng chơi">
-    <p><b>1</b><span>Chọn vòng đang mở</span></p><p><b>2</b><span>Làm đủ các bài trong vòng</span></p><p><b>3</b><span>Mở khóa vòng tiếp theo</span></p>
+    <p><b>1</b><span>Chọn vòng đang mở</span></p><p><b>2</b><span>Làm đủ bài học và nộp bài viết nếu có</span></p><p><b>3</b><span>Mở khóa vòng tiếp theo, không phải chờ chấm</span></p>
   </div>;
 }
 export default function RoundMap({ rounds, open, disabled }: { rounds: RoundProgress[]; open: (round: RoundProgress) => void; disabled: boolean }) {

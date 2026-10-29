@@ -13,9 +13,10 @@ import '../content/materials.css';
 import '../content/authoring.css';
 import { roundHeading } from './roundNumbering';
 import '../learning/journey.css';
+import LearnerWriting from '../writing/LearnerWriting';
 interface LessonSummary { id: number; title: string; description: string; objectiveIds: number[]; questionCounts: { guided: number; independent: number; reviewVariant: number } }
 interface Detail { unit: Unit; lessons: LessonSummary[] }
-export default function LessonCatalog({ student, start, disabled }: { student: boolean; start: (id: number) => void; disabled: boolean }) {
+export default function LessonCatalog({ student, userId, start, disabled }: { student: boolean; userId: number; start: (id: number) => void; disabled: boolean }) {
   const [topics, setTopics] = useState<Topic[]>([]), [topic, setTopic] = useState(''), [page, setPage] = useState(0), [query, setQuery] = useState(''), [search, setSearch] = useState('');
   const [unitId] = useRouteParam('unit'), [lessonId] = useRouteParam('lesson');
   const [units, setUnits] = useState<CatalogPage<Unit> | null>(null), [rounds, setRounds] = useState<RoundProgress[]>([]);
@@ -52,6 +53,7 @@ export default function LessonCatalog({ student, start, disabled }: { student: b
       }).catch(e => { if (live) setError(errorMessage(e)); });
     return () => { live = false; };
   }, [student, unitId, lessonId, refresh]);
+  useEffect(() => { const changed = () => setRefresh(v => v + 1); window.addEventListener('learning-progress-changed', changed); return () => window.removeEventListener('learning-progress-changed', changed); }, []);
   useEffect(() => {
     if (!student || (!unitId && !lessonId)) { setProgress([]); setProgressReady(false); return; }
     let live = true; setProgressReady(false);
@@ -68,7 +70,7 @@ export default function LessonCatalog({ student, start, disabled }: { student: b
   if ((unitId && !detail) || (lessonId && !intro) || (student && (unitId || lessonId) && !round)) return <section className="panel material-editor">{error ? <div role="alert" className="message error">{error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Thử lại</button></div> : <p role="status">Đang mở bài học…</p>}<button className="button secondary" onClick={() => returnTo(lessonId ? { lesson: null } : { unit: null, lesson: null })}>Quay lại danh sách</button></section>;
   if (student && round?.locked) return <section className="locked-round-page">
     <span className="eyebrow">CHƠI THEO VÒNG</span><h1>Vòng {round.number} đang khóa<span>.</span></h1>
-    <div className="panel locked-round-panel"><span className="locked-round-icon" aria-hidden="true">🔒</span><h2>{round.unit.title}</h2><p>Hoàn thành tất cả bài trong Vòng {round.prerequisiteRoundNumber} — {round.prerequisiteTitle} để mở vòng này.</p>
+    <div className="panel locked-round-panel"><span className="locked-round-icon" aria-hidden="true">🔒</span><h2>{round.unit.title}</h2><p>Hoàn thành bài học và bài viết nếu có trong Vòng {round.prerequisiteRoundNumber} — {round.prerequisiteTitle} để mở vòng này.</p>
       <button className="button primary" onClick={() => navigate({ unit: String(round.prerequisiteUnitId), lesson: null })}>Về vòng đang mở →</button><button className="button secondary" onClick={() => navigate({ unit: null, lesson: null })}>Mở bản đồ vòng chơi</button>
     </div></section>;
   return <section className={intro ? 'lesson-intro-page' : 'round-journey'}>
@@ -76,8 +78,9 @@ export default function LessonCatalog({ student, start, disabled }: { student: b
     {error && <div className="message error" role="alert">{error}<button className="link-button" onClick={() => setRefresh(v => v + 1)}>Thử lại</button></div>}
     {intro ? <LessonIntroduction key={intro.lesson.id} intro={intro} progress={progress.find(p => p.lessonId === intro.lesson.id)} progressReady={progressReady} student={student} disabled={disabled} start={start} retryProgress={() => setRefresh(v => v + 1)} /> : detail ? <>
       <p className="muted">{detail.unit.description}</p>
-      {student && <article className="panel round-overview"><h2>Tiến độ vòng chơi</h2>{progressReady ? <><RoundMeter totalLessons={detail.lessons.length} completedLessons={completed} /><p>{detail.lessons.length > 0 && completed === detail.lessons.length ? 'Bạn đã hoàn thành tất cả bài trong vòng này. Bạn có thể học lại từng bài.' : 'Chọn một bài bên dưới để chơi. Hoàn thành tất cả bài trong vòng sẽ mở khóa vòng kế tiếp.'}</p>{next && <button className="button primary" disabled={disabled} onClick={() => navigate({ lesson: String(next.id) })}>Chơi bài tiếp theo →</button>}</> : <p role="status">{error ? 'Chưa tải được tiến độ vòng học.' : 'Đang tải tiến độ vòng học…'}</p>}</article>}
+      {student && <article className="panel round-overview"><h2>Tiến độ vòng chơi</h2>{progressReady ? <><RoundMeter totalLessons={detail.lessons.length} completedLessons={completed} writing={round?.writing} /><p>{round?.state === 'COMPLETED' ? 'Bạn đã hoàn thành vòng này. Bạn có thể học lại từng bài.' : detail.lessons.length > 0 && completed === detail.lessons.length && round?.writing?.required ? 'Bạn đã hoàn thành các bài học. Nộp bài viết cuối vòng để mở vòng tiếp theo.' : 'Chọn một bài bên dưới để chơi. Hoàn thành bài học và nộp bài viết nếu có để mở vòng kế tiếp.'}</p>{next && <button className="button primary" disabled={disabled} onClick={() => navigate({ lesson: String(next.id) })}>Chơi bài tiếp theo →</button>}</> : <p role="status">{error ? 'Chưa tải được tiến độ vòng học.' : 'Đang tải tiến độ vòng học…'}</p>}</article>}
       <div className="catalog-grid">{detail.lessons.map((l, index) => <article className="panel catalog-card" key={l.id}><span className="eyebrow">BÀI {index + 1}</span><h2>{l.title}</h2><p className="muted">{l.description}</p><p className="muted">{l.questionCounts.guided} câu hướng dẫn · {l.questionCounts.independent} câu tự làm</p>{progressLabel(l.id)}<button className="link-button" disabled={busy} onClick={() => navigate({ lesson: String(l.id) })}>{student ? 'Chơi bài ' + (index + 1) + ' · ' : 'Xem giới thiệu '}{l.title} →</button></article>)}</div>
+      {student && round?.writing && <LearnerWriting key={detail.unit.id} userId={userId} unitId={detail.unit.id} changed={() => setRefresh(v => v + 1)} />}
       <div className="material-actions"><button className="button secondary" onClick={() => returnTo({ unit: null, lesson: null })}>{student ? 'Về bản đồ vòng chơi' : 'Về các vòng đấu'}</button></div>
     </> : <>
       <p className="muted">{student ? 'Bắt đầu ở vòng đang mở. Làm đủ các bài để mở khóa vòng tiếp theo; vòng đã hoàn thành luôn có thể chơi lại.' : 'Chọn chủ đề và xem những bài học đã được công bố.'}</p>

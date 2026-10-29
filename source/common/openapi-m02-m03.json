@@ -15083,6 +15083,34 @@
               "string",
               "null"
             ]
+          },
+          "writing": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Optional unit writing prerequisite. Submission unlocks the next round before grading.",
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "submitted": {
+                "type": "boolean"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "NOT_STARTED",
+                  "DRAFT",
+                  "SUBMITTED",
+                  "RETURNED",
+                  "GRADED"
+                ]
+              }
+            },
+            "required": [
+              "required",
+              "submitted",
+              "state"
+            ]
           }
         },
         "required": [
