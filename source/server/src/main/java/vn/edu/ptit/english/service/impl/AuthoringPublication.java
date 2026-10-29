@@ -42,6 +42,11 @@ public class AuthoringPublication {
             var origins=new HashSet<String>();for(var slot:lesson.questions()){var q=c.questions.get(slot.questionVersionId());var qr=content.question(q.getQuestionId(),false).orElseThrow(AuthoringAccess::missing);if(!origins.add(qr.getOriginKey()))errors.add(new Issue("questions","DUPLICATE_ORIGIN","Một câu gốc chỉ được xuất hiện một lần trong bài, kể cả bản sao/phiên bản khác."));if(q.data().topicId()!=unit.getTopicId()||!lesson.objectiveIds().contains(q.data().objectiveId()))errors.add(new Issue("questions","TOPIC_OBJECTIVE_MISMATCH","Câu hỏi phải cùng chủ đề Unit và thuộc mục tiêu của bài."));if(slot.practiceRole().equals("GUIDED")&&(q.data().hint()==null||q.data().hint().isBlank()))errors.add(new Issue("questions["+q.getId()+"].hint","REQUIRED","Câu hướng dẫn cần có gợi ý."));}
             for(String role:List.of("GUIDED","INDEPENDENT","REVIEW_VARIANT")){var positions=lesson.questions().stream().filter(s->s.practiceRole().equals(role)).map(Slot::position).sorted().toList();if(positions.isEmpty())errors.add(new Issue("questions","MISSING_GROUP","Cần ít nhất một câu trong nhóm "+role+"."));for(int i=0;i<positions.size();i++)if(positions.get(i)!=i){errors.add(new Issue("questions","INVALID_ORDER","Thứ tự câu trong mỗi nhóm phải liên tiếp từ 0."));break;}}
         }
+        if(c.draft instanceof LessonVersionEntity version) {
+            var qs=new HashMap<Long,vn.edu.ptit.english.dto.AuthoringData.Question>();c.questions.forEach((id,q)->qs.put(id,q.data()));
+            var ms=new HashMap<Long,vn.edu.ptit.english.dto.MaterialData>();c.materials.forEach((id,m)->ms.put(id,m.data()));
+            errors.addAll(vn.edu.ptit.english.dto.LessonActivities.errors(version.data(),qs,ms));
+        }
         return errors.stream().limit(100).toList();
     }
     public Preview preview(String kind,long id,UserPrincipal actor){var c=closure(kind,id,actor);Object data=c.draft instanceof QuestionVersionEntity q?q.view():Map.of("lesson",((LessonVersionEntity)c.draft).view(),"questions",c.questions.values().stream().map(QuestionVersionEntity::view).toList(),"materials",c.materials.values().stream().map(MaterialVersionEntity::view).toList());return new Preview(id,c.draft.getId(),c.draft.getRevision(),token(c),errors(c,actor),List.of(),data);}

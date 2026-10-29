@@ -34,6 +34,10 @@ public class AttemptSelector {
                 .sorted(Comparator.comparingInt((vn.edu.ptit.english.dto.AuthoringData.Slot s)->s.practiceRole().equals("GUIDED")?0:1).thenComparingInt(s->s.position()))
                 .forEach(s->selected.add(new Selected(content.questionVersion(s.questionVersionId()),PracticeRole.valueOf(s.practiceRole()),
                     attempts.lessonSlot(lesson.versionId(),s.questionVersionId()).orElseThrow(AuthoringAccess::missing))));
+            if(!lesson.activities().isEmpty()) {
+                var order=vn.edu.ptit.english.dto.LessonActivities.order(lesson.activities());
+                selected.sort(Comparator.comparingInt(s->order.indexOf(s.question().versionId())));
+            }
             return checked(lesson.versionId(),selected);
         }
         ReviewSelectionProvider provider=input.mode()==Mode.REVIEW?review.getIfAvailable():null;

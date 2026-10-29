@@ -187,6 +187,7 @@ public class AudioUpdateServiceImpl implements AudioUpdateService {
                 var root=content.lesson(lessonId,false).orElseThrow(AuthoringAccess::missing);
                 var original=root.getPublished().data();
                 var slots=new ArrayList<Slot>();
+                var replacements=new HashMap<Long,Long>();
                 for(var slot:original.questions()){
                     var old=content.questionVersion(slot.questionVersionId()).orElseThrow(AuthoringAccess::missing);
                     if(needsUpdate(old,id,current.target().getId())){
@@ -196,9 +197,10 @@ public class AudioUpdateServiceImpl implements AudioUpdateService {
                             ||!withAudio(old.data(),current.target().getId()).equals(next.data()))
                             throw conflict("PREVIEW_STALE","Phiên bản câu hỏi không còn phù hợp để thay audio.");
                         slots.add(new Slot(next.getId(),slot.practiceRole(),slot.position()));
+                        replacements.put(slot.questionVersionId(),next.getId());
                     }else slots.add(slot);
                 }
-                var data=new Lesson(original.title(),original.description(),original.instructions(),original.objectiveIds(),List.copyOf(slots));
+                var data=new Lesson(original.title(),original.description(),original.instructions(),original.objectiveIds(),List.copyOf(slots),vn.edu.ptit.english.dto.LessonActivities.remap(original.activities(),replacements));
                 var version=content.save(new LessonVersionEntity(root.getId(),root.getLastVersionNo()+1,data));
                 root.startDraft(version);content.save(root);
                 publish("lessons",root.getId(),input.requestId(),actor);

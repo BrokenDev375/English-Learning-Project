@@ -64,3 +64,9 @@ Kết quả kiểm tra lần này tại [biên bản bản đồ vòng chơi](..
 - [x] Kho báu kết quả theo Submission, sao minh họa và xem lại hoạt cảnh không thêm XP hoặc sửa điểm.
 
 Thiết kế/giới hạn tại [gameplay](GAMEPLAY_INTEGRATION_PROPOSAL.md), bằng chứng tại [biên bản](../statics/results/gameplay-validation.md). Demo chưa có ORDERING nên trò xây cầu chỉ hiện khi bài có dạng câu đó.
+
+## Bài 18 câu và đọc dài — 28/10/2026
+
+Source bổ sung cấu trúc bài theo phiên bản: trắc nghiệm → ghép cặp → xếp từ → điền từ → đọc điền từ → đọc hiểu. Mỗi phần có một GUIDED, tổng 6 GUIDED + 12 INDEPENDENT. Đọc điền từ nhập trực tiếp trong đoạn; hai dạng đọc có ví dụ riêng. Bài cũ không tự chuyển cấu trúc; bài mẫu được tạo riêng qua script API có checkpoint. V12 thêm activities_json. Theo yêu cầu chạy tiếp theo, đã build/chạy demo chính 5176/8083, nâng V12 và nạp bài mẫu Unit 6/Lesson 11 tại Vòng 2; giữ nguyên dữ liệu học viên. Chi tiết, phạm vi nghiệm thu và giới hạn tại [tiến độ bài 18 câu](QUESTION_VARIETY_PROGRESS.md) và [biên bản riêng](../statics/results/question-variety-validation.md); các số PASS phía trên là lịch sử trước thay đổi này.
+
+Điều chỉnh tiếp theo: source/bộ mẫu activities-1.1.0 vẫn 18 câu, giảm mỗi phần đọc một câu để thêm hai câu nghe chọn đáp án ở cuối (3/2/2/3/3/3/2, 7 GUIDED + 11 INDEPENDENT). Cấu trúc sáu phần cũ được giữ tương thích. Chưa triển khai phần nghe lên demo Lesson 11; kết quả kiểm tra mới ghi riêng ở biên bản bài 18 câu.

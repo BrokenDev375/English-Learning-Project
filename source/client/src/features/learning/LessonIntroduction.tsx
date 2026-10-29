@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { errorMessage } from '../../api';
 import { navigate, returnTo } from '../../navigation';
 import type { Instruction } from '../content/authoring';
+import { activityKinds } from '../content/authoring';
+import type { ActivityKind } from '../content/authoring';
 import type { Objective } from '../content/catalog';
 import { Instructions } from '../content/AuthorPreview';
 import { listAttempts, readAttempt } from './api';
@@ -13,6 +15,7 @@ export interface Introduction {
   lesson: { id: number; unitId: number; lessonVersionId: number; title: string; description: string; questionCounts: { guided: number; independent: number; reviewVariant: number } };
   instructions: Instruction[];
   objectives: Objective[];
+  activitySummary?: { kind: ActivityKind; questionCount: number }[];
 }
 interface Activity { lessonId: number; loading: boolean; active: boolean; latestResult: number | null; error: string }
 const normalized = (text: string) => text.normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -68,6 +71,7 @@ export default function LessonIntroduction({ intro, progress, progressReady, stu
   return <div className="panel lesson-introduction">
     <div className="lesson-intro-overview"><p className="lesson-description">{intro.lesson.description}</p>
       <div className="lesson-facts" aria-label="Thông tin lượt học"><span>{total} câu</span><span>{intro.lesson.questionCounts.guided} câu có hướng dẫn</span><span>{intro.lesson.questionCounts.independent} câu tự làm</span></div>
+      {!!intro.activitySummary?.length && <div className="lesson-intro-section"><h2>Các hoạt động trong bài</h2><ol>{intro.activitySummary.map(a => <li key={a.kind}>{activityKinds[a.kind]} · {a.questionCount} câu</li>)}</ol><p>Mỗi phần bắt đầu bằng một câu hướng dẫn; các câu còn lại tự làm. Các phần đọc nâng cao, nếu có, dùng đoạn ví dụ riêng.</p></div>}
       {progress && <div className="lesson-state"><span className={'lesson-state-badge ' + progress.state.toLowerCase()}><span aria-hidden="true">{progress.state === 'COMPLETED' ? '✓' : progress.state === 'STARTED' ? '◷' : '○'}</span><span>{progress.state === 'COMPLETED' ? 'Đã hoàn thành bài học' : progress.state === 'STARTED' ? 'Đã bắt đầu · Chưa hoàn thành' : 'Chưa bắt đầu'}</span></span>{progress.updateAvailable && <span className="lesson-update">Có phiên bản bài học mới</span>}</div>}
     </div>
     <div className="lesson-intro-section"><h2>Bạn sẽ học gì?</h2><ul>{intro.objectives.map(o => <li key={o.id}>{o.name}</li>)}</ul></div>

@@ -9,6 +9,8 @@ import LearningMaterial from './LearningMaterial';
 import { useOnline } from '../connection/useOnline';
 import { GameResults } from './GameWorld';
 import { AttemptRewards } from '../gamification/Rewards';
+import InlineReading from './InlineReading';
+import { activityKinds } from '../content/authoring';
 
 export default function AttemptResult({ session, state }: { session: AttemptSession; state: ReturnType<AttemptSession['getSnapshot']> }) {
   const result = state.result!, snapshot = state.snapshot!;
@@ -20,6 +22,8 @@ export default function AttemptResult({ session, state }: { session: AttemptSess
   const disabled = !online || state.busy || !!state.pending || !!state.conflict || state.loginRequired || state.loading;
   const completionEligible = result.items.length > 0 && result.items.every(item => item.finalResponseComplete);
   const material = snapshot.materials.find(m => m.materialVersionId === item.materialVersionId);
+  const activity = snapshot.activities?.find(a => a.attemptQuestionIds.includes(item.attemptQuestionId));
+  const passage = activity?.passages.find(p => p.materialVersionId === item.materialVersionId);
   return <div className="attempt-result">
     <AttemptRewards key={result.submissionId} submissionId={result.submissionId} />
     <div className="material-actions"><button className="button secondary" onClick={() => navigate({ attempt: null, tab: 'review', unit: null, lesson: null })}>Xem nội dung cần ôn</button></div>
@@ -28,11 +32,12 @@ export default function AttemptResult({ session, state }: { session: AttemptSess
     <SubmissionReview result={result} snapshot={snapshot} session={session} disabled={disabled} />
     <div className="panel table-wrap"><table><caption className="sr-only">Kết quả lần đầu và khi nộp của từng câu</caption><thead><tr><th>Câu</th><th>Lần đầu</th><th>Khi nộp</th><th>Hỗ trợ ở lần đầu</th></tr></thead><tbody>{result.items.map((f, n) => <tr key={f.attemptQuestionId}><td><button className="link-button" onClick={() => setSelected(n)} aria-label={'Xem và chữa câu ' + (n + 1)}>Câu {n + 1}</button></td><td>{outcomeNames[f.firstOutcome]}{!f.firstResponseComplete && ' · chưa đủ'}</td><td>{outcomeNames[f.finalOutcome]}{!f.finalResponseComplete && ' · chưa đủ'}</td><td>{f.firstSupportUsed ? 'Có sử dụng' : 'Không sử dụng'}</td></tr>)}</tbody></table></div>
     <div className="runner-layout"><nav className="panel question-nav" aria-label="Chọn câu chữa bài">{result.items.map((f, n) => <button key={f.attemptQuestionId} aria-label={'Chữa câu ' + (n + 1)} aria-current={selected === n ? 'step' : undefined} className={selected === n ? 'current' : ''} onClick={() => setSelected(n)}>{n + 1}</button>)}</nav><div className="runner-main">
-      {material && <LearningMaterial key={material.materialVersionId} material={material} />}
+      {material && <LearningMaterial key={material.materialVersionId} material={material} collapsibleReading={activity?.kind === 'READING_CHOICE'} readingContent={passage ? <InlineReading passage={passage} items={snapshot.items} activeId={item.attemptQuestionId} disabled={disabled} editableId={item.attemptQuestionId} answerOf={id => Object.hasOwn(responses, id) ? responses[id] : result.items.find(f => f.attemptQuestionId === id)?.finalResponse ?? null} onChange={(id, a) => setResponses(v => ({ ...v, [id]: a }))} onSelect={id => setSelected(result.items.findIndex(f => f.attemptQuestionId === id))} /> : undefined} />}
       <article className="panel learning-panel"><span className="eyebrow">CHỮA CÂU {selected + 1}</span><h2>{item.question.prompt}</h2>
+        {activity && <p className="muted">{activityKinds[activity.kind]}</p>}
         <p><strong>Lần đầu:</strong> {responseText(item.question, fact.firstResponse)} — {outcomeNames[fact.firstOutcome]}</p><p><strong>Khi nộp:</strong> {responseText(item.question, fact.finalResponse)} — {outcomeNames[fact.finalOutcome]}</p>
         <KeyExplanation question={item.question} answerKey={fact.answerKey} explanation={fact.explanation} />
-        <AnswerFields key={item.attemptQuestionId} prefix={'correction-' + item.attemptQuestionId} question={item.question} legend="Câu trả lời chữa bài" value={response} disabled={state.loginRequired} onChange={a => setResponses(v => ({ ...v, [item.attemptQuestionId]: a }))} />
+        {passage ? <p className="muted">Chữa câu {selected + 1} trực tiếp trong đoạn văn phía trên.</p> : <AnswerFields key={item.attemptQuestionId} prefix={'correction-' + item.attemptQuestionId} question={item.question} legend="Câu trả lời chữa bài" value={response} disabled={state.loginRequired} onChange={a => setResponses(v => ({ ...v, [item.attemptQuestionId]: a }))} />}
         <button className="button primary" disabled={disabled || !complete(item.question, response)} onClick={() => void session.mutate('retry', item.attemptQuestionId, response)}>Kiểm tra bài chữa</button>
         {feedback?.data.kind === 'CORRECTION' && <div className={'message ' + (feedback.data.outcome === 'CORRECT' ? 'success' : 'warning')} role="status"><strong>Bài chữa: {outcomeNames[feedback.data.outcome]}</strong><p>Đáp án đã chữa: {responseText(item.question, feedback.response)}</p><p>Điểm nộp vẫn là {result.scorePercent.toFixed(2)}/100.</p></div>}
       </article></div></div>

@@ -1,0 +1,7 @@
+flowchart LR
+    A[Tạo lượt và pin version] --> B[IN_PROGRESS]
+    B -->|Nộp full snapshot| C[SUBMITTED]
+    B --> D[FIRST khi check đầu tiên]
+    C --> E[FIRST nếu chưa có và một Submission]
+    C --> F[CORRECTION không đổi điểm gốc]
+    B --> G[Lưu nháp không chấm]

@@ -27,7 +27,7 @@ public final class AttemptViews {
         boolean feedbackOpened,PublicQuestion question,Long materialVersionId,Answer response) {}
     public record Snapshot(long attemptId,Mode mode,State state,Long lessonVersionId,long revision,Instant createdAt,
         Instant updatedAt,Instant submittedAt,List<Item> items,List<PublicMaterial> materials,PlayerState playerState,
-        Long submissionId,LessonPublic lesson) {}
+        Long submissionId,LessonPublic lesson,@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY) JsonNode activities) {}
     public record Summary(long attemptId,Mode mode,State state,Long lessonVersionId,long revision,int totalQuestions,
         int answeredCount,Instant createdAt,Instant updatedAt,Instant submittedAt,Long submissionId) {}
     public record DraftAck(String requestId,long attemptId,long revision,State state,Instant savedAt,int answeredCount) {}

@@ -12,7 +12,11 @@ export interface Pair { leftId: string; rightId: string }
 export interface QuestionData { type: keyof typeof questionTypes; topicId: number; objectiveId: number; difficulty: keyof typeof difficulties; prompt: string; explanation: string; hint: string | null; materialVersionId: number | null; source: Source; content: { options?: Option[]; parts?: Part[]; leftItems?: Option[]; rightItems?: Option[]; tokens?: Option[] }; answerKey: { correctOptionId?: string | null; blanks?: Blank[]; caseSensitive?: boolean; normalizeWhitespace?: boolean; pairs?: Pair[]; acceptedOrders?: string[][] } }
 export type Instruction = { kind: 'TEXT'; text: string } | { kind: 'EXAMPLE'; text: string; translation: string | null };
 export interface Slot { questionVersionId: number; practiceRole: keyof typeof practiceRoles; position: number }
-export interface LessonData { title: string; description: string; instructions: Instruction[]; objectiveIds: number[]; questions: Slot[] }
+export const activityKinds = { CHOICE: 'Trắc nghiệm', MATCHING: 'Ghép cặp', ORDERING: 'Sắp xếp từ', FILL: 'Điền từ', READING_CLOZE: 'Đọc điền từ', READING_CHOICE: 'Đọc hiểu', LISTENING_CHOICE: 'Nghe chọn đáp án' };
+export type ActivityKind = keyof typeof activityKinds;
+export type PassagePart = { kind: 'TEXT'; text: string } | { kind: 'BLANK'; questionVersionId: number; blankId: string };
+export interface Activity { id: string; kind: ActivityKind; questionVersionIds: number[]; passages: { materialVersionId: number; parts: PassagePart[] }[] }
+export interface LessonData { title: string; description: string; instructions: Instruction[]; objectiveIds: number[]; questions: Slot[]; activities?: Activity[] }
 export interface Stamp { id: number; versionNo: number; revision: number; state: string; schemaVersion: 1 }
 export type QuestionVersion = QuestionData & Stamp & { questionId: number };
 export type LessonVersion = LessonData & Stamp & { lessonId: number };
@@ -46,4 +50,4 @@ export async function historicalVersion<T>(kind: string, id: number, roots: numb
 }
 export function newQuestion(choices: Choices): QuestionData { const topic = choices.topics[0]?.id ?? 0; return { type: 'SINGLE_CHOICE', topicId: topic, objectiveId: choices.objectives.find(o => o.topicId === topic)?.id ?? 0, difficulty: 'EASY', prompt: '', explanation: '', hint: null, materialVersionId: null, source: { label: 'Tự biên soạn', url: null, license: null }, content: { options: [{ id: 'opt-a', text: '' }, { id: 'opt-b', text: '' }] }, answerKey: { correctOptionId: null } }; }
 export const newLesson = (): LessonData => ({ title: '', description: '', instructions: [{ kind: 'TEXT', text: '' }], objectiveIds: [], questions: [] });
-export function payload(version: Version | QuestionData | LessonData) { if ('type' in version) { const { type, topicId, objectiveId, difficulty, prompt, explanation, hint, materialVersionId, source, content, answerKey } = version; return { type, topicId, objectiveId, difficulty, prompt, explanation, hint, materialVersionId, source, content, answerKey }; } const { title, description, instructions, objectiveIds, questions } = version; return { title, description, instructions, objectiveIds, questions }; }
+export function payload(version: Version | QuestionData | LessonData) { if ('type' in version) { const { type, topicId, objectiveId, difficulty, prompt, explanation, hint, materialVersionId, source, content, answerKey } = version; return { type, topicId, objectiveId, difficulty, prompt, explanation, hint, materialVersionId, source, content, answerKey }; } const { title, description, instructions, objectiveIds, questions, activities } = version; return { title, description, instructions, objectiveIds, questions, ...(activities?.length ? { activities } : {}) }; }

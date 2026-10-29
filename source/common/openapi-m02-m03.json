@@ -10609,6 +10609,13 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LessonActivity"
+            },
+            "maxItems": 7
           }
         },
         "required": [
@@ -10675,6 +10682,13 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LessonActivity"
+            },
+            "maxItems": 7
           }
         },
         "required": [
@@ -10756,6 +10770,13 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LessonActivity"
+            },
+            "maxItems": 7
           }
         },
         "required": [
@@ -11411,6 +11432,37 @@
             },
             "minItems": 0,
             "maxItems": 100
+          },
+          "activitySummary": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "CHOICE",
+                    "MATCHING",
+                    "ORDERING",
+                    "FILL",
+                    "READING_CLOZE",
+                    "READING_CHOICE",
+                    "LISTENING_CHOICE"
+                  ]
+                },
+                "questionCount": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "kind",
+                "questionCount"
+              ]
+            }
           }
         },
         "required": [
@@ -12094,6 +12146,12 @@
               }
             ],
             "description": "Bản giới thiệu/hướng dẫn của đúng LessonVersion đã chốt; null nếu không phải LEARN."
+          },
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptActivity"
+            }
           }
         },
         "required": [
@@ -13767,6 +13825,223 @@
           "revision",
           "lessonId",
           "lessonCompleted"
+        ]
+      },
+      "ReadingActivityText": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "TEXT"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 12000
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ]
+      },
+      "ReadingActivityBlank": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "BLANK"
+          },
+          "questionVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "blankId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "kind",
+          "questionVersionId",
+          "blankId"
+        ]
+      },
+      "ReadingActivityPassage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "materialVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ReadingActivityText"
+                },
+                {
+                  "$ref": "#/components/schemas/ReadingActivityBlank"
+                }
+              ]
+            },
+            "maxItems": 41
+          }
+        },
+        "required": [
+          "materialVersionId",
+          "parts"
+        ]
+      },
+      "LessonActivity": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "CHOICE",
+              "MATCHING",
+              "ORDERING",
+              "FILL",
+              "READING_CLOZE",
+              "READING_CHOICE",
+              "LISTENING_CHOICE"
+            ]
+          },
+          "questionVersionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "passages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadingActivityPassage"
+            },
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "questionVersionIds",
+          "passages"
+        ]
+      },
+      "AttemptReadingBlank": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "BLANK"
+          },
+          "attemptQuestionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "blankId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "kind",
+          "attemptQuestionId",
+          "blankId"
+        ]
+      },
+      "AttemptReadingPassage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "materialVersionId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ReadingActivityText"
+                },
+                {
+                  "$ref": "#/components/schemas/AttemptReadingBlank"
+                }
+              ]
+            },
+            "maxItems": 41
+          }
+        },
+        "required": [
+          "materialVersionId",
+          "parts"
+        ]
+      },
+      "AttemptActivity": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "CHOICE",
+              "MATCHING",
+              "ORDERING",
+              "FILL",
+              "READING_CLOZE",
+              "READING_CHOICE",
+              "LISTENING_CHOICE"
+            ]
+          },
+          "attemptQuestionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "passages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptReadingPassage"
+            },
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "attemptQuestionIds",
+          "passages"
         ]
       }
     }

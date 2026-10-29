@@ -83,7 +83,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V10
+│   │   │   ├── db/migration/                  Flyway V1–V12
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -225,6 +225,7 @@ Sửa M06 ngày 23/10: retention đọc/check/delete trong một readwrite trans
 | V7 | gamification_outbox; đã áp dụng trên demo |
 | V8 | league_seasons/group_allocators/groups/members/outbox; FK xp_ledger.season_id, kết quả frozen trên membership; đã áp dụng demo, schema tiếp theo cần migration mới |
 | V9 | Mở rộng CHECK question_versions.type cho ORDERING; không thêm bảng hoặc viết lại dữ liệu; chưa nâng DB demo trong lượt triển khai này |
+| V12 | `lesson_versions.activities_json` nullable: cấu trúc sáu hoạt động của bài nâng cấp 18 câu và ánh xạ đọc điền từ; không sửa lượt/bài cũ. Source đã có V10/V11 cho chính sách M05, xem ghi chú cuối file |
 
 Flyway quản lý schema; Hibernate giữ `ddl-auto=validate`. Không sửa migration đã áp dụng, không dùng create/update để chữa lệch schema. Thay đổi schema tiếp theo cần migration mới. SQL dưới `docs/database/planned/` là tài liệu hợp đồng, không tự chạy thay migration runtime.
 
@@ -432,3 +433,13 @@ Game ngày 26/10: Săn kho báu tích hợp trong AttemptRunner/AttemptResult; G
 Level v3 ngày 26/10: V11 INSERT policy m05-p0-v3, mỗi bước L→L+1 cần 10×L XP, ngưỡng L là 5×L×(L−1). ActivityLevels là bộ tính cấp dùng số nguyên; GamificationServiceImpl giữ hỗ trợ v1/v2 và policy nguồn theo submittedAt. Không đổi XP/cap/League/nguồn cũ. UI lấy floor/next từ Summary. Xem [luật và giới hạn](docs/M05_PROGRESSIVE_LEVELS.md), [kiểm tra](statics/results/progressive-levels-validation.md).
 
 Bảng xếp hạng chung ngày 27/10: GET /api/me/leaderboard, WeeklyLeaderboardService/Repository/Views là điểm vào; đọc daily stats đã commit theo tuần VN, ACTIVE STUDENT có XP dương, đồng hạng, top/page/self một snapshot. Không migration/ghi XP/join League; không cấp account ID/email. Leaderboards.tsx gom tab Toàn hệ thống/Nhóm thi đấu, sidebar Bảng xếp hạng; #/league tương thích mở nhóm. Xem [nghiệp vụ](docs/M05_GLOBAL_LEADERBOARD.md), [kiểm tra](statics/results/global-leaderboard-validation.md).
+
+Bài 18 câu ngày 28/10: LessonActivities/activities_json của LessonVersion là cấu trúc tùy chọn theo phiên bản. Sáu phần CHOICE → MATCHING → ORDERING → FILL → READING_CLOZE → READING_CHOICE, số câu 3/2/2/3/4/4, mỗi phần một GUIDED rồi INDEPENDENT. AttemptSelector lưu thứ tự mới chỉ khi có metadata; bài/lượt cũ giữ nguyên. Hai dạng đọc có ví dụ riêng; InlineReading dùng snapshot đã chiếu theo attemptQuestionId, chỉ có ô thuộc lượt, không chấm ở client. Điểm vào: LessonActivityFields, AuthorPreview, AttemptSnapshotReader và V12; API tác giả activities tùy chọn, GET giới thiệu chỉ có activitySummary an toàn. Bài mẫu tạo riêng bằng `scripts/seed-activity-sample.mjs` qua API với checkpoint, không tự nâng DB demo hoặc đè ngân hàng nền. Xem [tiến độ](docs/QUESTION_VARIETY_PROGRESS.md), [kế hoạch](docs/QUESTION_VARIETY_IMPLEMENTATION_PLAN.md), [kiểm tra](statics/results/question-variety-validation.md). Bài viết tiếp tục để sau.
+
+Chạy demo 28/10 theo yêu cầu: `english-learning-main` đã build/chạy source mới trên **5176/8083**, DB từ V11 lên **V12**, giữ nguyên volume. Đã sao lưu trước nâng trong `.test-state/main-activities-run/`; sau chạy vẫn 9 tài khoản, 58 Attempt, 47 Submission. Bài mẫu 18 câu đã nạp: **Unit 6 / Vòng 2 — Everyday adventures / Lesson 11 / LessonVersion 11**, checkpoint `.test-state/activity-sample/0ae6f571866778a9.json`. Giữ demo đang chạy; không chạy bộ E2E ghi dữ liệu vào môi trường này.
+
+Điều chỉnh bài 18 câu: cấu trúc mới bảy phần CHOICE → MATCHING → ORDERING → FILL → READING_CLOZE → READING_CHOICE → LISTENING_CHOICE, số câu 3/2/2/3/3/3/2, 7 GUIDED + 11 INDEPENDENT. Nghe dùng SINGLE_CHOICE + AUDIO, bốn option/câu, tái sử dụng audio player/grant/transcript hiện hành. Giữ validator tương thích sáu phần cũ, không đổi lượt đã pin. Bộ mẫu activities-1.1.0 có upload audio qua receipt/checkpoint; chạy seed mới tạo bài riêng, chưa thay bài demo Lesson 11. Kết quả kiểm tra riêng ghi tại statics/results/question-variety-validation.md.
+
+Trạng thái chạy ngày 29/10 theo yêu cầu test lại dữ liệu nền main: project `english-learning-baseline` đang phục vụ **5176/8083**, mã nguồn working tree hiện tại, volume DB/assets mới riêng. Đã xác nhận 3 user, 3 Unit, 6 Lesson, 90 Question, 13 Material, 0 Attempt/Submission/XP ledger; UI và đăng nhập student/danh mục đạt. Project `english-learning-main` chứa dữ liệu demo bổ sung đã dừng, volume/checkpoint còn nguyên. Chạy tiếp bằng `start-baseline.cmd`; không chạy E2E/seed bổ sung vào baseline khi chưa được yêu cầu. Chạy lại script giữ tiến độ test mới, không reset mỗi lần. Xem [cách chuyển môi trường](docs/BASELINE_TESTING.md).
+
+Demo linh hoạt 29/10: bài đầu Vòng 1 của baseline **Lesson 1 / LessonVersion 7** đã nâng thành 18 câu, gồm 6 trắc nghiệm, 4 ghép cặp, 6 điền từ, 2 nghe; dùng lại 10 câu LEARN và audio cũ, bổ sung 8 câu qua API, giữ 5 câu ôn. Các bài khác không tự đổi, lượt cũ pin phiên bản cũ. Metadata activities nay cho chọn 1–7 dạng, 15–20 câu, mỗi dạng tối thiểu một GUIDED và một INDEPENDENT; LISTENING_CHOICE dùng AUDIO 3–6 lựa chọn. Chú ý các số baseline 90 câu/0 lượt phía trên là trước khi nâng và trước khi người dùng test. Checkpoint/backup và kiểm tra tại [hướng dẫn](docs/BASELINE_TESTING.md), [biên bản](statics/results/question-variety-validation.md).
