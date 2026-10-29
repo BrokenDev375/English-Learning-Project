@@ -1,6 +1,8 @@
-# Tiến độ giám sát phiên — bước 0–4
+# Tiến độ giám sát phiên — hoàn tất bước 0–5
 
-Ngày 29/10/2026, nhánh `feature/admin-session-monitoring`. Bước 0–2 đã commit tại `6941339` trên nền `764d846`, bước 3 tại `77dcbea`; bước 4 triển khai tiếp trong working tree, chưa commit. Kế hoạch: [ADMIN_SESSION_MONITORING_PLAN](ADMIN_SESSION_MONITORING_PLAN.md).
+Sửa sau nghiệm thu ngày 29/10: tách ACCOUNT/Tài khoản với PROFILE/Hồ sơ học tập, bỏ Attempt context ngoài runner và rebind tabId ngay nếu đổi trong lúc HELLO chờ ACK. Hồi quy bản sửa: **35/35 backend, 19/19 browser, manager 12/12, tracker 11/11, build đạt**. Xem [biên bản sửa nhãn/tab](../statics/results/admin-session-route-fix-validation.md). Số full 361/137 bên dưới là bằng chứng trước bản sửa, không phải lượt chạy lại source này.
+
+Ngày 29/10/2026, nhánh `feature/admin-session-monitoring`. Bước 0–2 commit `6941339`, bước 3 `77dcbea`, bước 4 `60fc657`; bước 5 đã hoàn tất trong working tree, chưa commit/push. Kế hoạch: [ADMIN_SESSION_MONITORING_PLAN](ADMIN_SESSION_MONITORING_PLAN.md), [bàn giao](ADMIN_SESSION_MONITORING_HANDOFF.md).
 
 ## Phần đã viết
 
@@ -16,7 +18,7 @@ Ngày 29/10/2026, nhánh `feature/admin-session-monitoring`. Bước 0–2 đã 
 
 ## Chưa thuộc lượt này
 
-Bước 5 chưa nghiệm thu: chưa chạy lại toàn bộ backend/browser, script restart/recreate và chờ mặc định 300s thật trên source mới. Bước 4 không đổi backend/migration/timeout hoặc luật học, khóa vẫn dùng M01. Luồng REVIEW dùng cùng session/socket; ca khóa thực tế trong lượt giao diện chạy với LEARN, chưa có ca riêng khi đang REVIEW.
+Đã nghiệm thu bước 5 trên runtime `60fc657`: backend đầy đủ, browser toàn bộ, timeout mặc định 300s thật, idle/draft/pending submit mất ACK, restart/recreate/receipt/ledger/media và khóa khi đang REVIEW thật. Bước 5 không sửa backend/migration/timeout hoặc luật học. Chưa chạy sleep/resume thiết bị vật lý, trình duyệt khác Chrome, load/soak lớn hoặc nhiều backend; ghi NOT RUN trong biên bản.
 
 Không có lịch sử session bền vững/nhiều backend, xác thực người thật hoặc phát hiện “treo máy”. 5 phút tính từ tín hiệu server chấp nhận. Activity được client báo, không thay quyền hoặc xác nhận người đang chú ý học. Nghe audio liên tục không giữ phiên nếu không có thao tác mới.
 
@@ -29,3 +31,5 @@ Xem [biên bản bước 0–2](../statics/results/admin-session-step012-validat
 Kiểm tra bước 3: backend tập trung **61/61**, unit service bổ sung **8/8** (7 ca trùng, 1 ca mới); browser **10/10** rồi chạy lại ca giám sát mở rộng metadata LEARN **1/1**; manager **11/11**, tracker **10/10**, build đạt. Ghi riêng tại [biên bản bước 3](../statics/results/admin-session-step3-validation.md); số 350/128 phía trên là lịch sử bước 0–2, không phải lượt chạy lại toàn bộ trên source bước 3.
 
 Bước 4: browser tập trung **23/23 PASS** trong một lượt, manager **11/11**, tracker **10/10**, build TypeScript/Vite đạt; đã nhìn ảnh desktop/mobile và kiểm tra keyboard/focus/overflow. Khóa LEARN thật trên hai thiết bị, mở khóa/login mới và mất ACK sau commit đều qua. Xem [biên bản bước 4](../statics/results/admin-session-step4-validation.md), gồm phân biệt fixture lỗi UI với API thật và các ca chưa chạy ở bước 5.
+
+Bước 5: **361/361 backend**, 38 suite, 0 failure/error/skip, BUILD SUCCESS trong 18m15s; browser hồi quy **137/137** (7.0 phút), idle/recovery **8/8** + audio bổ sung **1/1**, default 300s **1/1** (5.1 phút). Tổng 147 browser khác nhau qua bốn lượt, không phải một lượt 147/147. Script **3/3 chặng PASS**, build/harness **11/11 + 10/10 + 6/6** đạt. Xem [biên bản bước 5](../statics/results/admin-session-step5-validation.md), gồm các lỗi fixture/assertion đã sửa và giới hạn còn lại; không cộng các lượt trùng.

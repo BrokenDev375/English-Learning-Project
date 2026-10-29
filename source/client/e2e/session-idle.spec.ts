@@ -50,6 +50,25 @@ test.describe('session recovery @idle-short', () => {
     expect((await page.request.get('/api/auth/session')).status()).toBe(401);
     await login(page, email); expect((await page.request.get('/api/auth/session')).status()).toBe(200);
   });
+  test('continuous audio playback cannot renew the idle deadline', async ({ page }) => {
+    await student(page); await lesson(page);
+    const id = new URL(page.url()).hash.match(/attempt=(\d+)/)![1];
+    const snapshot = await (await page.request.get(`/api/attempts/${id}`)).json();
+    const material = snapshot.materials.find((m: { kind: string }) => m.kind === 'AUDIO');
+    expect(material).toBeTruthy();
+    const index = snapshot.items.findIndex((i: { materialVersionId: number }) => i.materialVersionId === material.materialVersionId);
+    expect(index).toBeGreaterThanOrEqual(0); await page.locator('.question-nav button').nth(index).click();
+    const audio = page.locator('audio').first();
+    await audio.evaluate(async element => {
+      const player = element as HTMLAudioElement, counters = window as unknown as { idleAudioTicks: number };
+      counters.idleAudioTicks = 0; player.addEventListener('timeupdate', () => { counters.idleAudioTicks++; });
+      player.loop = true; await player.play();
+    });
+    await expect.poll(() => audio.evaluate(element => { const player = element as HTMLAudioElement; return player.currentTime > 0 && !player.paused; })).toBe(true);
+    await expect(page.getByLabel('Email', { exact: true })).toBeVisible({ timeout: 35000 });
+    expect(await page.evaluate(() => (window as unknown as { idleAudioTicks: number }).idleAudioTicks)).toBeGreaterThan(10);
+    expect((await page.request.get('/api/auth/me')).status()).toBe(401);
+  });
   test('offline edits survive real server idle expiration and same-user reauthentication', async ({ page, context }) => {
     const email = await student(page);
     await lesson(page);
@@ -64,6 +83,27 @@ test.describe('session recovery @idle-short', () => {
     await expect(page.locator('.answer-fields').getByRole('radio').last()).toBeChecked();
     await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
   });
+  test('submit committed without ACK survives idle and reauthentication with the same pending key and immutable result', async ({ page }) => {
+    const email = await student(page); await lesson(page);
+    const id = new URL(page.url()).hash.match(/attempt=(\d+)/)![1];
+    let original: unknown, allowAck = false, calls = 0;
+    await page.route('**/api/attempts/*/submit', async route => {
+      const body = route.request().postDataJSON(); calls++;
+      if (!original) { original = body; expect((await route.fetch()).status()).toBe(200); }
+      else expect(body).toEqual(original);
+      if (allowAck) await route.continue(); else await route.abort('failed');
+    });
+    await page.getByRole('button', { name: 'Nộp bài', exact: true }).click();
+    await page.getByRole('button', { name: 'Xác nhận nộp bài', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Gửi lại thao tác và đối soát', exact: true })).toBeVisible();
+    const before = await (await page.request.get(`/api/attempts/${id}/result`)).json();
+    await expect(page.getByLabel('Email', { exact: true })).toBeVisible({ timeout: 35000 });
+    allowAck = true; await login(page, email); await expect(page.locator('.result-score')).toBeVisible();
+    expect(calls).toBeGreaterThanOrEqual(2);
+    expect(await (await page.request.get(`/api/attempts/${id}/result`)).json()).toEqual(before);
+    await page.reload(); await expect(page.locator('.result-score')).toBeVisible();
+    expect(await (await page.request.get(`/api/attempts/${id}/result`)).json()).toEqual(before);
+  });
   test('interaction in one tab renews the shared HTTP session for another tab', async ({ page, context }) => {
     await student(page); const tab = await context.newPage(); await tab.goto('/#/profile');
     await expect(tab.getByRole('button', { name: 'Đăng xuất', exact: true })).toBeVisible();
@@ -74,6 +114,17 @@ test.describe('session recovery @idle-short', () => {
       const s = await r.json(); return Date.parse(s.idleExpiresAt) > Date.parse(first.idleExpiresAt);
     }).toBe(true);
     await expect(tab.getByRole('button', { name: 'Đăng xuất', exact: true })).toBeVisible(); await tab.close();
+  });
+  test('a real interaction renews only its own device while another session of the same account expires', async ({ page, browser }) => {
+    const email = await student(page);
+    const other = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    try {
+      const device = await other.newPage(); await device.goto('/'); await login(device, email);
+      for (let i = 0; i < 4; i++) { await page.waitForTimeout(6000); await page.bringToFront(); await page.keyboard.press('Tab'); }
+      await expect(device.getByLabel('Email', { exact: true })).toBeVisible({ timeout: 10000 });
+      expect((await page.request.get('/api/auth/me')).status()).toBe(200);
+      expect((await device.request.get('/api/auth/me')).status()).toBe(401);
+    } finally { await other.close(); }
   });
   test('a stalled IndexedDB completion cannot hold the expired UI open forever', async ({ page }) => {
     await student(page); await lesson(page); await page.waitForTimeout(750);

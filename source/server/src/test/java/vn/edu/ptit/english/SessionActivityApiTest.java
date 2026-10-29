@@ -87,6 +87,27 @@ class SessionActivityApiTest {
         String address=UUID.randomUUID()+"@admin.test";users.create(address,passwords.encode("TestPass@123"),"Session admin",Role.ADMIN);
         var c=new Client();c.login(address);return c;
     }
+    @Test void accountAndLearningProfileContextsAreAcceptedAndFilteredSeparatelyWithoutRenewal()throws Exception{
+        var a=admin();var student=new Client();student.login();
+        long userId=users.findByEmail(email).orElseThrow().id();String tab=UUID.randomUUID().toString();
+        var before=json.readTree(student.call("GET","/api/auth/session",null).body());
+        var body=new HashMap<String,Object>(report(tab,0,false));body.put("activity","ACCOUNT");
+        assertThat(student.call("POST","/api/auth/activity",body).statusCode()).isEqualTo(200);
+        var source=registry.snapshot().stream().filter(s->s.userId()==userId).findFirst().orElseThrow();
+        var socket=org.mockito.Mockito.mock(org.springframework.web.socket.WebSocketSession.class);
+        org.mockito.Mockito.when(socket.getId()).thenReturn("route-"+tab);org.mockito.Mockito.when(socket.isOpen()).thenReturn(true);
+        live.attach(socket,vn.edu.ptit.english.security.UserPrincipal.from(users.findByEmail(email).orElseThrow()),source.id());live.bindTab(socket.getId(),tab);
+        String query="&q="+URLEncoder.encode(email,java.nio.charset.StandardCharsets.UTF_8);
+        var account=a.call("GET","/api/admin/sessions?activity=ACCOUNT"+query,null);
+        assertThat(account.statusCode()).withFailMessage(account.body()).isEqualTo(200);
+        assertThat(json.readTree(account.body()).at("/items/0/primaryContext/activity").asText()).isEqualTo("ACCOUNT");
+        body.put("seq",1);body.put("activity","PROFILE");
+        assertThat(student.call("POST","/api/auth/activity",body).statusCode()).isEqualTo(200);
+        assertThat(json.readTree(a.call("GET","/api/admin/sessions?activity=ACCOUNT"+query,null).body()).path("totalElements").asInt()).isZero();
+        assertThat(json.readTree(a.call("GET","/api/admin/sessions?activity=PROFILE"+query,null).body()).at("/items/0/primaryContext/activity").asText()).isEqualTo("PROFILE");
+        assertThat(json.readTree(student.call("GET","/api/auth/session",null).body()).get("idleExpiresAt")).isEqualTo(before.get("idleExpiresAt"));
+        live.detach(socket.getId());
+    }
     @Test void monitoringEndpointsRequireCurrentAdminAndReturnPrivateOpaqueDetail()throws Exception{
         var guest=new Client();assertThat(guest.call("GET","/api/admin/sessions",null).statusCode()).isEqualTo(401);
         var student=new Client();student.login();assertThat(student.call("GET","/api/admin/sessions",null).statusCode()).isEqualTo(403);

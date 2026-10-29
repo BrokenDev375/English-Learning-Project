@@ -58,10 +58,10 @@ export class ActivityTracker {
   private current() { return !this.stopped && this.epoch === authenticationEpoch(); }
   private contextValue() {
     const [path, query] = location.hash.slice(1).split('?'); const p = new URLSearchParams(query);
-    const routes: Record<string, string> = { '': 'HOME', '/': 'HOME', '/home': 'HOME', '/profile': 'PROFILE', '/rewards': 'REWARDS', '/league': 'LEADERBOARD', '/leaderboard': 'LEADERBOARD', '/content': 'AUTHORING', '/admin': 'ADMIN_USERS', '/statistics': 'STATISTICS' };
+    const routes: Record<string, string> = { '': 'HOME', '/': 'HOME', '/home': 'HOME', '/account': 'ACCOUNT', '/profile': 'PROFILE', '/rewards': 'REWARDS', '/league': 'LEADERBOARD', '/leaderboard': 'LEADERBOARD', '/content': 'AUTHORING', '/admin': 'ADMIN_USERS', '/statistics': 'STATISTICS' };
     const id = Number(p.get('attempt'));
-    return { activity: id === this.deniedAttempt ? 'OTHER' : path === '/learning' ? (id > 0 ? learningContext?.attemptId === id ? learningContext.activity : p.get('tab') === 'review' ? 'REVIEW' : 'LEARN' : p.get('tab') === 'review' ? 'REVIEW' : 'CATALOG') : routes[path] ?? 'OTHER',
-      visibility: document.hidden ? 'HIDDEN' : 'VISIBLE', ...(Number.isSafeInteger(id) && id > 0 && id !== this.deniedAttempt ? { attemptId: id } : {}) };
+    return { activity: path === '/learning' && id === this.deniedAttempt ? 'OTHER' : path === '/learning' ? (id > 0 ? learningContext?.attemptId === id ? learningContext.activity : p.get('tab') === 'review' ? 'REVIEW' : 'LEARN' : p.get('tab') === 'review' ? 'REVIEW' : 'CATALOG') : routes[path] ?? 'OTHER',
+      visibility: document.hidden ? 'HIDDEN' : 'VISIBLE', ...(path === '/learning' && Number.isSafeInteger(id) && id > 0 && id !== this.deniedAttempt ? { attemptId: id } : {}) };
   }
   private accept(next: SessionDeadline) {
     if (this.deadline && next.sessionGeneration !== this.deadline.sessionGeneration) {

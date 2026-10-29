@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, ApiError, errorMessage } from '../../api';
 import type { Role } from '../../types';
 
-export const activityNames = { HOME: 'Trang chủ', LEARN: 'Học bài', REVIEW: 'Ôn tập', RESULT: 'Xem kết quả', CATALOG: 'Khám phá bài học', PROFILE: 'Tài khoản', REWARDS: 'Phần thưởng', LEADERBOARD: 'Bảng xếp hạng', AUTHORING: 'Biên soạn', ADMIN_USERS: 'Quản lý tài khoản', STATISTICS: 'Thống kê', OTHER: 'Chưa rõ chức năng' };
+export const activityNames = { HOME: 'Trang chủ', LEARN: 'Học bài', REVIEW: 'Ôn tập', RESULT: 'Xem kết quả', CATALOG: 'Khám phá bài học', ACCOUNT: 'Tài khoản', PROFILE: 'Hồ sơ học tập', REWARDS: 'Phần thưởng', LEADERBOARD: 'Bảng xếp hạng', AUTHORING: 'Biên soạn', ADMIN_USERS: 'Quản lý tài khoản', STATISTICS: 'Thống kê', OTHER: 'Chưa rõ chức năng' };
 export type Activity = keyof typeof activityNames;
 export interface MonitoredUser { userId: number; fullName: string; email: string; role: Role; accountStatus: 'ACTIVE' }
 export interface ActivityContext { activity: Activity; attemptId: number | null; lessonTitle: string | null; roundNumber: number | null }

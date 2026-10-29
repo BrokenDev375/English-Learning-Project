@@ -104,7 +104,10 @@ function fixture(options = {}) {
   assert.equal(f.calls.at(-1).body.activity, 'OTHER');
   assert.equal(f.calls.at(-1).body.attemptId, undefined);
   assert.equal(f.calls.at(-1).body.interaction, false);
-  assert.equal(f.views.at(-1).uncertain, false); assert.equal(f.expired.length, 0); f.tracker.stop();
+  assert.equal(f.views.at(-1).uncertain, false); assert.equal(f.expired.length, 0);
+  f.location.hash = '#/account?attempt=42'; f.window.dispatchEvent(new Event('app-navigation')); await settle();
+  assert.equal(f.calls.at(-1).body.activity, 'ACCOUNT'); assert.equal(f.calls.at(-1).body.attemptId, undefined);
+  f.tracker.stop();
 }
 {
   const requests = [], events = [], pending = [];
@@ -120,4 +123,18 @@ function fixture(options = {}) {
   pending.shift()(Response.json({ code: 'UNAUTHENTICATED' }, { status: 401 }));
   await assert.rejects(read, e => e.code === 'SESSION_CHANGED'); assert.equal(events.length, 0);
 }
-console.log('PASS: 10 deterministic session scenarios (idle, coalescing, offline, generation, navigation, tab expiry, denied context, stale HTTP/CSRF).');
+{
+  const f = fixture({ hash: '#/account' }); await settle();
+  assert.equal(f.calls.at(-1).body.activity, 'ACCOUNT', 'the account menu must not be OTHER');
+  f.location.hash = '#/profile'; f.window.dispatchEvent(new Event('app-navigation')); await settle();
+  assert.equal(f.calls.at(-1).body.activity, 'PROFILE', 'learning profile is a separate screen');
+  f.location.hash = '#/learning?attempt=42'; f.window.dispatchEvent(new Event('app-navigation')); await settle();
+  assert.equal(f.calls.at(-1).body.attemptId, 42);
+  for (const [route, activity] of [['account', 'ACCOUNT'], ['profile', 'PROFILE']]) {
+    f.location.hash = `#/${route}?attempt=42`; f.window.dispatchEvent(new Event('app-navigation')); await settle();
+    assert.equal(f.calls.at(-1).body.activity, activity);
+    assert.equal(f.calls.at(-1).body.attemptId, undefined, 'an old URL parameter must not turn another screen into LEARN');
+  }
+  assert.equal(f.calls.at(-1).body.interaction, false); f.tracker.stop();
+}
+console.log('PASS: 11 deterministic session scenarios, including distinct account and learning profile routes.');

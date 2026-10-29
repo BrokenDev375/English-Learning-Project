@@ -1,6 +1,6 @@
 # Kế hoạch giám sát hoạt động và hết phiên do không tương tác
 
-Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Bước 0–2 đã commit tại `6941339`, bước 3 tại `77dcbea`; bước 4 triển khai trong working tree, chưa commit. Bước 5 chưa nghiệm thu. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md), [biên bản bước 0–2](../statics/results/admin-session-step012-validation.md), [bước 3](../statics/results/admin-session-step3-validation.md) và [bước 4](../statics/results/admin-session-step4-validation.md) cho bằng chứng từng lượt chạy.
+Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Bước 0–2 commit `6941339`, bước 3 `77dcbea`, bước 4 `60fc657`; **hoàn tất bước 5 trong working tree**, chưa commit/push. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md), [nghiệm thu bước 5](../statics/results/admin-session-step5-validation.md) và [bàn giao](ADMIN_SESSION_MONITORING_HANDOFF.md). Bằng chứng các bước cũ vẫn được giữ riêng theo source.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -14,7 +14,7 @@ P0 gồm:
 - [x] Bảng giám sát realtime, lọc/phân trang và khung chi tiết phiên trên trang admin hiện tại.
 - [x] Khóa tài khoản từ bảng giám sát, tái sử dụng API/transaction/quyền M01.
 - [x] Phục hồi nháp/pending M06 sau khi hết phiên và đăng nhập lại đúng user.
-- [ ] Kiểm thử quyền, concurrency, nhiều tab/thiết bị, mất mạng và hồi quy.
+- [x] Kiểm thử quyền, concurrency, nhiều tab/thiết bị, mất mạng và hồi quy; các điều kiện vật lý/tải chưa chạy ghi riêng trong biên bản.
 
 P1, không đưa vào P0: cưỡng chế đăng xuất riêng một phiên bằng nút admin, lịch sử truy cập bền vững, định vị/IP/device fingerprint, đo thời gian học, thi cử mới, nhiều backend/Redis hoặc dashboard theo dõi đáp án. Giao diện không hiển thị “Đang thi” khi hệ thống chưa có nghiệp vụ thi.
 
@@ -66,7 +66,7 @@ Không trộn trạng thái tài khoản, kết nối, chức năng và idle và
 |---|---|
 | Tài khoản | ACTIVE / LOCKED / DELETED hiện có |
 | Kết nối | Có socket còn heartbeat / không có socket sống |
-| Chức năng tab | HOME, LEARN, REVIEW, RESULT, CATALOG, PROFILE, REWARDS, LEADERBOARD, AUTHORING, ADMIN_USERS, STATISTICS, OTHER |
+| Chức năng tab | HOME, LEARN, REVIEW, RESULT, CATALOG, ACCOUNT, PROFILE, REWARDS, LEADERBOARD, AUTHORING, ADMIN_USERS, STATISTICS, OTHER |
 | Hiển thị tab | VISIBLE / HIDDEN |
 | Tương tác phiên | ACTIVE khi dưới 60s, IDLE khi từ 60s đến dưới 300s, EXPIRED tại 300s |
 
@@ -223,11 +223,13 @@ Mobile: summary xuống dòng, bảng cuộn trong khung hoặc card; khung chi 
 
 ### Bước 5 — Hồi quy, nghiệm thu và tài liệu
 
-- [ ] Backend đầy đủ sau tích hợp; production build, manager/storage harness và browser E2E liên quan rồi toàn bộ khi ổn định.
-- [ ] Script/ca nghiệm thu riêng cho idle + nháp + pending submit mất ACK, restart và account lock; dùng môi trường test riêng.
-- [ ] Manual smoke desktop/mobile, hai tab cùng context và hai browser context; kiểm tra cấu hình mặc định 300s thật trước bàn giao.
-- [ ] Cập nhật README, AGENTS, hợp đồng M06/M07 liên quan, progress và biên bản mới có ngày/source/lệnh/kết quả/giới hạn.
-- [ ] `git diff --check`, trạng thái Git, không thêm `.env`/credentials/artifact. Chỉ commit/push khi được yêu cầu.
+- [x] Backend đầy đủ 361/361; production build, manager 11/11, tracker 10/10, storage 6/6 và browser hồi quy 137/137.
+- [x] Idle/nháp/pending submit mất ACK, restart/recreate và khóa LEARN/REVIEW trên môi trường test riêng; 9 ca idle/audio qua các lượt và 3 chặng script đạt.
+- [x] Smoke desktop/mobile bằng browser automation và quan sát ảnh, hai tab/cùng context và hai browser context; default 300s/30s đã chờ thật và đạt. Sleep OS/thiết bị vật lý chưa chạy.
+- [x] README, AGENTS, hợp đồng M06/M07, progress, bàn giao và biên bản theo source/lệnh/kết quả/giới hạn.
+- [x] `git diff --check`, trạng thái Git, không thêm `.env`/credentials/artifact; không tự commit/push.
+
+Bằng chứng chi tiết và các ca NOT RUN tại [biên bản bước 5](../statics/results/admin-session-step5-validation.md); không tuyên bố nhiều backend hoặc nghiệm thu tải lớn từ kết quả local.
 
 Đạt khi ma trận dưới đây có bằng chứng thật; ca chưa chạy ghi NOT RUN, không ghi PASS suy diễn.
 

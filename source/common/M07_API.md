@@ -1,5 +1,7 @@
 # Hợp đồng M07 — Hồ sơ và thống kê
 
+Bổ sung 29/10/2026: giao diện quản trị dùng [API giám sát phiên](ADMIN_SESSION_MONITORING_API.md) cho bảng hoạt động/phiên/tab. GET /api/admin/statistics/presence và PRESENCE_CHANGED giữ tương thích; event chỉ invalidation cho ADMIN subscribe, gom tối đa một lần/giây, ACK/reconnect GET và poll visible 15s. Hai bộ lọc giám sát/CRUD độc lập; không dùng số tab làm số tài khoản. Context hoạt động không phải dữ liệu thống kê kết quả hoặc bằng chứng chú ý học. Xem [nghiệm thu tích hợp](../../statics/results/admin-session-step5-validation.md).
+
 Cập nhật 24/10/2026. Cookie session của M01, xác thực lại quyền tài khoản hiện hành. Tất cả endpoint GET, không thay đổi DB, trả Cache-Control: no-store, private. Không nhận userId để chọn học viên; /me chỉ dùng principal. TEACHER chỉ đọc các endpoint /api/teacher/statistics trong phạm vi Unit mình làm chủ; không được đọc /me của học viên hoặc /admin.
 
 ## Endpoint

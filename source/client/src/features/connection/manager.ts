@@ -19,7 +19,7 @@ export class ConnectionManager {
   private deadline?: number;
   private retries = 0;
   private generation = 0;
-  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean }>();
+  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean; tabId?: string }>();
   private presenceWanted = false;
   private presenceReady = false;
   private resources = new Set<number>();
@@ -49,9 +49,10 @@ export class ConnectionManager {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
     const id = requestId();
+    const tabId = ['HELLO', 'HEARTBEAT'].includes(type) ? activityTabId() : undefined;
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
-    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE' });
-    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(['HELLO', 'HEARTBEAT'].includes(type) ? { tabId: activityTabId() } : {}) }));
+    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE', tabId });
+    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(tabId ? { tabId } : {}) }));
   }
   private connect() {
     if (this.stopped || this.socket) return;
@@ -74,6 +75,8 @@ export class ConnectionManager {
         if (state !== 'connected') {
           this.retries = 0; publish('connected');
           this.beat = window.setInterval(() => this.send('HEARTBEAT'), connectionConfig.heartbeatMs);
+          // Registration may rotate the document ID while HELLO awaits ACK (e.g. remount/recovery).
+          if (command.tabId && command.tabId !== activityTabId()) this.send('HEARTBEAT');
           this.resources.forEach(id => this.send('SUBSCRIBE', id));
           if (this.student) {
             for (const resource of ['GAMIFICATION', 'LEAGUE'] as const) this.send('SUBSCRIBE', undefined, resource);

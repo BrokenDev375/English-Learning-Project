@@ -154,4 +154,13 @@ for (const outcome of ['401', 'success']) {
   assert.equal(socket.sent.at(-1).type, 'HEARTBEAT'); assert.equal(socket.sent.at(-1).tabId, renewed);
   manager.stop(); const count = socket.sent.length; f.tab.renewActivityTab(); assert.equal(socket.sent.length, count);
 }
-console.log('PASS: 11 deterministic manager scenarios, including admin presence, reconnect and document tab binding.');
+{
+  const f = fixture(), manager = new f.module.ConnectionManager(7, () => 0);
+  manager.start(); const socket = f.sockets[0]; socket.message({ type: 'CONNECTED', userId: 7 });
+  const hello = socket.sent.at(-1), latestTab = f.tab.renewActivityTab();
+  socket.message({ type: 'ACK', requestId: hello.requestId });
+  assert.equal(socket.sent.at(-1).type, 'HEARTBEAT', 'a tab change during HELLO must bind immediately after ACK');
+  assert.equal(socket.sent.at(-1).tabId, latestTab, 'do not wait 25 seconds with the old tab binding');
+  manager.stop();
+}
+console.log('PASS: 12 deterministic manager scenarios, including tab changes before and after HELLO ACK.');

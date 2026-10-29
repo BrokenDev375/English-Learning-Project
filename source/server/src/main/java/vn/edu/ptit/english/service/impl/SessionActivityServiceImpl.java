@@ -14,7 +14,7 @@ public class SessionActivityServiceImpl implements SessionActivityService {
     private final SessionActivityRegistry registry;
     private final AccountGuard guard;
     private final ConnectionService connections;
-    private static final Set<String> ACTIVITIES=Set.of("HOME","LEARN","REVIEW","RESULT","CATALOG","PROFILE","REWARDS","LEADERBOARD","AUTHORING","ADMIN_USERS","STATISTICS","OTHER");
+    private static final Set<String> ACTIVITIES=vn.edu.ptit.english.dto.AdminSessionQuery.ACTIVITIES;
     public SessionActivityServiceImpl(SessionActivityRegistry registry,AccountGuard guard,ConnectionService connections) {
         this.registry=registry;this.guard=guard;this.connections=connections;
     }

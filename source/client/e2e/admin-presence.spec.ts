@@ -26,6 +26,44 @@ async function login(page: Page, connected = true) {
 function panel(page: Page) { return page.getByLabel('Giám sát hoạt động', { exact: true }); }
 function users(page: Page) { return panel(page).locator('tbody tr'); }
 
+test('real account/profile menus have distinct labels and only application tabs count', async ({ browser, page }) => {
+  await login(page);
+  const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  try {
+    const learner = await context.newPage(); await learner.goto('/');
+    const email = `route-${randomUUID()}@test.local`, password = 'Presence@12345';
+    await write(learner, '/api/auth/register', { email, password, fullName: 'Học viên kiểm tra menu' });
+    await write(learner, '/api/auth/login', { email, password }); await learner.reload();
+    const row = users(page).filter({ hasText: email }); await expect(row).toContainText('1 tab');
+    await learner.getByRole('button', { name: 'Tài khoản', exact: true }).click();
+    await expect(row.locator('.session-context > strong')).toHaveText('Tài khoản');
+    await panel(page).getByRole('combobox', { name: 'Chức năng', exact: true }).selectOption('ACCOUNT');
+    await expect(row).toHaveCount(1);
+    await learner.getByRole('button', { name: 'Hồ sơ học tập', exact: true }).click();
+    await expect(row).toHaveCount(0);
+    await panel(page).getByRole('combobox', { name: 'Chức năng', exact: true }).selectOption('PROFILE');
+    await expect(row.locator('.session-context > strong')).toHaveText('Hồ sơ học tập');
+    await learner.goto('/#/profile?attempt=999999');
+    await expect(row.locator('.session-context > strong')).toHaveText('Hồ sơ học tập');
+    await panel(page).getByRole('combobox', { name: 'Chức năng', exact: true }).selectOption('');
+    await learner.getByRole('button', { name: 'Tài khoản', exact: true }).click();
+    await expect(row.locator('.session-context > strong')).toHaveText('Tài khoản');
+    await learner.getByRole('button', { name: 'Hồ sơ học tập', exact: true }).click();
+    await expect(row.locator('.session-context > strong')).toHaveText('Hồ sơ học tập');
+    const blank = await context.newPage(); await learner.bringToFront();
+    await page.evaluate(() => window.dispatchEvent(new Event('presence:changed')));
+    await expect(row).toContainText('1 tab'); // about:blank has no tracker or authenticated app socket.
+    await blank.goto('/#/profile'); await expect(blank.getByText('Đã kết nối', { exact: true })).toBeVisible();
+    await expect(row).toContainText('2 tab'); await expect(row).toContainText('2 kết nối');
+    await row.getByRole('button', { name: 'Xem phiên', exact: true }).click();
+    const detail = page.getByRole('dialog', { name: 'Chi tiết phiên', exact: true });
+    await expect(detail.locator('.session-tabs > li')).toHaveCount(2);
+    await expect(detail.locator('.session-tabs .session-context > strong')).toHaveText(['Hồ sơ học tập', 'Hồ sơ học tập']);
+    await detail.getByRole('button', { name: 'Đóng', exact: true }).click();
+    await blank.close(); await expect(row).toContainText('1 tab');
+  } finally { await context.close(); }
+});
+
 test('monitoring API binds real document tabs, deduplicates users and invalidates context without changing online counts', async ({ browser, page }) => {
   await login(page);
   const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
@@ -62,6 +100,11 @@ test('monitoring API binds real document tabs, deduplicates users and invalidate
     await expect.poll(async () => (await read()).items[0]?.primaryContext.lessonTitle).toContain('A day with Linh');
     const learning = (await read()).items[0].primaryContext;
     expect(learning.activity).toBe('LEARN'); expect(learning.roundNumber).toBe(1); expect(learning.attemptId).toBeGreaterThan(0);
+    await learner.getByRole('button', { name: 'Tài khoản', exact: true }).click();
+    await expect.poll(async () => (await read()).items[0]?.primaryContext.activity).toBe('ACCOUNT');
+    expect((await read()).items[0].primaryContext.attemptId).toBeNull();
+    await learner.getByRole('button', { name: 'Hồ sơ học tập', exact: true }).click();
+    await expect.poll(async () => (await read()).items[0]?.primaryContext.activity).toBe('PROFILE');
   } finally { await context.close(); }
 });
 test('one compact online list updates through WebSocket and never duplicates people or panels after repeated tab changes', async ({ browser, page }) => {

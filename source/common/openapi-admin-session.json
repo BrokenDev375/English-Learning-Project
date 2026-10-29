@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Idle session and admin monitoring API steps 0-3",
-    "version": "1.1.0"
+    "title": "Idle session and admin monitoring API",
+    "version": "1.2.0"
   },
   "security": [
     {
@@ -197,6 +197,7 @@
                 "REVIEW",
                 "RESULT",
                 "CATALOG",
+                "ACCOUNT",
                 "PROFILE",
                 "REWARDS",
                 "LEADERBOARD",
@@ -418,6 +419,7 @@
               "REVIEW",
               "RESULT",
               "CATALOG",
+              "ACCOUNT",
               "PROFILE",
               "REWARDS",
               "LEADERBOARD",
@@ -537,6 +539,7 @@
               "REVIEW",
               "RESULT",
               "CATALOG",
+              "ACCOUNT",
               "PROFILE",
               "REWARDS",
               "LEADERBOARD",

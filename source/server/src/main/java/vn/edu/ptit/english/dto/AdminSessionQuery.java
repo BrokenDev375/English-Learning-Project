@@ -7,7 +7,7 @@ import vn.edu.ptit.english.enums.Role;
 import vn.edu.ptit.english.exception.ApiException;
 
 public record AdminSessionQuery(String q, Role role, String activity, int page, int size) {
-    public static final Set<String> ACTIVITIES=Set.of("HOME","LEARN","REVIEW","RESULT","CATALOG","PROFILE","REWARDS","LEADERBOARD","AUTHORING","ADMIN_USERS","STATISTICS","OTHER");
+    public static final Set<String> ACTIVITIES=Set.of("HOME","LEARN","REVIEW","RESULT","CATALOG","ACCOUNT","PROFILE","REWARDS","LEADERBOARD","AUTHORING","ADMIN_USERS","STATISTICS","OTHER");
     public static AdminSessionQuery parse(MultiValueMap<String,String> params) {
         try {
             if(params.entrySet().stream().anyMatch(e->!Set.of("q","role","activity","page","size").contains(e.getKey()) || e.getValue().size()!=1))throw new IllegalArgumentException();

@@ -35,7 +35,7 @@ Hai endpoint yêu cầu phiên cookie hợp lệ, mọi vai trò đã đăng nh�
 - seq>0 báo tiếp; trùng/cũ không cập nhật gì. Tab chưa đăng ký/hơn 75s không báo lại nhận 409 TAB_EXPIRED; client dùng UUID mới và đăng ký context-only, không phát lại tương tác cũ.
 - Tối đa 16 tab metadata còn sống và 256 watermark/phiên. Vượt giới hạn trả 429 TAB_LIMIT; cần phiên mới sau khi dùng hết watermark. Không xóa watermark chỉ để nhận request cũ như mới.
 - Tối đa 120 request activity/phút/phiên, kể cả request trùng. Vượt trả 429 ACTIVITY_RATE_LIMIT, không gia hạn.
-- `activity`: HOME, LEARN, REVIEW, RESULT, CATALOG, PROFILE, REWARDS, LEADERBOARD, AUTHORING, ADMIN_USERS, STATISTICS, OTHER. Đây là tín hiệu màn hình, chưa phải bằng chứng nghiệp vụ/đang thi.
+- `activity`: HOME, LEARN, REVIEW, RESULT, CATALOG, ACCOUNT, PROFILE, REWARDS, LEADERBOARD, AUTHORING, ADMIN_USERS, STATISTICS, OTHER. ACCOUNT là menu Tài khoản (`#/account`), PROFILE là Hồ sơ học tập (`#/profile`). Đây là tín hiệu màn hình, chưa phải bằng chứng nghiệp vụ/đang thi.
 - `visibility`: VISIBLE/HIDDEN. `attemptId` tùy chọn, positive int64, STUDENT và owner hợp lệ; missing/foreign trả 404 RESOURCE_NOT_FOUND. Không nhận tên bài/đáp án/title tùy ý. Bước 3 sẽ ánh xạ nhãn/mode thật khi trả admin DTO.
 - interaction=true mới và seq mới được chấp nhận cập nhật lastInteractionAt theo thời gian server. Không dùng receipt học và không lưu activity trong outbox.
 
@@ -84,6 +84,8 @@ Projection sao chép registry trong khóa ngắn, ghép metadata qua hai truy v�
 ### WebSocket và invalidation
 
 HELLO/HEARTBEAT nhận thêm `tabId` UUID tùy chọn để ghép socket với tab trong đúng phiên HTTP đã xác thực; client cũ không có trường này vẫn dùng được. Tab ID không cấp quyền và không tự tạo context. Heartbeat giữ metadata tab đã tồn tại còn sống, không cập nhật tương tác/deadline/seq hoặc phục sinh tab đã hết cửa sổ.
+
+Nếu tabId đổi trong lúc HELLO chưa ACK, manager gửi HEARTBEAT mang ID mới ngay sau ACK, không chờ chu kỳ 25s. Tab trắng/new tab hoặc trang ngoài ứng dụng không có tracker/socket nên không nằm trong số tab ứng dụng. Chỉ gắn attemptId khi đang ở `/learning`; query attempt còn sót khi chuyển sang Tài khoản/Hồ sơ không được biến context thành LEARN/REVIEW hoặc làm lộ ID sai owner.
 
 Giữ event `{"version":1,"type":"PRESENCE_CHANGED"}` và subscription PRESENCE cũ. Chỉ ADMIN đã subscribe nhận invalidation, không có dữ liệu giám sát trong event. Login/logout, socket/member thay đổi, activity/visibility/tương tác mới làm dirty; phát tối đa một lần/giây, đợt tiếp theo được scheduled flush. Heartbeat/context cùng giá trị và thời gian idle tăng tự nhiên không tự phát event mỗi giây. ACK subscribe/reconnect vẫn yêu cầu GET; bảng và khung chi tiết poll 15s khi visible kể cả socket còn sống, mỗi resource chỉ một GET đang chạy và một refresh queued, giữ dữ liệu cũ khi lỗi. Snapshot của bộ lọc/phiên cũ không thay dữ liệu mới.
 
