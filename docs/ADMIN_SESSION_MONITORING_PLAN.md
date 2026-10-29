@@ -1,6 +1,6 @@
 # Kế hoạch giám sát hoạt động và hết phiên do không tương tác
 
-Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Nền đã kiểm tra: `764d846` / `61af437`. **Hoàn tất bước 0–2**, chưa commit; bước 3–5 chưa triển khai. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md) và [biên bản](../statics/results/admin-session-step012-validation.md) cho kết quả và giới hạn theo từng lượt chạy.
+Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Bước 0–2 đã commit tại `6941339` trên nền `764d846` / `61af437`; **bước 3 hoàn tất trong working tree**, chưa commit. Bước 4–5 chưa triển khai. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md), [biên bản bước 0–2](../statics/results/admin-session-step012-validation.md) và [bước 3](../statics/results/admin-session-step3-validation.md) cho kết quả và giới hạn từng lượt chạy.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -205,11 +205,13 @@ Mobile: summary xuống dòng, bảng cuộn trong khung hoặc card; khung chi 
 
 ### Bước 3 — API giám sát và invalidation
 
-- [ ] Projection theo account/session/tab, lookup batch user và context hợp lệ, filter/page/count nhất quán.
-- [ ] Invalidation hoạt động có coalescing, ADMIN-only, giữ hợp đồng presence cũ và reconnect GET.
-- [ ] Kiểm thử quyền, ID giả/foreign, nhiều tab đếm một account, đổi hoạt động khi số người không đổi, mất socket còn phiên HTTP.
+- [x] Projection theo account/session/tab, lookup batch user và context hợp lệ, filter/page/count nhất quán.
+- [x] Invalidation hoạt động có coalescing, ADMIN-only, giữ hợp đồng presence cũ và reconnect GET.
+- [x] Kiểm thử quyền, ID giả/foreign, nhiều tab đếm một account, đổi hoạt động khi số người không đổi, mất socket còn phiên HTTP.
 
 Đạt khi không lộ session ID/đáp án, không N+1 và admin đọc không kéo dài phiên của người bị theo dõi.
+
+Triển khai trên nền `6941339`, chưa commit; phạm vi và bằng chứng tại [biên bản bước 3](../statics/results/admin-session-step3-validation.md). Bảng/khung giám sát mới vẫn thuộc bước 4.
 
 ### Bước 4 — Trang admin và tích hợp khóa
 

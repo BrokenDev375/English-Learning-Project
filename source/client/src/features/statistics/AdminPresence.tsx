@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, errorMessage } from '../../api';
-import { presenceSnapshot, watchPresence } from '../connection/manager';
+import { watchPresence } from '../connection/manager';
 import { initials } from '../../components/Brand';
 import { roleNames } from '../../types';
 import type { Role } from '../../types';
@@ -22,7 +22,7 @@ export default function AdminPresence() {
     }
     const refresh = () => { void load(); };
     refresh();
-    const timer = window.setInterval(() => { if (!presenceSnapshot()) refresh(); }, 30000);
+    const timer = window.setInterval(refresh, 15000);
     document.addEventListener('visibilitychange', refresh); window.addEventListener('online', refresh); window.addEventListener('presence:changed', refresh);
     const unwatch = watchPresence();
     return () => { active = false; unwatch(); window.clearInterval(timer); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); window.removeEventListener('presence:changed', refresh); };

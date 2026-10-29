@@ -1,4 +1,5 @@
-import { api, ApiError, requestId, authenticationEpoch } from '../../api';
+import { api, ApiError, authenticationEpoch } from '../../api';
+import { renewActivityTab } from './tab';
 
 export interface SessionDeadline {
   sessionGeneration: string; serverTime: string; lastInteractionAt: string; idleExpiresAt: string; warningAt: string;
@@ -11,7 +12,7 @@ export function publishLearningContext(attemptId: number, activity: 'LEARN' | 'R
   return () => { if (learningContext === value) learningContext = null; };
 }
 export class ActivityTracker {
-  private tabId = requestId();
+  private tabId = renewActivityTab();
   private seq = 0;
   private stopped = false;
   private registered = false;
@@ -76,7 +77,7 @@ export class ActivityTracker {
       this.stop(); window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: e.code, epoch: this.epoch } })); return;
     }
     if (e instanceof ApiError && e.code === 'TAB_EXPIRED') {
-      this.registered = false; this.tabId = requestId(); this.seq = 0;
+      this.registered = false; this.tabId = renewActivityTab(); this.seq = 0;
       this.error = ''; window.clearTimeout(this.queued);
       this.queued = window.setTimeout(() => void this.check(), 0); return;
     }

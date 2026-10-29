@@ -32,6 +32,8 @@ class SessionActivityApiTest {
     @Autowired PasswordEncoder passwords;
     @Autowired ObjectMapper json;
     @Autowired SessionActivityRegistry registry;
+    @Autowired vn.edu.ptit.english.security.LiveConnections live;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     @LocalServerPort int port;
     String email;
     @BeforeEach void create(){time.time=Instant.now();email=UUID.randomUUID()+"@test.local";users.create(email,passwords.encode("TestPass@123"),"Idle test",Role.STUDENT);}
@@ -44,7 +46,8 @@ class SessionActivityApiTest {
             return http.send(b.method(method,body==null?HttpRequest.BodyPublishers.noBody():HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build(),HttpResponse.BodyHandlers.ofString());
         }
         void token()throws Exception{csrf=json.readTree(call("GET","/api/auth/csrf",null).body()).path("token").asText();}
-        void login()throws Exception{token();assertThat(call("POST","/api/auth/login",Map.of("email",email,"password","TestPass@123")).statusCode()).isEqualTo(200);token();}
+        void login()throws Exception{login(email);}
+        void login(String address)throws Exception{token();assertThat(call("POST","/api/auth/login",Map.of("email",address,"password","TestPass@123")).statusCode()).isEqualTo(200);token();}
     }
     Map<String,Object> report(String tab,long seq,boolean active){return Map.of("tabId",tab,"seq",seq,"activity","HOME","visibility","VISIBLE","interaction",active);}
     @Test void authenticatedSessionAndContextHavePrivateNoStoreResponsesAndStrictInput()throws Exception{
@@ -79,5 +82,46 @@ class SessionActivityApiTest {
         var state=json.readTree(c.call("GET","/api/auth/session",null).body());time.time=Instant.parse(state.path("idleExpiresAt").asText());registry.sweep();
         assertThat(close.get(10,java.util.concurrent.TimeUnit.SECONDS)).isEqualTo("1008:IDLE_TIMEOUT");
         assertThat(c.call("GET","/api/auth/me",null).statusCode()).isEqualTo(401);socket.abort();
+    }
+    Client admin()throws Exception{
+        String address=UUID.randomUUID()+"@admin.test";users.create(address,passwords.encode("TestPass@123"),"Session admin",Role.ADMIN);
+        var c=new Client();c.login(address);return c;
+    }
+    @Test void monitoringEndpointsRequireCurrentAdminAndReturnPrivateOpaqueDetail()throws Exception{
+        var guest=new Client();assertThat(guest.call("GET","/api/admin/sessions",null).statusCode()).isEqualTo(401);
+        var student=new Client();student.login();assertThat(student.call("GET","/api/admin/sessions",null).statusCode()).isEqualTo(403);
+        String teacherEmail=UUID.randomUUID()+"@teacher.test";users.create(teacherEmail,passwords.encode("TestPass@123"),"Teacher",Role.TEACHER);
+        var teacher=new Client();teacher.login(teacherEmail);assertThat(teacher.call("GET","/api/admin/sessions/no-such-ref",null).statusCode()).isEqualTo(403);
+        var a=admin();var source=registry.snapshot().stream().filter(s->s.userId()==users.findByEmail(email).orElseThrow().id()).findFirst().orElseThrow();
+        var response=a.call("GET","/api/admin/sessions/"+source.sessionRef(),null);
+        assertThat(response.statusCode()).withFailMessage(response.body()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("private","no-store");
+        assertThat(response.body()).doesNotContain(source.id(),"JSESSIONID","passwordHash","securityVersion");
+        assertThat(a.call("GET","/api/admin/sessions/"+source.id(),null).statusCode()).isEqualTo(404);
+        assertThat(a.call("GET","/api/admin/sessions?size=51",null).statusCode()).isEqualTo(400);
+        assertThat(a.call("GET","/api/admin/sessions?q=a&q=b",null).statusCode()).isEqualTo(400);
+    }
+    @Test void monitoringJoinsRealMetadataRejectsForeignAttemptAndRetainsDisconnectedHttpSession()throws Exception{
+        var a=admin();var s=new Client();s.login();long uid=users.findByEmail(email).orElseThrow().id();String tab=UUID.randomUUID().toString();
+        jdbc.update("insert into attempts(user_id,mode,selection_json,player_state_json) values (?,'REVIEW','{}',?)",uid,
+            json.writeValueAsString(vn.edu.ptit.english.dto.AttemptData.PlayerState.empty()));
+        long attempt=jdbc.queryForObject("select max(id) from attempts where user_id=?",Long.class,uid);
+        var body=new HashMap<String,Object>(report(tab,0,false));body.put("attemptId",attempt);body.put("activity","LEARN");
+        assertThat(s.call("POST","/api/auth/activity",body).statusCode()).isEqualTo(200);
+        var actor=vn.edu.ptit.english.security.UserPrincipal.from(users.findByEmail(email).orElseThrow());
+        var source=registry.snapshot().stream().filter(x->x.userId()==uid).findFirst().orElseThrow();
+        var socket=org.mockito.Mockito.mock(org.springframework.web.socket.WebSocketSession.class);
+        org.mockito.Mockito.when(socket.getId()).thenReturn("monitor-"+tab);org.mockito.Mockito.when(socket.isOpen()).thenReturn(true);
+        live.attach(socket,actor,source.id());live.bindTab(socket.getId(),tab);
+        var response=a.call("GET","/api/admin/sessions?q="+URLEncoder.encode(email,java.nio.charset.StandardCharsets.UTF_8),null);
+        assertThat(response.statusCode()).withFailMessage(response.body()).isEqualTo(200);
+        var page=json.readTree(response.body());assertThat(page.path("totalElements").asInt()).isEqualTo(1);
+        assertThat(page.at("/items/0/primaryContext/activity").asText()).isEqualTo("REVIEW");
+        var foreign=new Client();String foreignEmail=UUID.randomUUID()+"@other.test";users.create(foreignEmail,passwords.encode("TestPass@123"),"Other",Role.STUDENT);foreign.login(foreignEmail);
+        assertThat(foreign.call("POST","/api/auth/activity",body).statusCode()).isEqualTo(404);
+        live.detach(socket.getId());time.advance(60000);
+        var detail=a.call("GET","/api/admin/sessions/"+source.sessionRef(),null);
+        assertThat(detail.statusCode()).isEqualTo(200);assertThat(json.readTree(detail.body()).at("/session/connected").asBoolean()).isFalse();
+        assertThat(Instant.parse(json.readTree(detail.body()).at("/session/idleExpiresAt").asText())).isEqualTo(source.idleExpiresAt());
     }
 }

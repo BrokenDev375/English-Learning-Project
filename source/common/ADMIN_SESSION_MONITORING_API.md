@@ -1,6 +1,6 @@
-# Hợp đồng phiên không tương tác — bước 0–2
+# Hợp đồng phiên không tương tác và giám sát — bước 0–3
 
-Nền `764d846`, bổ sung ngày 29/10/2026. Bản này chỉ gồm phiên cá nhân và client tracker; bảng giám sát admin thuộc bước 3–4, chưa có API `/api/admin/sessions`.
+Nền bước 0–2 tại `6941339`, bổ sung ngày 29/10/2026. Gồm phiên cá nhân, client tracker và API giám sát admin bước 3; bảng/khung chi tiết giao diện mới thuộc bước 4.
 
 ## HTTP
 
@@ -56,6 +56,36 @@ Public health/login/register/CSRF vẫn truy cập được với cookie cũ; lo
 - Client dùng serverTime bù lệch giờ, không tự kết luận server hết phiên chỉ vì đồng hồ cục bộ. Mạng lỗi hiển thị chưa xác minh; tiếp tục phải có ACK thật.
 - Hết phiên pause sender, flush nháp local nếu được, fence API/CSRF callbacks theo vòng auth, giữ journal/pending và route học. Không gọi logout/purge. Cùng user login lại hydrate/replay M06; tài khoản khác không nhận dữ liệu cũ.
 - Chính sách session 8h của servlet vẫn giữ làm trần dự phòng. Idle áp dụng riêng cho cả ba vai trò.
+
+## Giám sát quản trị — bước 3
+
+Chỉ ADMIN hiện hành được đọc; session cookie, AccountGuard và idle gate vẫn áp dụng. Mọi response thành công có `Cache-Control: no-store, private`. Không có API gia hạn/kết thúc phiên của người khác trong bước này.
+
+### `GET /api/admin/sessions`
+
+Tham số: `q` tên/email (trim, không phân biệt hoa thường, tối đa 100 ký tự), `role` STUDENT/TEACHER/ADMIN, `activity` thuộc tập chức năng activity, `page` từ 0 đến 1000000 (mặc định 0), `size` 1–50 (mặc định 20). Tham số lạ, lặp hoặc sai giá trị trả 400 `INVALID_SESSION_QUERY`. IDLE là chiều tương tác riêng, không phải activity.
+
+Response `serverTime`, `basis=LOCAL_BACKEND_LIVE_SOCKET`, `summary`, `items`, `totalElements`, `page`, `size`; schema đầy đủ trong OpenAPI. Chỉ đưa tài khoản ACTIVE có ít nhất một socket mở còn heartbeat và phiên registry còn hạn vào danh sách. Một tài khoản chỉ có một dòng; sắp theo userId tăng. Bộ lọc áp dụng trước tổng và phân trang; trang ngoài phạm vi trả `items=[]` nhưng giữ tổng đúng.
+
+- `summary.connectedAccounts`: số tài khoản phù hợp bộ lọc, không phải số phiên/tab. `activities` chia mỗi tài khoản vào đúng activity đại diện; `idleAccounts` là tập con riêng.
+- `validSessions`: tổng phiên HTTP còn hạn của các tài khoản đó, kể cả phiên đã mất socket. Không phải tổng mọi phiên offline của hệ thống.
+- `tabs` và `Account.tabCount`: tab đã báo context trong 75s và được gắn ít nhất một socket sống; nhiều socket cùng tab vẫn đếm một. `openConnections` đếm socket; socket client cũ chưa gắn tab vẫn đếm online nhưng context là OTHER/visibility UNKNOWN nếu không còn tab khác.
+- `Account.sessions`: các phiên còn hạn với `sessionRef`, `loginAt`, `lastInteractionAt`, `idleExpiresAt`, `interactionState`, `connected`, `openConnections`, `tabCount`. Riêng `Session.tabCount` đếm metadata tab còn hạn, bao gồm tab chưa có socket.
+- Activity đại diện: tab có socket, VISIBLE và có tương tác gần nhất; nếu không có thì tab có socket được thấy gần nhất. Hòa timestamp dùng tabRef để ổn định. Trạng thái tương tác account lấy thời điểm tương tác mới nhất giữa các phiên, deadline account là hạn muộn nhất; mỗi phiên vẫn có deadline độc lập trong chi tiết.
+
+### `GET /api/admin/sessions/{sessionRef}`
+
+Trả `serverTime`, `basis`, `user`, `session`, `tabs`. Một phiên mất socket vẫn được đọc nếu còn hạn. Handle giả, raw session ID, phiên đã logout/hết hạn hoặc tài khoản không còn ACTIVE cùng trả 404 `SESSION_NOT_FOUND`. Đây là mã tham chiếu ngẫu nhiên, không phải credential; chỉ ADMIN mới dùng được.
+
+Tab gồm `tabRef`, `connected`, `visibility`, `lastInteractionAt` (null khi chưa có tương tác), `lastSeenAt`, `context`. Context chứa activity, attemptId và tên bài/roundNumber nếu có. Có Attempt thì server kiểm tra lại owner, lấy mode/state và tên từ LessonVersion đã chốt; RESULT chỉ hợp lệ khi đã nộp. Thiếu hoặc sai owner trở thành OTHER và không trả metadata. Context không có Attempt chỉ là tín hiệu route do client báo, không chứng minh đang chú ý học. Không trả đáp án, nội dung câu, pending command, URL, cookie, HttpSession ID hoặc securityVersion.
+
+Projection sao chép registry trong khóa ngắn, ghép metadata qua hai truy vấn batch scalar user/Attempt (bỏ truy vấn rỗng); không đọc collection đáp án/phiên bản hoặc truy vấn từng hàng. Đây là snapshot RAM + DB tại một backend, không cam kết ảnh chụp nguyên tử giữa các nguồn. GET không touch/expire/gia hạn phiên đang được xem; worker idle vẫn dọn riêng.
+
+### WebSocket và invalidation
+
+HELLO/HEARTBEAT nhận thêm `tabId` UUID tùy chọn để ghép socket với tab trong đúng phiên HTTP đã xác thực; client cũ không có trường này vẫn dùng được. Tab ID không cấp quyền và không tự tạo context. Heartbeat giữ metadata tab đã tồn tại còn sống, không cập nhật tương tác/deadline/seq hoặc phục sinh tab đã hết cửa sổ.
+
+Giữ event `{"version":1,"type":"PRESENCE_CHANGED"}` và subscription PRESENCE cũ. Chỉ ADMIN đã subscribe nhận invalidation, không có dữ liệu giám sát trong event. Login/logout, socket/member thay đổi, activity/visibility/tương tác mới làm dirty; phát tối đa một lần/giây, đợt tiếp theo được scheduled flush. Heartbeat/context cùng giá trị và thời gian idle tăng tự nhiên không tự phát event mỗi giây. ACK subscribe/reconnect vẫn yêu cầu GET; giao diện online cũ poll 15s khi visible kể cả socket còn sống, chỉ một GET đang chạy và một refresh queued, giữ dữ liệu cũ khi lỗi. Trang chi tiết/bảng giám sát mới thuộc bước 4.
 
 ## Cấu hình
 

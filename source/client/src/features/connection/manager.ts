@@ -1,4 +1,5 @@
 import { api, ApiError, requestId } from '../../api';
+import { activityTabId } from '../session/tab';
 
 export type ConnectionState = 'connecting' | 'connected' | 'interrupted' | 'auth-required';
 export const connectionConfig = { heartbeatMs: 25000, ackMs: 10000, backoffMs: 1000, maxBackoffMs: 30000, pollMs: 30000 };
@@ -24,9 +25,11 @@ export class ConnectionManager {
   private resources = new Set<number>();
   private ready = new Set<number>();
   constructor(private userId: number, private random = Math.random, private student = false) {}
-  start() { window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
+  private tabChanged = () => { if (state === 'connected') this.send('HEARTBEAT'); };
+  start() { window.addEventListener('session-tab-changed', this.tabChanged); window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
   stop() {
     this.stopped = true; this.generation++; window.removeEventListener('online', this.wake); window.removeEventListener('focus', this.wake);
+    window.removeEventListener('session-tab-changed', this.tabChanged);
     this.clear(); this.socket?.close(); this.socket = null;
   }
   private clear() {
@@ -48,7 +51,7 @@ export class ConnectionManager {
     const id = requestId();
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
     this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE' });
-    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}) }));
+    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(['HELLO', 'HEARTBEAT'].includes(type) ? { tabId: activityTabId() } : {}) }));
   }
   private connect() {
     if (this.stopped || this.socket) return;

@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 class AccountSocketHandlerTest {
     final ObjectMapper json = new ObjectMapper();
     final LiveConnectionsTest.Time clock = new LiveConnectionsTest.Time();
-    final LiveConnections live = new LiveConnections(clock, json, 1000);
+    final LiveConnections live = new LiveConnections(clock, json, 75000);
     final AccountGuard guard = mock(AccountGuard.class);
     final ConnectionService access = mock(ConnectionService.class);
     final AccountSocketHandler handler = new AccountSocketHandler(json, live, guard, access);
@@ -87,9 +87,10 @@ class AccountSocketHandlerTest {
         send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE")); admin.messages().clear();
         var owner = connect("owner", 2, Role.STUDENT); connect("other-tab", 2, Role.STUDENT);
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,3));
-        assertThat(admin.messages()).hasSize(2).allSatisfy(m -> { assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"); assertThat(m.size()).isEqualTo(2); });
+        clock.advance(1000); live.flushPresence();
+        assertThat(admin.messages()).hasSize(1).allSatisfy(m -> { assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"); assertThat(m.size()).isEqualTo(2); });
         assertThat(owner.messages()).extracting(m -> m.path("type").asText()).containsExactly("CONNECTED");
-        admin.messages().clear(); clock.advance(800); send(admin, "HEARTBEAT", Map.of());
+        admin.messages().clear(); clock.advance(73800); send(admin, "HEARTBEAT", Map.of());
         assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("ACK");
         admin.messages().clear(); clock.advance(300); live.sweep();
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
@@ -105,13 +106,14 @@ class AccountSocketHandlerTest {
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,2));
         live.accessChanged(new AccountAccessChanged(2));
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(1,1));
-        assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("PRESENCE_CHANGED", "PRESENCE_CHANGED");
+        clock.advance(1000); live.flushPresence();
+        assertThat(admin.messages()).extracting(m -> m.path("type").asText()).containsExactly("PRESENCE_CHANGED");
     }
     @Test void failedAdminRecipientIsRemovedAndRemainingAdminsAreNotifiedWithoutRecursiveBroadcast() throws Exception {
         var admin = connect("admin", 1, Role.ADMIN); send(admin, "SUBSCRIBE", Map.of("resource", "PRESENCE"));
         var failed = connect("failed", 2, Role.ADMIN); send(failed, "SUBSCRIBE", Map.of("resource", "PRESENCE")); admin.messages().clear();
         doThrow(new java.io.IOException("test disconnect")).when(failed.socket()).sendMessage(any());
-        connect("owner", 3, Role.STUDENT);
+        connect("owner", 3, Role.STUDENT); clock.advance(1000); live.flushPresence();
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,2));
         assertThat(admin.messages()).isNotEmpty().allSatisfy(m -> assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"));
         verify(failed.socket()).close(any(CloseStatus.class));
@@ -119,9 +121,18 @@ class AccountSocketHandlerTest {
     @Test void rewardSubscriptionDoesNotBypassHeartbeatExpiry() throws Exception {
         var client = connect("expiring", 1, Role.STUDENT);
         send(client, "SUBSCRIBE", Map.of("resource", "GAMIFICATION")); client.messages().clear();
-        clock.advance(1001); live.sweep();
+        clock.advance(75001); live.sweep();
         assertThat(live.presence(1).online()).isFalse();
         live.notifyGamification(1, "{\"type\":\"GAMIFICATION_CHANGED\"}");
         assertThat(client.messages()).isEmpty(); verify(client.socket()).close(any(CloseStatus.class));
+    }
+    @Test void helloAndHeartbeatBindOnlyValidTabIdsOnTheAuthenticatedSocket()throws Exception{
+        var client=connect("tab-owner",1,Role.STUDENT);String tab=UUID.randomUUID().toString();
+        assertThat(send(client,"HELLO",Map.of("tabId",tab)).path("type").asText()).isEqualTo("ACK");
+        assertThat(live.monitoringSnapshot().get(0).tabId()).isEqualTo(tab);
+        assertThat(send(client,"HEARTBEAT",Map.of("tabId","bad")).path("code").asText()).isEqualTo("INVALID_MESSAGE");
+        assertThat(live.monitoringSnapshot().get(0).tabId()).isEqualTo(tab);
+        String next=UUID.randomUUID().toString();send(client,"HEARTBEAT",Map.of("tabId",next));
+        assertThat(live.monitoringSnapshot().get(0).tabId()).isEqualTo(next);
     }
 }

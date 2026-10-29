@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 const compile = path => ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 const trackerCode = compile('../src/features/session/tracker.ts');
+const tabCode = compile('../src/features/session/tab.ts');
 const apiCode = compile('../src/api.ts');
 const settle = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 class ApiError extends Error { constructor(status, code) { super(code); this.status = status; this.code = code; } }
@@ -29,8 +30,10 @@ function fixture(options = {}) {
     return state();
   };
   const module = {};
+  const ports = { api, ApiError, requestId: () => 'tab-' + ++serial, authenticationEpoch: () => epoch }, tab = {};
+  new Function('require', 'exports', 'window', tabCode)(() => ports, tab, window);
   new Function('require', 'exports', 'window', 'document', 'navigator', 'location', 'Date', 'BroadcastChannel', trackerCode)(
-    () => ({ api, ApiError, requestId: () => 'tab-' + ++serial, authenticationEpoch: () => epoch }), module,
+    path => path === './tab' ? tab : ports, module,
     window, document, { onLine: true }, location, Time, undefined);
   window.addEventListener('session-expired', e => expired.push(e.detail));
   const tracker = new module.ActivityTracker(v => views.push(v)); tracker.start();

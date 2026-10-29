@@ -23,6 +23,7 @@ public class LiveConnections implements HttpSessionListener {
         final WebSocketSession session;
         final Role role;
         volatile boolean presenceSubscribed;
+        volatile String tabId;
         final Set<Long> subscriptions = ConcurrentHashMap.newKeySet();
         volatile long lastSeen;
         long window; int messages;
@@ -37,10 +38,13 @@ public class LiveConnections implements HttpSessionListener {
     private final ObjectMapper json;
     private OnlineSnapshot announcedPresence = new OnlineSnapshot(Set.of(), 0);
     private boolean publishingPresence;
+    private boolean presenceDirty;
+    private long lastPresenceSent = -1000;
     private SessionActivityRegistry activity;
     @org.springframework.beans.factory.annotation.Autowired
     public void sessionActivity(SessionActivityRegistry activity) {
         this.activity=activity;
+        activity.onChanged(this::activityChanged);
         activity.onClosing(id -> sockets.forEach((key,socket) -> {
             if(socket.httpSessionId.equals(id)) {
                 sockets.remove(key,socket);
@@ -62,6 +66,17 @@ public class LiveConnections implements HttpSessionListener {
         presenceChanged();
     }
     public void detach(String id) { if (sockets.remove(id) != null) presenceChanged(); }
+    public void bindTab(String id, String tabId) {
+        var socket=sockets.get(id);
+        if(socket!=null && !java.util.Objects.equals(socket.tabId,tabId)) {socket.tabId=tabId;activityChanged();}
+    }
+    /** Internal join keys, never an API DTO. */
+    public record SocketSnapshot(String sessionId, String tabId, long userId) {}
+    public java.util.List<SocketSnapshot> monitoringSnapshot() {
+        long now=clock.millis();
+        return sockets.values().stream().filter(s->s.session.isOpen() && now-s.lastSeen<timeout)
+            .map(s->new SocketSnapshot(s.httpSessionId,s.tabId,s.userId)).toList();
+    }
     public boolean allowMessage(String id) {
         var socket = sockets.get(id); if (socket == null) return false;
         if(activity!=null && !activity.current(socket.httpSessionId))return false;
@@ -75,7 +90,9 @@ public class LiveConnections implements HttpSessionListener {
     }
     public void heartbeat(String id) {
         var socket = sockets.get(id);
-        if (socket != null) { long now = clock.millis(); boolean stale = now - socket.lastSeen >= timeout; socket.lastSeen = now; if (stale) presenceChanged(); }
+        if (socket != null) { long now = clock.millis(); boolean stale = now - socket.lastSeen >= timeout; socket.lastSeen = now;
+            if(activity!=null)activity.socketSeen(socket.httpSessionId,socket.tabId);
+            if (stale) presenceChanged(); }
     }
     public boolean subscribePresence(String id, boolean enabled) {
         var socket = sockets.get(id);
@@ -101,21 +118,26 @@ public class LiveConnections implements HttpSessionListener {
         try { socket.session.close(new CloseStatus(1001, "HEARTBEAT_TIMEOUT")); } catch (IOException | RuntimeException ignored) {}
     }
     /** Invalidation only: admins re-read the authorized snapshot, including after subscription ACK. */
+    private synchronized void activityChanged() { presenceDirty=true;flushPresence(); }
     private synchronized void presenceChanged() {
+        var current=onlineSnapshot();
+        if(!current.equals(announcedPresence)) {announcedPresence=current;presenceDirty=true;}
+        flushPresence();
+    }
+    @Scheduled(fixedDelay = 1000)
+    public synchronized void flushPresence() {
+        if(!presenceDirty || clock.millis()-lastPresenceSent<1000)return;
         if (publishingPresence) return;
         publishingPresence = true;
+        presenceDirty=false;
+        lastPresenceSent=clock.millis();
         try {
-            for (;;) {
-                var current = onlineSnapshot();
-                if (current.equals(announcedPresence)) return;
-                announcedPresence = current;
                 for (var socket : sockets.values()) {
                     if (socket.role != Role.ADMIN || !socket.presenceSubscribed || !socket.session.isOpen()
                         || clock.millis() - socket.lastSeen >= timeout) continue;
                     try { socket.session.sendMessage(new TextMessage("{\"version\":1,\"type\":\"PRESENCE_CHANGED\"}")); }
-                    catch (IOException | RuntimeException ignored) { expire(socket); }
+                    catch (IOException | RuntimeException ignored) { expire(socket);presenceDirty=true; }
                 }
-            }
         } finally { publishingPresence = false; }
     }
     public vn.edu.ptit.english.dto.ConnectionViews.Presence presence(long userId) {

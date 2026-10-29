@@ -24,6 +24,45 @@ async function login(page: Page, connected = true) {
 }
 function panel(page: Page) { return page.getByLabel('Người đang online', { exact: true }); }
 function users(page: Page) { return panel(page).getByRole('listitem'); }
+
+test('monitoring API binds real document tabs, deduplicates users and invalidates context without changing online counts', async ({ browser, page }) => {
+  await login(page);
+  const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  try {
+    const learner = await context.newPage(); await learner.goto('/');
+    const email = `monitor-${randomUUID()}@test.local`, password = 'Presence@12345';
+    await write(learner, '/api/auth/register', { email, password, fullName: 'Giám sát nhiều tab' });
+    await write(learner, '/api/auth/login', { email, password }); await learner.reload();
+    await expect(learner.getByText('Đã kết nối', { exact: true })).toBeVisible();
+    const tab = await context.newPage(); await tab.goto('/'); await expect(tab.getByText('Đã kết nối', { exact: true })).toBeVisible();
+    const endpoint = '/api/admin/sessions?q=' + encodeURIComponent(email);
+    const read = async () => (await page.request.get(endpoint)).json();
+    await expect.poll(async () => (await read()).items[0]?.tabCount).toBe(2);
+    const before = await read(); expect(before.totalElements).toBe(1); expect(before.summary.connectedAccounts).toBe(1);
+    expect(before.items[0].validSessionCount).toBe(1); expect(before.items[0].openConnections).toBe(2);
+    const ref = before.items[0].sessions[0].sessionRef;
+    const detail = await page.request.get('/api/admin/sessions/' + ref);
+    expect(detail.headers()['cache-control']).toContain('no-store');
+    const body = await detail.json(); expect(body.tabs).toHaveLength(2); expect(body.tabs.every((t: { connected: boolean }) => t.connected)).toBe(true);
+    expect(JSON.stringify(body)).not.toMatch(/JSESSIONID|securityVersion|passwordHash|answers|selection_json/);
+    expect((await learner.request.get('/api/admin/sessions/' + ref)).status()).toBe(403);
+    const refresh = page.waitForResponse(r => r.url().endsWith(path) && r.status() === 200);
+    await tab.goto('/#/profile'); await refresh;
+    await expect.poll(async () => (await read()).items[0]?.primaryContext.activity).toBe('PROFILE');
+    expect((await read()).summary.connectedAccounts).toBe(1);
+    await tab.close();
+    await expect.poll(async () => (await read()).items[0]?.openConnections).toBe(1);
+    await learner.goto('/#/home');
+    await learner.getByRole('button', { name: 'Vào chơi', exact: true }).click();
+    await learner.getByRole('button', { name: /^Chơi (?:tiếp )?vòng 1 →$/ }).click();
+    await learner.getByRole('button', { name: /Chơi bài 1 · A day with Linh/ }).click();
+    await learner.getByRole('button', { name: 'Bắt đầu chơi', exact: true }).click();
+    await expect(learner.locator('.question-nav button')).toHaveCount(10);
+    await expect.poll(async () => (await read()).items[0]?.primaryContext.lessonTitle).toContain('A day with Linh');
+    const learning = (await read()).items[0].primaryContext;
+    expect(learning.activity).toBe('LEARN'); expect(learning.roundNumber).toBe(1); expect(learning.attemptId).toBeGreaterThan(0);
+  } finally { await context.close(); }
+});
 test('one compact online list updates through WebSocket and never duplicates people or panels after repeated tab changes', async ({ browser, page }) => {
   const admin = await login(page); await expect(users(page)).toHaveCount(1); await expect(users(page)).toContainText(admin.fullName);
   await expect(panel(page).getByRole('button')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Tải lại', exact: true })).toHaveCount(0);

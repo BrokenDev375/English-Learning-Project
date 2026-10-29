@@ -6,6 +6,9 @@ import ts from 'typescript';
 const code = ts.transpileModule(readFileSync(new URL('../src/features/connection/manager.ts', import.meta.url), 'utf8'), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
+const tabCode = ts.transpileModule(readFileSync(new URL('../src/features/session/tab.ts', import.meta.url), 'utf8'), {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+}).outputText;
 class ApiError extends Error { constructor(status) { super('test'); this.status = status; } }
 function fixture(authenticated = true, authenticate = async () => { if (!authenticated) throw new ApiError(401); return { id: 7 }; }) {
   let now = 0, serial = 0;
@@ -24,7 +27,9 @@ function fixture(authenticated = true, authenticate = async () => { if (!authent
     async close(code = 1000) { if (this.readyState === 3) return; this.readyState = 3; await this.onclose?.({ code }); }
   }
   const module = {};
-  new Function('require', 'exports', 'window', 'location', 'WebSocket', code)(() => ({ ApiError, requestId: () => 'request-' + ++serial, api: authenticate }), module, window, { protocol: 'http:', host: 'test.local' }, Socket);
+  const ports = { ApiError, requestId: () => 'request-' + ++serial, api: authenticate }, tab = {};
+  new Function('require', 'exports', 'window', tabCode)(() => ports, tab, window);
+  new Function('require', 'exports', 'window', 'location', 'WebSocket', code)(path => path.endsWith('/tab') ? tab : ports, module, window, { protocol: 'http:', host: 'test.local' }, Socket);
   async function advance(ms) {
     const until = now + ms;
     for (;;) {
@@ -36,7 +41,7 @@ function fixture(authenticated = true, authenticate = async () => { if (!authent
     }
     now = until;
   }
-  return { module, sockets, window, advance, timers };
+  return { module, sockets, window, advance, timers, tab };
 }
 
 {
@@ -140,4 +145,13 @@ for (const outcome of ['401', 'success']) {
   manager.watchPresence(false); assert.equal(manager.presenceLive, false); assert.equal(f.sockets[1].sent.at(-1).type, 'UNSUBSCRIBE');
   f.sockets[1].message({ type: 'PRESENCE_CHANGED' }); assert.equal(changed, 3); manager.stop();
 }
-console.log('PASS: 10 deterministic manager scenarios, including admin presence subscribe/ACK/reconnect/unsubscribe and obsolete callbacks.');
+{
+  const f = fixture(), manager = new f.module.ConnectionManager(7, () => 0);
+  manager.start(); const socket = f.sockets[0]; socket.message({ type: 'CONNECTED', userId: 7 });
+  const hello = socket.sent.at(-1); assert.equal(hello.tabId, f.tab.activityTabId());
+  socket.message({ type: 'ACK', requestId: hello.requestId });
+  const renewed = f.tab.renewActivityTab(); assert.notEqual(renewed, hello.tabId);
+  assert.equal(socket.sent.at(-1).type, 'HEARTBEAT'); assert.equal(socket.sent.at(-1).tabId, renewed);
+  manager.stop(); const count = socket.sent.length; f.tab.renewActivityTab(); assert.equal(socket.sent.length, count);
+}
+console.log('PASS: 11 deterministic manager scenarios, including admin presence, reconnect and document tab binding.');
