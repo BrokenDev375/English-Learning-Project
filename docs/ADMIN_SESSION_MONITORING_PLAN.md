@@ -1,6 +1,6 @@
 # Kế hoạch giám sát hoạt động và hết phiên do không tương tác
 
-Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Bước 0–2 đã commit tại `6941339` trên nền `764d846` / `61af437`; **bước 3 hoàn tất trong working tree**, chưa commit. Bước 4–5 chưa triển khai. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md), [biên bản bước 0–2](../statics/results/admin-session-step012-validation.md) và [bước 3](../statics/results/admin-session-step3-validation.md) cho kết quả và giới hạn từng lượt chạy.
+Ngày lập: **29/10/2026**. Nhánh: `feature/admin-session-monitoring`. Bước 0–2 đã commit tại `6941339`, bước 3 tại `77dcbea`; bước 4 triển khai trong working tree, chưa commit. Bước 5 chưa nghiệm thu. Xem [tiến độ](ADMIN_SESSION_MONITORING_PROGRESS.md), [biên bản bước 0–2](../statics/results/admin-session-step012-validation.md), [bước 3](../statics/results/admin-session-step3-validation.md) và [bước 4](../statics/results/admin-session-step4-validation.md) cho bằng chứng từng lượt chạy.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -11,8 +11,8 @@ P0 gồm:
 - [x] Registry phiên/tab và thời điểm tương tác, tách khỏi heartbeat.
 - [x] Server kiểm tra hạn idle ở HTTP, WebSocket và sweep nền.
 - [x] Client báo hoạt động, cảnh báo trước 30 giây, xử lý hết phiên đúng lý do.
-- [ ] Bảng giám sát realtime, lọc/phân trang và khung chi tiết phiên trên trang admin hiện tại.
-- [ ] Khóa tài khoản từ bảng giám sát, tái sử dụng API/transaction/quyền M01.
+- [x] Bảng giám sát realtime, lọc/phân trang và khung chi tiết phiên trên trang admin hiện tại.
+- [x] Khóa tài khoản từ bảng giám sát, tái sử dụng API/transaction/quyền M01.
 - [x] Phục hồi nháp/pending M06 sau khi hết phiên và đăng nhập lại đúng user.
 - [ ] Kiểm thử quyền, concurrency, nhiều tab/thiết bị, mất mạng và hồi quy.
 
@@ -211,13 +211,13 @@ Mobile: summary xuống dòng, bảng cuộn trong khung hoặc card; khung chi 
 
 Đạt khi không lộ session ID/đáp án, không N+1 và admin đọc không kéo dài phiên của người bị theo dõi.
 
-Triển khai trên nền `6941339`, chưa commit; phạm vi và bằng chứng tại [biên bản bước 3](../statics/results/admin-session-step3-validation.md). Bảng/khung giám sát mới vẫn thuộc bước 4.
+Đã commit tại `77dcbea` trên nền `6941339`; phạm vi và bằng chứng tại [biên bản bước 3](../statics/results/admin-session-step3-validation.md). Biên bản bước 3 hiện là file untracked, cần stage khi người dùng commit tài liệu.
 
 ### Bước 4 — Trang admin và tích hợp khóa
 
-- [ ] Thay panel hiện có bằng bảng/summary/khung chi tiết; giữ CRUD tài khoản.
-- [ ] Tái sử dụng modal/service khóa và đối soát sau mất phản hồi; cập nhật list sau thu hồi.
-- [ ] Loading/empty/stale/error, role/current-user/last-admin constraints, desktop/mobile/keyboard.
+- [x] Thay panel hiện có bằng bảng/summary/khung chi tiết; giữ CRUD tài khoản.
+- [x] Tái sử dụng modal/service khóa và đối soát sau mất phản hồi; cập nhật list sau thu hồi.
+- [x] Loading/empty/stale/error, role/current-user/last-admin constraints, desktop/mobile/keyboard.
 
 Đạt khi khóa user đang học/ôn làm các phiên/socket của user bị thu hồi, tài khoản khác không bị ảnh hưởng, mở khóa cần login mới.
 

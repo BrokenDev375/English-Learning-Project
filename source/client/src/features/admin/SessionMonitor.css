@@ -1,0 +1,53 @@
+.session-monitor{margin-bottom:28px;--monitor-muted:#52665a;min-width:0}
+.session-monitor-heading{padding:24px 24px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.session-monitor-heading h2{font-size:22px;margin:0 0 6px}
+.session-monitor-heading p,.session-read-time,.session-scope,.session-note{font-size:12px;color:var(--monitor-muted,#52665a);margin:0}
+.session-read-time{white-space:nowrap;font-variant-numeric:tabular-nums}
+.session-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 24px;padding:18px 0 22px;border-top:1px solid var(--border)}
+.session-summary dt{font-size:12px;color:var(--monitor-muted)}
+.session-summary dd{font-size:26px;font-weight:700;line-height:1.4;margin:5px 0 0;font-variant-numeric:tabular-nums}
+.session-filters{border-top:1px solid var(--border);border-bottom:0}
+.session-monitor .session-filters label{font-size:12px}
+.session-monitor input::placeholder{color:#65756b;opacity:1}
+.session-monitor :focus-visible,.session-drawer :focus-visible,.admin-confirm :focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.session-scope{padding:0 24px 18px;max-width:80ch}
+.session-error{margin:0 24px 18px}
+.session-monitor .table-wrap:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.session-monitor th{font-size:11px;color:var(--monitor-muted)}
+.session-monitor td{font-size:12px;vertical-align:top}
+.session-monitor .user-cell{min-width:190px}
+.session-monitor .user-cell strong{font-size:12px}
+.session-monitor .user-cell>div>span,.session-monitor small{font-size:11px;color:var(--monitor-muted)}
+.session-monitor td>small,.session-interaction,.session-context small,.session-drawer small{display:block;margin-top:4px}
+.session-context{min-width:160px;max-width:250px;overflow-wrap:anywhere}
+.session-context strong{font-size:12px;font-weight:600}
+.session-monitor .row-actions{gap:12px}
+.session-monitor .row-actions button{min-height:36px;font-size:12px}
+.session-counts{white-space:nowrap;font-variant-numeric:tabular-nums}
+.session-monitor .pagination{color:var(--monitor-muted);font-size:12px}
+.session-monitor .message button,.session-drawer .message button{min-height:36px;font-weight:600}
+.session-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100%);max-width:100%;height:100dvh;max-height:100dvh;padding:0;border:0;background:#fff;color:#20352e}
+.session-drawer::backdrop,.admin-confirm::backdrop{background:#18302366}
+.session-drawer header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:24px;border-bottom:1px solid var(--border)}
+.session-drawer h2{margin:0 0 12px;font-size:23px}
+.session-drawer header p{margin:0;font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.session-drawer small{font-size:12px;color:#52665a;font-weight:400}
+.session-drawer-body{padding:24px;font-size:13px}
+.session-drawer label{font-size:13px}
+.session-drawer .session-read-time{margin:20px 0 0;white-space:normal}
+.session-facts{margin:16px 0 24px}
+.session-facts>div{display:grid;grid-template-columns:1fr 1.15fr;gap:18px;padding:12px 0;border-bottom:1px solid var(--border)}
+.session-facts dt{color:#52665a}
+.session-facts dd{margin:0;font-variant-numeric:tabular-nums}
+.session-note{line-height:1.7;margin-bottom:24px}
+.session-drawer h3{font-size:16px;margin:26px 0 12px}
+.session-tabs{margin:0;padding:0;list-style:none}
+.session-tabs li{padding:18px 0;border-top:1px solid var(--border)}
+.session-tab-heading{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px}
+.session-tab-heading span,.session-tabs p{font-size:12px;color:#52665a}
+.session-tabs p{margin:8px 0 0}
+.session-drawer .session-context{max-width:none}
+.admin-confirm{border:0;color:#20352e;max-height:calc(100dvh - 40px);overflow:auto}
+.account-list-heading{padding:24px 24px 0;margin:0;font-size:22px}
+@media(max-width:760px){.session-monitor-heading{flex-direction:column;padding:20px}.session-summary{grid-template-columns:repeat(2,minmax(0,1fr));margin:0 20px;gap:20px}.session-scope{padding:0 20px 18px}.session-error{margin:0 20px 18px}.session-monitor .table-wrap{max-width:100%}.session-drawer header,.session-drawer-body{padding:20px}.session-facts>div{grid-template-columns:1fr;gap:4px}.session-drawer header small{max-width:220px}.account-list-heading{padding:20px 18px 0}.session-filters label{flex-basis:calc(50% - 12px)}}
+@media(prefers-reduced-motion:no-preference){.session-drawer[open]{animation:session-drawer-enter .18s cubic-bezier(.16,1,.3,1)}@keyframes session-drawer-enter{from{transform:translateX(24px)}to{transform:translateX(0)}}}

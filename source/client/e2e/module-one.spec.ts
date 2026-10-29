@@ -62,7 +62,7 @@ test('admin changes role, locks, unlocks and soft deletes across two browsers', 
     await admin.getByRole('button', { name: 'Quản lý tài khoản', exact: true }).click();
     await admin.getByLabel('Tìm tài khoản', { exact: true }).fill(email);
     await admin.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
-    const row = admin.getByRole('row').filter({ hasText: email });
+    const row = admin.getByRole('region', { name: 'Danh sách tài khoản', exact: true }).getByRole('row').filter({ hasText: email });
     await expect(row).toHaveCount(1);
     await row.getByRole('combobox').selectOption('TEACHER');
     await admin.getByRole('dialog').getByRole('button', { name: 'Hủy', exact: true }).click();

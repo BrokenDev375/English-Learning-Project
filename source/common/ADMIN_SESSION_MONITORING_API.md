@@ -1,6 +1,6 @@
-# Hợp đồng phiên không tương tác và giám sát — bước 0–3
+# Hợp đồng phiên không tương tác và giám sát — bước 0–4
 
-Nền bước 0–2 tại `6941339`, bổ sung ngày 29/10/2026. Gồm phiên cá nhân, client tracker và API giám sát admin bước 3; bảng/khung chi tiết giao diện mới thuộc bước 4.
+Nền bước 0–2 tại `6941339`, API bước 3 tại `77dcbea`, bổ sung ngày 29/10/2026. Gồm phiên cá nhân, client tracker, API và giao diện giám sát admin bước 4.
 
 ## HTTP
 
@@ -85,7 +85,15 @@ Projection sao chép registry trong khóa ngắn, ghép metadata qua hai truy v�
 
 HELLO/HEARTBEAT nhận thêm `tabId` UUID tùy chọn để ghép socket với tab trong đúng phiên HTTP đã xác thực; client cũ không có trường này vẫn dùng được. Tab ID không cấp quyền và không tự tạo context. Heartbeat giữ metadata tab đã tồn tại còn sống, không cập nhật tương tác/deadline/seq hoặc phục sinh tab đã hết cửa sổ.
 
-Giữ event `{"version":1,"type":"PRESENCE_CHANGED"}` và subscription PRESENCE cũ. Chỉ ADMIN đã subscribe nhận invalidation, không có dữ liệu giám sát trong event. Login/logout, socket/member thay đổi, activity/visibility/tương tác mới làm dirty; phát tối đa một lần/giây, đợt tiếp theo được scheduled flush. Heartbeat/context cùng giá trị và thời gian idle tăng tự nhiên không tự phát event mỗi giây. ACK subscribe/reconnect vẫn yêu cầu GET; giao diện online cũ poll 15s khi visible kể cả socket còn sống, chỉ một GET đang chạy và một refresh queued, giữ dữ liệu cũ khi lỗi. Trang chi tiết/bảng giám sát mới thuộc bước 4.
+Giữ event `{"version":1,"type":"PRESENCE_CHANGED"}` và subscription PRESENCE cũ. Chỉ ADMIN đã subscribe nhận invalidation, không có dữ liệu giám sát trong event. Login/logout, socket/member thay đổi, activity/visibility/tương tác mới làm dirty; phát tối đa một lần/giây, đợt tiếp theo được scheduled flush. Heartbeat/context cùng giá trị và thời gian idle tăng tự nhiên không tự phát event mỗi giây. ACK subscribe/reconnect vẫn yêu cầu GET; bảng và khung chi tiết poll 15s khi visible kể cả socket còn sống, mỗi resource chỉ một GET đang chạy và một refresh queued, giữ dữ liệu cũ khi lỗi. Snapshot của bộ lọc/phiên cũ không thay dữ liệu mới.
+
+### Giao diện và thao tác khóa — bước 4
+
+SessionMonitor thay panel online cũ, chỉ mount/subscription một lần trong AdminAccounts. Bảng dùng API sessions; `/api/admin/statistics/presence` vẫn giữ cho consumer khác. Hai bộ lọc giám sát/CRUD độc lập. Tổng là tập phù hợp bộ lọc trước phân trang, không phải toàn hệ thống khi đang lọc. Dòng có user/role, context, visibility, thời gian tương tác, số phiên/tab/socket và nút Xem phiên/Khóa. Số thời gian tương đối tính theo serverTime; không gọi API mỗi giây. Khi tài khoản rời danh sách làm trang ngoài phạm vi, bảng quay về trang hợp lệ.
+
+Khung chi tiết chọn phiên theo loginAt, đọc riêng từng sessionRef; 404 hiển thị “Phiên đã kết thúc”, lỗi khác giữ snapshot kèm nhãn chưa cập nhật. Native dialog có focus containment, Escape, focus trở về nút mở và cuộn trong khung trên mobile. Không cho mở route hoặc nội dung riêng của người học từ màn hình giám sát.
+
+Khóa tái sử dụng modal và `PATCH /api/admin/users/{id}/status`; không thêm endpoint hoặc quy tắc quyền. Self-management bị khóa ở UI; M01 tiếp tục quyết định current-role/last-admin/rollback. Sau ACK tăng revision để cập nhật cả giám sát và CRUD. Với lỗi mạng/timeout/5xx, đọc `/api/admin/users?q=<email tối đa 100 ký tự>&size=50&page=0`, tìm đúng userId và đối chiếu giá trị mong muốn. Đã khớp mới xác nhận thành công; chưa xác minh được giữ modal với “Kiểm tra trạng thái”, không tự resend. Khi GET chưa khớp, người dùng có thể kiểm tra lại và chủ động xác nhận một lần thử mới. Không tìm thấy tài khoản trong batch tìm kiếm không được suy thành đã xóa/khóa. Callback khác auth epoch hoặc component đã unmount không được khởi động đối soát mới.
 
 ## Cấu hình
 
