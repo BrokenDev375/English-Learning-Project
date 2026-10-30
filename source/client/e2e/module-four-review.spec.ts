@@ -59,27 +59,29 @@ async function snapshot(page: Page): Promise<Snapshot> {
   return (await page.request.get('/api/attempts/' + id)).json();
 }
 
-test('review shows an honest empty state for a new student', async ({ page }) => {
+test('review offers three choices and allows published variants before any round results', async ({ page }) => {
   await register(page); await openReview(page);
-  await expect(page.getByRole('heading', { name: 'Chưa có kết quả để chọn bài ôn' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Bắt đầu ôn nội dung cần ôn', exact: true })).toBeDisabled();
+  await expect(page.locator('.review-option')).toHaveCount(3);
+  await expect(page.getByRole('button', { name: 'Ôn tất cả', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Ôn ưu tiên', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Ôn các câu sai', exact: true })).toBeDisabled();
+  await expect(page.getByLabel('Chủ đề ôn', { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: '../../.test-state/review-choices/desktop.png', fullPage: true });
+  await page.getByRole('button', { name: 'Ôn tất cả', exact: true }).click();
+  await expect(page.locator('.question-nav button')).toHaveCount(10);
+  expect((await snapshot(page)).items.every(i => i.practiceRole === 'REVIEW_VARIANT')).toBe(true);
 });
 
-test('review uses unseen variants, retains drafts and reschedules after independent success', async ({ page }) => {
+test('wrong review reuses round questions, retains drafts and removes a correctly submitted question', async ({ page }) => {
   await register(page); const learned = await prepare(page); await openReview(page);
-  await expect(page.locator('.review-objective')).toHaveCount(1);
-  await expect(page.locator('.review-state')).toHaveText('Cần luyện thêm');
-  await expect(page.locator('.review-reason strong')).toHaveText('Vì sao cần ôn?');
-  await expect(page.locator('.review-reason span')).not.toBeEmpty();
   const data = await (await page.request.get('/api/me/review')).json();
-  expect(data.objectives.items[0].hasMistakes).toBe(true);
+  expect(data.choices.wrong).toBe(learned.items.length);
   await page.getByLabel('Số câu mỗi lượt', { exact: true }).fill('1');
-  await page.getByRole('button', { name: 'Ôn mục tiêu còn lỗi sai', exact: true }).click();
+  await page.getByRole('button', { name: 'Ôn các câu sai', exact: true }).click();
   await expect(page.locator('.question-nav button')).toHaveCount(1);
   const s = await snapshot(page);
   expect(s.mode).toBe('REVIEW');
-  expect(s.items.every(i => i.objectiveId === learned.items[0].objectiveId && i.practiceRole === 'REVIEW_VARIANT' && !i.wasSeenBefore)).toBe(true);
-  await expect(page.getByRole('button', { name: 'Mở gợi ý', exact: true })).toHaveCount(0);
+  expect(s.items.every(i => learned.items.some(original => original.originKey === i.originKey) && i.wasSeenBefore)).toBe(true);
   const first = s.items[0];
   if (first.question.type === 'SINGLE_CHOICE') await page.locator('.answer-fields').getByRole('radio').first().check();
   else if (first.question.type === 'FILL_BLANK') for (const field of await page.locator('.answer-fields').getByRole('textbox').all()) await field.fill('draft');
@@ -92,14 +94,27 @@ test('review uses unseen variants, retains drafts and reschedules after independ
   await finish(page, await snapshot(page), true); await page.reload();
   await expect(page.locator('.result-score')).toContainText('100.00');
   await page.getByRole('button', { name: 'Xem nội dung cần ôn', exact: true }).click();
-  await expect(page.locator('.review-state')).toHaveText('Đã có mốc ôn');
+  await expect(page.getByText('Đang cập nhật kết quả và nội dung ôn…', { exact: true })).toHaveCount(0);
   const updated = await (await page.request.get('/api/me/review')).json();
-  expect(updated.objectives.items[0].stage).toBe(1);
-  expect(updated.objectives.items[0].submissionCount).toBe(2);
-  expect(updated.objectives.items[0].needsReview).toBe(false);
+  expect(updated.choices.wrong).toBe(data.choices.wrong - 1);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: '../../.test-state/m04-review-mobile.png', fullPage: true });
+  await page.screenshot({ path: '../../.test-state/review-choices/mobile.png', fullPage: true });
+});
+
+test('priority mixes original errors with variants of the same objective and removes only solved originals', async ({ page }) => {
+  await register(page); const learned = await prepare(page); await openReview(page);
+  await page.getByLabel('Số câu mỗi lượt', { exact: true }).fill('4');
+  await page.getByRole('button', { name: 'Ôn ưu tiên', exact: true }).click();
+  await expect(page.locator('.question-nav button')).toHaveCount(4);
+  const s = await snapshot(page);
+  const originals = s.items.filter(i => learned.items.some(q => q.originKey === i.originKey));
+  expect(originals).toHaveLength(2);
+  expect(s.items.filter(i => i.practiceRole === 'REVIEW_VARIANT')).toHaveLength(2);
+  expect(s.items.every(i => learned.items.some(q => q.objectiveId === i.objectiveId))).toBe(true);
+  await finish(page, s, true);
+  const data = await (await page.request.get('/api/me/review')).json();
+  expect(data.choices.wrong).toBe(learned.items.length - originals.length);
 });
 
 test('lost synchronization ACK replays the same request without counting twice', async ({ page }) => {
@@ -113,7 +128,7 @@ test('lost synchronization ACK replays the same request without counting twice',
   await openReview(page);
   await expect(page.getByRole('button', { name: 'Thử tải lại nội dung ôn', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Thử tải lại nội dung ôn', exact: true }).click();
-  await expect(page.locator('.review-objective')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Ôn các câu sai', exact: true })).toBeEnabled();
   const d = await (await page.request.get('/api/me/review')).json();
   expect(d.objectives.items[0].submissionCount).toBe(1); expect(calls).toBe(2);
 });
@@ -131,7 +146,7 @@ test('lost create ACK resumes the same review attempt after retry', async ({ pag
     }
     expect(route.request().postDataJSON()).toEqual(original); return route.continue();
   });
-  await page.getByRole('button', { name: 'Bắt đầu ôn nội dung cần ôn', exact: true }).click();
+  await page.getByRole('button', { name: 'Ôn ưu tiên', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Gửi lại yêu cầu tạo lượt', exact: true }).click();
   await expect(page.locator('.question-nav button')).toHaveCount(1);
@@ -140,10 +155,11 @@ test('lost create ACK resumes the same review attempt after retry', async ({ pag
 
 test('different accounts in one browser do not share review progress', async ({ page }) => {
   await register(page); await prepare(page); await openReview(page);
-  await expect(page.locator('.review-objective')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Ôn các câu sai', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Đăng nhập', exact: true })).toBeVisible();
   await register(page); await openReview(page);
-  await expect(page.getByRole('heading', { name: 'Chưa có kết quả để chọn bài ôn' })).toBeVisible();
-  await expect(page.locator('.review-objective')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Ôn các câu sai', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Ôn ưu tiên', exact: true })).toBeDisabled();
+  expect((await (await page.request.get('/api/me/review')).json()).choices.wrong).toBe(0);
 });

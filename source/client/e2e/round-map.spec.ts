@@ -55,6 +55,8 @@ test('old practice URLs return to the map and review explains its purpose withou
   await page.goto('/#/learning?tab=practice'); await expect(page.getByRole('heading', { name: 'Bản đồ vòng chơi.' })).toBeVisible(); await expect(page).toHaveURL(/tab=catalog/);
   await expect(page.locator('.practice-form')).toHaveCount(0); await expect(page.getByRole('tab', { name: 'Luyện tự chọn', exact: true })).toHaveCount(0);
   await nav.getByRole('button', { name: 'Ôn tập cá nhân', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Ôn tập cá nhân.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Ôn đúng phần bạn cần', exact: true })).toBeVisible(); await expect(page.locator('.review-guide li')).toHaveCount(3);
-  await expect(page.getByRole('heading', { name: 'Chưa có kết quả để chọn bài ôn', exact: true })).toBeVisible(); await page.getByRole('button', { name: 'Vào chơi để có bài ôn →', exact: true }).click(); await expect(page.locator('.round-map')).toBeVisible();
+  await expect(page.locator('.review-option')).toHaveCount(3);
+  await expect(page.getByRole('button', { name: 'Ôn tất cả', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Ôn các câu sai', exact: true })).toBeDisabled();
+  await nav.getByRole('button', { name: 'Vào chơi', exact: true }).click(); await expect(page.locator('.round-map')).toBeVisible();
 });

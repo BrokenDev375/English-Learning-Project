@@ -58,6 +58,15 @@ class AttemptRequestsTest {
         var bad=n.deepCopy(); ((ObjectNode)bad.get("playerState")).putArray("audioPositions").addObject().put("materialVersionId",1).put("seconds",-1);
         assertThatThrownBy(()->AttemptRequests.mutation(bad)).isInstanceOf(ApiException.class);
     }
+    @Test void acceptsThreeQuestionReviewChoicesAndRetainsLegacyRequests() throws Exception {
+        var body = (ObjectNode) read("{\"requestId\":\"" + key + "\",\"mode\":\"REVIEW\",\"reviewKind\":\"ALL\",\"topicId\":null,\"count\":10}");
+        for (String kind : new String[]{"ALL", "PRIORITY", "WRONG", "DUE", "MISTAKES"}) {
+            body.put("reviewKind", kind);
+            assertThat(AttemptRequests.create(body).reviewKind()).isEqualTo(kind);
+        }
+        body.put("reviewKind", "OTHER");
+        assertThatThrownBy(() -> AttemptRequests.create(body)).isInstanceOf(ApiException.class);
+    }
     @Test void invalidAnswersFailWithFieldPathAndSpecificCode()throws Exception {
         for(String payload:new String[]{
             "{\"type\":\"MULTIPLE_CHOICE\",\"optionIds\":[]}",

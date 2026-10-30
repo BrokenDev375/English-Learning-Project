@@ -46,7 +46,7 @@ public final class AttemptRequests {
             default -> {
                 fields(n,"body","requestId","mode","reviewKind","topicId","count");
                 String kind=text(n,"reviewKind",16,false,false,"reviewKind");
-                if(!Set.of("DUE","MISTAKES").contains(kind)) throw invalid("reviewKind","Loại ôn không hợp lệ.");
+                if(!Set.of("ALL","PRIORITY","WRONG","DUE","MISTAKES").contains(kind)) throw invalid("reviewKind","Loại ôn không hợp lệ.");
                 return new Create(key(n),parsed,null,id(n,"topicId",true),null,count(n),kind);
             }
         }
