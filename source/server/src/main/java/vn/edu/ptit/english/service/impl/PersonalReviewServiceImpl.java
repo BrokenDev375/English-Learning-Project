@@ -25,10 +25,13 @@ public class PersonalReviewServiceImpl implements PersonalReviewService {
     private final ReviewPolicy policy;
     private final RequestReceiptService receipts;
     private final AccountGuard accounts;
+    private final ReviewChoiceSelector choices;
     public PersonalReviewServiceImpl(ReviewRepository repository, PublishedContentReader content,
-        ReviewQuestionPool questions, ReviewPolicy policy, RequestReceiptService receipts, AccountGuard accounts) {
+        ReviewQuestionPool questions, ReviewPolicy policy, RequestReceiptService receipts, AccountGuard accounts,
+        ReviewChoiceSelector choices) {
         this.repository = repository; this.content = content; this.questions = questions;
         this.policy = policy; this.receipts = receipts; this.accounts = accounts;
+        this.choices = choices;
     }
     private void student(UserPrincipal actor) {
         if (actor.role() != Role.STUDENT)
@@ -122,7 +125,7 @@ public class PersonalReviewServiceImpl implements PersonalReviewService {
             .stream().map(p -> view(p, objectives.get(p.getId().getObjectiveId()), pool, evidence, now)).toList();
         return new Dashboard(now, repository.pendingCount(actor.id()), scoped.size(),
             (int) scoped.stream().filter(p -> due(p, now)).count(), (int) scoped.stream().filter(ReviewProgressEntity::isHasMistakes).count(),
-            new CatalogPage<>(items, filtered.size(), page, size, (filtered.size() + size - 1) / size));
+            new CatalogPage<>(items, filtered.size(), page, size, (filtered.size() + size - 1) / size), choices.counts(actor.id(), topicId));
     }
     private ObjectiveReview view(ReviewProgressEntity p, ObjectiveEntity objective, ReviewQuestionPool.Pool pool,
                                 Map<ReviewEvidenceKey, ReviewEvidenceEntity> evidence, Instant now) {
@@ -163,6 +166,7 @@ public class PersonalReviewServiceImpl implements PersonalReviewService {
     public List<Long> select(long userId, String reviewKind, Long topicId, int count) {
         if (repository.pendingCount(userId) > 0)
             throw new ApiException(HttpStatus.CONFLICT, "REVIEW_SYNC_REQUIRED", "Có kết quả mới. Hãy cập nhật nội dung ôn trước khi bắt đầu.");
+        if (ReviewChoiceSelector.supports(reviewKind)) return choices.select(userId, reviewKind, topicId, count);
         Instant now = Instant.now();
         var pool = questions.read(userId, topicId);
         var scopedObjectives = new HashSet<Long>(); pool.candidates().forEach(q -> scopedObjectives.add(q.objectiveId()));

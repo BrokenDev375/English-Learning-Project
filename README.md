@@ -12,7 +12,7 @@ M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migra
 
 Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.
 
-Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Ôn tập cá nhân giải thích điều kiện thưởng; giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
+Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
 
 1. Chọn bài/chủ đề chưa từng làm, tự trả lời đúng các câu độc lập rồi nộp: mỗi nguồn câu mới hợp lệ được **5 XP**, tối đa **200 XP/ngày**. Câu GUIDED, câu đã gặp, trả lời sai/thiếu hoặc chữa lại không tạo XP câu mới.
 2. Nộp đủ ít nhất `min(3, số câu độc lập được giao)` câu độc lập tự làm và đúng ít nhất một câu để ghi nhận ngày hoạt động. Streak tính theo ngày Việt Nam; làm lại câu cũ vẫn có thể giữ streak.
@@ -33,7 +33,7 @@ Nhóm tối đa 25 người cùng bậc, chỉ xét lên/xuống khi có ít nh�
 
 Sau hết tuần có 2 phút xử lý bài nộp thuộc tuần cũ, rồi job tự chốt từng nhóm và lưu **Lịch sử tuần của bạn**. Nguồn xét quá mốc vẫn có thể nhận XP cá nhân nhưng không thay bảng tuần cũ. Không có nút đổi giờ/chốt tuần sớm trong app thật; kiểm tra biên tuần dùng Clock trong test riêng.
 
-M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
+M04 bổ sung ba lựa chọn ôn cá nhân: tất cả, ưu tiên và câu sai ở vòng chơi. Nộp lượt ôn đúng chính câu gốc sẽ bỏ câu đó khỏi danh sách sai; chơi vòng sau lại sai thì thêm lại. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/review-choices-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.
 
@@ -43,9 +43,9 @@ LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave serve
 
 ## M04 — ôn tập cá nhân
 
-Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và lý do cần ôn. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
+Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả và có ba lựa chọn: **Ôn tất cả** (câu sai chưa ôn đúng + toàn bộ câu biến thể), **Ôn ưu tiên** (câu sai + biến thể cùng mục tiêu), **Ôn các câu sai** (chỉ câu gốc sai ở vòng chơi, gồm hướng dẫn và tự làm). Mỗi lựa chọn hiển thị số câu có thể ôn; chọn 1–10 câu mỗi lượt. Tài khoản mới vẫn có thể ôn các câu biến thể đang công bố.
 
-Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng mục tiêu và mức cần luyện. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch nhắc mặc định 1–3–7 ngày là quy tắc demo, không phải mô hình đã chứng minh tối ưu. API vẫn tính gợi ý tăng mức khi có đủ dữ liệu; giao diện hiện tập trung vào kiến thức, lý do và mốc ôn. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
+Câu ôn lấy từ bài đang công bố trong ngân hàng M02, không lọc độ khó cho ba lựa chọn mới. Nộp lượt ôn đúng chính câu đó sẽ bỏ khỏi danh sách sai; đúng một biến thể khác không xóa câu gốc. Lịch sử bài nộp giữ nguyên; câu sai lại ở vòng chơi sau được thêm lại. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch 1–3–7 và gợi ý mức vẫn được tính ở backend cho tiến độ/thưởng; DUE/MISTAKES cũ giữ tương thích phục hồi. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
 
 ## M03 — học và luyện tập
 

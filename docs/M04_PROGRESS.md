@@ -1,5 +1,20 @@
 # Tiến độ M04 — Ôn tập cá nhân
 
+Cập nhật hiện hành 28/10/2026: giao diện và bộ chọn câu chuyển sang ba lựa chọn dưới đây. Các phần P0 ngày 21/10 và giao diện ngày 26/10 là mốc lịch sử; lịch/projection vẫn được duy trì để phục hồi và tính thưởng.
+
+## Ba lựa chọn ôn — 28/10/2026
+
+- Ôn tất cả (`ALL`): câu sai vòng chơi chưa ôn đúng + toàn bộ `REVIEW_VARIANT` đang công bố, kể cả mục tiêu chưa học.
+- Ôn ưu tiên (`PRIORITY`): câu sai chưa ôn đúng, xen kẽ biến thể cùng mục tiêu; không lọc mức độ khó hoặc lịch đến hạn.
+- Ôn các câu sai (`WRONG`): chỉ lấy nguồn câu có FIRST sai trong LEARN đã nộp của chính học viên, gồm GUIDED và INDEPENDENT. Bỏ trống, lỗi ở PRACTICE/REVIEW và lượt chưa nộp không tự tạo nguồn sai.
+- Nộp REVIEW có finalOutcome đúng cho cùng origin sau lần LEARN sai gần nhất thì bỏ nguồn câu khỏi danh sách sai; lỗi LEARN mới hơn thêm lại. Đúng biến thể khác cùng mục tiêu, lưu nháp hoặc chữa sau nộp không giải quyết câu gốc. Lịch sử FIRST/Submission giữ nguyên.
+- `choices{all,priority,wrong}` trên dashboard đếm nguồn câu đủ điều kiện, dùng cùng tập hợp với bộ chọn. Chỉ cấp phiên bản trong bài đang công bố, khử trùng origin, giữ nhóm đoạn đọc/audio. Mỗi lượt 1–10 câu; có thể ít hơn khi thiếu kho.
+- Giao diện còn ba thẻ chọn, số câu và nút cập nhật; bỏ bộ lọc/chủ đề, phân trang mục tiêu và lịch dài. Tài khoản mới vẫn ôn được biến thể công bố.
+- Giữ DUE/MISTAKES cũ cho pending request/lượt đang dở, không đổi cách chấm, lịch/projection M04, receipt/journal, media grant hoặc thưởng M05. Không migration, không thay đổi DB demo.
+- Điểm vào mới: `ReviewChoiceSelector`; `ReviewRepository.wrongLearnQuestions/correctReviewQuestions` đọc lịch sử đã nộp. Câu GUIDED vẫn giữ vai trò/hỗ trợ như M03.
+
+Kiểm tra và giới hạn của thay đổi này: [biên bản ba lựa chọn](../statics/results/review-choices-validation.md).
+
 Ngày 21/10/2026. Bản bàn giao P0 được phát triển trên nhánh feature/m04-personal-review, xuất phát từ origin/main tại be92240 (đã gồm M03 và bản sửa audio). Trạng thái commit/merge/push hiện tại tra cứu bằng Git.
 
 ## Phần đã triển khai
