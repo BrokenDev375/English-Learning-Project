@@ -19,7 +19,7 @@ class RoundNumberMigrationTest {
                 s.executeUpdate("UPDATE lessons SET retired_at=CURRENT_TIMESTAMP(6) WHERE id=3");
             }
             var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(4);flyway.validate();
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(6);flyway.validate();
             try(var c=mysql.createConnection("");var s=c.createStatement();var r=s.executeQuery("SELECT id,round_number,revision FROM units ORDER BY round_number")) {
                 long[] ids={3,2,1,4}, revisions={5,4,3,6};
                 for(int i=0;i<4;i++){assertThat(r.next()).isTrue();assertThat(r.getLong(1)).isEqualTo(ids[i]);assertThat(r.getInt(2)).isEqualTo(i+1);assertThat(r.getLong(3)).isEqualTo(revisions[i]);}

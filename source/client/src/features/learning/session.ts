@@ -9,6 +9,7 @@ import { watchAttempt } from '../connection/manager';
 import { syncReviewAfterSubmission } from './storage/journal';
 import { validRecoveryState } from './storage/validation';
 import { clearWritingSessions, writingDirty, writingUnpersisted } from '../writing/session';
+import { clearContestSessions, contestDirty, contestUnpersisted } from '../contests/session';
 
 interface SessionState {
   snapshot: Snapshot | null; draft: Draft | null; result: Result | null; busy: boolean; loading: boolean;
@@ -210,7 +211,7 @@ export class AttemptSession {
 const sessions = new Map<string, AttemptSession>();
 let pendingCreate: ReturnType<typeof createCommand> | null = null;
 let owner: number | undefined;
-export function activateLearningUser(userId: number) { if (owner !== userId) { clearWritingSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); pendingCreate = null; owner = userId; activateStorage(userId); } }
+export function activateLearningUser(userId: number) { if (owner !== userId) { clearWritingSessions(); clearContestSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); pendingCreate = null; owner = userId; activateStorage(userId); } }
 export async function prepareLearningUser(userId: number) { await prepareWriter(); await unlockStorage(userId); activateLearningUser(userId); await pruneCleanDrafts(userId).catch(() => {}); }
 export const getPendingCreate = () => pendingCreate;
 export const setPendingCreate = (command: ReturnType<typeof createCommand> | null) => { pendingCreate = command; };
@@ -220,13 +221,13 @@ export function sessionFor(userId: number, attemptId: number) {
   if (!sessions.has(key)) sessions.set(key, new AttemptSession(attemptId, userId));
   return sessions.get(key)!;
 }
-export async function clearLearningSessions() { const previous = owner; clearWritingSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); if (previous !== undefined) await purgeStorage(previous); }
-export function forgetLearningUser() { clearWritingSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); }
-export function hasUnsavedLearning() { return writingDirty() || !!pendingCreate || [...sessions.values()].some(s => s.dirty || s.getSnapshot().pending); }
+export async function clearLearningSessions() { const previous = owner; clearWritingSessions(); clearContestSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); if (previous !== undefined) await purgeStorage(previous); }
+export function forgetLearningUser() { clearWritingSessions(); clearContestSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); }
+export function hasUnsavedLearning() { return contestDirty() || writingDirty() || !!pendingCreate || [...sessions.values()].some(s => s.dirty || s.getSnapshot().pending); }
 export async function hasStoredUnsavedLearning(userId: number) {
   try {
     if ((await readRows<Row>('commands', userId)).length) return true;
     return (await readRows<WorkingRow>('workingDrafts', userId)).some(row => !row.state?.snapshot || row.state.pending || row.state.conflict || !equal(row.state.draft, fromSnapshot(row.state.snapshot)));
   } catch { return true; } // Cannot confirm storage is clean: ask before discarding it.
 }
-export function hasUnpersistedLearning() { return writingUnpersisted() || [...sessions.values()].some(s => s.unpersisted); }
+export function hasUnpersistedLearning() { return contestUnpersisted() || writingUnpersisted() || [...sessions.values()].some(s => s.unpersisted); }

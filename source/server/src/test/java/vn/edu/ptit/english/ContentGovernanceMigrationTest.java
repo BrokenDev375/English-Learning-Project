@@ -14,7 +14,7 @@ class ContentGovernanceMigrationTest {
                 s.executeUpdate("INSERT INTO questions(owner_id,origin_key) VALUES(1,UUID())");
                 try(var r=s.executeQuery("SELECT GROUP_CONCAT(CONCAT_WS('|',id,owner_id,topic_id,title,stage,sort_order,round_number,revision,created_at,updated_at) ORDER BY id SEPARATOR ';') FROM units")){r.next();before=r.getString(1);}
             }
-            var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();assertThat(flyway.migrate().migrationsExecuted).isEqualTo(3);flyway.validate();
+            var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();assertThat(flyway.migrate().migrationsExecuted).isEqualTo(5);flyway.validate();
             try(var c=mysql.createConnection("");var s=c.createStatement()){
                 try(var r=s.executeQuery("SELECT GROUP_CONCAT(CONCAT_WS('|',id,owner_id,topic_id,title,stage,sort_order,round_number,revision,created_at,updated_at) ORDER BY id SEPARATOR ';') FROM units")){r.next();assertThat(r.getString(1)).isEqualTo(before);}
                 try(var r=s.executeQuery("SELECT assigned_teacher_id FROM units ORDER BY id")){r.next();assertThat(r.getLong(1)).isEqualTo(1);r.next();assertThat(r.getObject(1)).isNull();}

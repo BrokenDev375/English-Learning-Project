@@ -20,6 +20,8 @@ git log -3 --oneline
 
 ## 2. Tổng quan hệ thống
 
+Contest mới ngày 30/10/2026 trên `feature/online-contests`: V16 phòng thi/vi phạm/BXH; V17 kho bộ đề có thể dùng lại, quyền canAuthor/canProctor độc lập. ADMIN phân quyền/duyệt bộ đề/chọn một paperId READY cho cuộc thi; teacher tác giả chỉ bộ đề của mình, giám thị theo quyền + proctorIds không nhận questions/keys qua API contest. Điểm vào ContestPaperController → ContestPaperServiceImpl → ContestPaperRepositoryImpl, ContestServiceImpl pin snapshot nguồn; UI features/contests (PaperLibrary/PaperEditor/ContestPermissions, form contest chỉ thiết lập). Đọc [luồng](docs/ONLINE_CONTESTS.md), [API](source/common/ONLINE_CONTESTS_API.md), [kiểm tra V17](statics/results/contest-paper-library-validation.md). Không sinh XP/ôn/vòng học; không áp dụng số kiểm thử V16/M01–M07 cho source V17.
+
 English Learning là bài tập lớn môn **Lập trình mạng của PTIT**, xây dựng ứng dụng học tiếng Anh theo mô hình client–server. Hệ thống hiện tập trung vào học liệu có phiên bản và quá trình làm bài có thể lưu, tiếp tục, nộp, chữa và theo dõi tiến độ.
 
 Có ba vai trò:
@@ -83,7 +85,7 @@ English-Learning-Project/
 │   │   ├── src/main/java/vn/edu/ptit/english/   Mã backend
 │   │   ├── src/main/resources/
 │   │   │   ├── application.yml                Cấu hình qua biến môi trường
-│   │   │   ├── db/migration/                  Flyway V1–V15
+│   │   │   ├── db/migration/                  Flyway V1–V17
 │   │   │   └── demo/                          Dữ liệu seed học liệu
 │   │   ├── src/test/                          Unit/integration/contract tests
 │   │   └── Dockerfile                         Runtime và target test
@@ -465,3 +467,7 @@ Tích hợp main ngày 29/10: V12 số vòng cố định và V13 phân công/du
 Bài viết cuối vòng ngày 29/10: WritingController → WritingService/impl → WritingRepository/impl → JPA, migration V15. TEACHER theo assignedTeacherId hiện hành hoặc ADMIN đặt/công bố đề viết và chấm; đây là luồng riêng được người dùng đồng ý, không đổi luật duyệt Question/Lesson V13. Chốt WritingVersion khi bắt đầu; Work revision dưới khóa Unit, Submission/Grade bất biến, điểm cộng từ đủ tiêu chí đạt theo bản đề đã chốt. Nộp một lần mở vòng sau, RETURNED không khóa lại; không ghi progress M03/XP/M04/League. RoundJourneyReader đọc bulk task/work và thêm writing tùy chọn; vòng không có đề giữ luật cũ. UI features/writing (TeacherWriting, LearnerWriting, session), tab area=writing mở trang chọn Tạo bài viết/Chấm bài (writingMode=create|grade), WritingTaskEditor và WritingQueue tách riêng; writingSubmission giữ chi tiết chấm qua reload. Thẻ học sinh nằm cuối Unit. Nháp IndexedDB dùng workingDrafts M06 với key writing/user/unit/writer, local 250 ms/server 1500 ms; pending giữ payload/requestId tới replay+GET, 409 so sánh rõ, logout fence/xóa dữ liệu riêng. Xem [thiết kế](docs/UNIT_WRITING.md), [API](source/common/UNIT_WRITING_API.md), [kiểm tra](statics/results/unit-writing-validation.md). Không tự tạo đề mẫu hoặc commit/push.
 
 Tích hợp main 30/10: ghép main 4cbd4bc (ôn ALL/PRIORITY/WRONG của M07) vào addquestionsystem, giữ activities và bài viết V15; không migration mới. Ca activity-variety kiểm tra nguồn sai GUIDED trong đoạn cloze được chọn vào WRONG, chỉ chiếu một ô, lưu/tải lại và giải quyết đúng origin khi nộp ôn. Xem [kết quả tích hợp](statics/results/addquestion-main-integration-validation.md); không dùng các số kiểm thử lịch sử làm kết quả của lần merge này.
+
+Tìm kiếm contest: GET /author/contest-papers nhận q (tên/người soạn), /author/contest-permissions nhận q (tên/email) + proctorOnly; lọc scope/state/quyền trước pagination/count, escape LIKE ký tự %,_,!. PaperPicker dùng dialog tìm kiếm/phân trang; ProctorPicker giữ selected IDs/metadata qua từ khóa/trang, Author ADMIN trả proctors[{userId,fullName,email,eligible}]. usePagedSearch loại phản hồi cũ và tải lại khi trở về danh sách kho; không allPages cho chọn đề/giám thị. Không migration. Xem statics/results/contest-search-validation.md.
+
+Monitor contest: ParticipantStatus + participant-state chiếu trạng thái từ metadata/serverTime. API Participant trả thêm tabHidden từ entity đã có (không migration); tách đăng ký, tiến trình, kết nối và Trong/Ngoài tab thi. Online dùng lease 45s, hết kết nối hiện Chưa rõ trạng thái tab. Session đối soát visibility sau load/claim/heartbeat, so với cuối hàng đợi hoặc server để reload không kẹt hidden và không cộng trùng lượt. REVOKED vẫn trong ALL/REVOKED, không hiện tab thi đang hoạt động. Mobile contest-monitor-table chuyển sang thẻ có nhãn; bộ lọc server giữ nguyên. Xem statics/results/contest-tab-status-validation.md (13 backend + 3 browser trên thay đổi này); bản UI trước tại statics/results/contest-monitor-status-validation.md.

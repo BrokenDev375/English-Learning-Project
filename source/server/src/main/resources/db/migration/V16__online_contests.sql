@@ -1,0 +1,93 @@
+-- A deadline rejection also commits the automatic submission and must replay as 409.
+ALTER TABLE request_receipts DROP CHECK ck_request_receipts_status;
+ALTER TABLE request_receipts ADD CONSTRAINT ck_request_receipts_status CHECK (response_status BETWEEN 200 AND 299 OR response_status = 409);
+
+CREATE TABLE contests (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    owner_id BIGINT NOT NULL,
+    revision BIGINT NOT NULL DEFAULT 0,
+    state VARCHAR(16) NOT NULL DEFAULT 'DRAFT',
+    title VARCHAR(160) NOT NULL,
+    description VARCHAR(4000) NOT NULL,
+    registration_closes_at DATETIME(6) NOT NULL,
+    starts_at DATETIME(6) NOT NULL,
+    ends_at DATETIME(6) NOT NULL,
+    penalty_minutes INT NOT NULL DEFAULT 10,
+    shuffle_questions BOOLEAN NOT NULL DEFAULT TRUE,
+    proctor_ids_json JSON NOT NULL,
+    draft_json JSON NOT NULL,
+    paper_json JSON NULL,
+    results_json JSON NULL,
+    created_at DATETIME(6) NOT NULL,
+    closed_at DATETIME(6) NULL,
+    finalized_at DATETIME(6) NULL,
+    CONSTRAINT fk_contest_owner FOREIGN KEY (owner_id) REFERENCES users(id),
+    CONSTRAINT ck_contest_state CHECK (state IN ('DRAFT','PUBLISHED','RUNNING','CLOSED','FINALIZED','ARCHIVED','CANCELLED')),
+    CONSTRAINT ck_contest_time CHECK (registration_closes_at<=starts_at AND starts_at<ends_at),
+    CONSTRAINT ck_contest_penalty CHECK (penalty_minutes BETWEEN 1 AND 120),
+    KEY ix_contest_schedule (state,starts_at,ends_at)
+);
+CREATE TABLE contest_participants (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    contest_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    display_name VARCHAR(120) NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'REQUESTED',
+    revision BIGINT NOT NULL DEFAULT 0,
+    control_revision BIGINT NOT NULL DEFAULT 0,
+    requested_at DATETIME(6) NOT NULL,
+    decided_at DATETIME(6) NULL,
+    checked_in_at DATETIME(6) NULL,
+    writer_id VARCHAR(36) NULL,
+    lease_until DATETIME(6) NULL,
+    last_seen_at DATETIME(6) NULL,
+    last_saved_at DATETIME(6) NULL,
+    effective_deadline DATETIME(6) NULL,
+    online BOOLEAN NOT NULL DEFAULT FALSE,
+    tab_hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    tab_leaves INT NOT NULL DEFAULT 0,
+    flag_seen_count INT NOT NULL DEFAULT 0,
+    penalty_applied BOOLEAN NOT NULL DEFAULT FALSE,
+    answers_json JSON NOT NULL,
+    display_json JSON NULL,
+    submission_id BIGINT NULL,
+    UNIQUE KEY uq_contest_participant (contest_id,user_id),
+    KEY ix_contest_participant_state (contest_id,status,submission_id),
+    CONSTRAINT fk_contest_participant_contest FOREIGN KEY (contest_id) REFERENCES contests(id),
+    CONSTRAINT fk_contest_participant_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT ck_contest_participant_status CHECK (status IN ('REQUESTED','APPROVED','REJECTED','REVOKED')),
+    CONSTRAINT ck_contest_participant_counts CHECK (tab_leaves>=0 AND flag_seen_count>=0 AND revision>=0)
+);
+CREATE TABLE contest_submissions (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    participant_id BIGINT NOT NULL,
+    contest_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    source VARCHAR(16) NOT NULL,
+    submitted_at DATETIME(6) NOT NULL,
+    processed_at DATETIME(6) NOT NULL,
+    answers_json JSON NOT NULL,
+    result_json JSON NOT NULL,
+    UNIQUE KEY uq_contest_submission (participant_id),
+    KEY ix_contest_submission_contest (contest_id,id),
+    CONSTRAINT fk_contest_submission_participant FOREIGN KEY (participant_id) REFERENCES contest_participants(id),
+    CONSTRAINT fk_contest_submission_contest FOREIGN KEY (contest_id) REFERENCES contests(id),
+    CONSTRAINT fk_contest_submission_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT ck_contest_submission_source CHECK (source IN ('MANUAL','EXPIRED','CLOSED','REVOKED'))
+);
+ALTER TABLE contest_participants ADD CONSTRAINT fk_contest_participant_submission FOREIGN KEY (submission_id) REFERENCES contest_submissions(id);
+CREATE TABLE contest_events (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    contest_id BIGINT NOT NULL,
+    participant_id BIGINT NULL,
+    actor_id BIGINT NULL,
+    type VARCHAR(40) NOT NULL,
+    reason VARCHAR(2000) NOT NULL,
+    details_json JSON NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    KEY ix_contest_event_history (contest_id,id),
+    KEY ix_contest_participant_history (participant_id,id),
+    CONSTRAINT fk_contest_event_contest FOREIGN KEY (contest_id) REFERENCES contests(id),
+    CONSTRAINT fk_contest_event_participant FOREIGN KEY (participant_id) REFERENCES contest_participants(id),
+    CONSTRAINT fk_contest_event_actor FOREIGN KEY (actor_id) REFERENCES users(id)
+);
