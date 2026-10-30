@@ -13251,6 +13251,9 @@
               "reviewKind": {
                 "type": "string",
                 "enum": [
+                  "ALL",
+                  "PRIORITY",
+                  "WRONG",
                   "DUE",
                   "MISTAKES"
                 ]

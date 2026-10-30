@@ -1,5 +1,7 @@
 # M04 — Ôn tập cá nhân
 
+**Cập nhật 28/10/2026:** phần bộ chọn/giao diện P0 dưới đây được giữ làm thiết kế lịch sử. Luồng mới dùng ALL (câu sai chưa ôn đúng + tất cả biến thể), PRIORITY (câu sai + biến thể cùng mục tiêu) và WRONG (chỉ câu gốc sai vòng chơi). Cùng origin được bỏ khỏi danh sách sai khi REVIEW nộp đúng sau lần LEARN sai gần nhất; LEARN sai mới thêm lại. Ba luồng không lọc độ khó/lịch; giữ lịch/projection, DUE/MISTAKES cho tương thích. Chi tiết hiện hành tại [API M04](../source/common/M04_API.md) và [tiến độ](M04_PROGRESS.md).
+
 Phạm vi chốt ngày 21/10/2026: chọn nội dung từ kết quả đã nộp, ưu tiên mục tiêu còn sai hoặc lâu chưa ôn, dùng lịch nhắc đơn giản và ngân hàng M02. Không dùng AI sinh câu tự động; không thêm thi đấu, XP hoặc bộ nhớ offline bền vững.
 
 ## 1. Nguồn câu và trách nhiệm

@@ -1,5 +1,22 @@
 # Kiểm tra thủ công M04
 
+## Ba lựa chọn hiện hành — 28/10/2026
+
+| Ca | Thao tác | Kỳ vọng |
+|---|---|---|
+| M04-Q01 | Học viên mới mở Ôn tập cá nhân | Có đúng ba lựa chọn; Ôn tất cả mở khi có biến thể công bố, hai lựa chọn còn lại khóa nếu chưa có câu sai |
+| M04-Q02 | Nộp LEARN sai cả câu hướng dẫn và tự làm → Ôn các câu sai | Gặp lại đúng nguồn câu đã sai; không lấy câu chỉ sai ở REVIEW/PRACTICE hoặc vòng chưa nộp |
+| M04-Q03 | Có lỗi ở mục tiêu A → Ôn ưu tiên | Xen kẽ câu sai và biến thể cùng A, không lấy biến thể B; không lọc riêng một mức khó |
+| M04-Q04 | Ôn tất cả | Chỉ câu sai chưa ôn đúng và các biến thể đang công bố; không thêm câu tự làm đã đúng chỉ vì cùng mục tiêu |
+| M04-Q05 | Lưu nháp đúng nhưng chưa nộp | Số câu sai chưa giảm; tiếp tục lượt vẫn giữ bộ câu và nháp |
+| M04-Q06 | Nộp REVIEW đúng chính một câu gốc sai | Số câu sai giảm đúng một; làm đúng biến thể khác cùng mục tiêu không xóa câu gốc |
+| M04-Q07 | Ôn sai/bỏ trống rồi chữa đúng trên kết quả | Câu gốc vẫn cần ôn do Submission chưa đúng; lịch sử không bị sửa |
+| M04-Q08 | Ôn đúng hết nguồn sai của A | A không còn biến thể trong Ôn ưu tiên; biến thể vẫn có trong Ôn tất cả |
+| M04-Q09 | Sau khi ôn đúng, chơi lại vòng và sai lại câu đó | Câu trở lại danh sách sai; gửi lại request không thêm bản ghi/lượt hoặc đếm trùng |
+| M04-Q10 | Đổi tài khoản, thử đọc Attempt của người khác, retire học liệu | Không lẫn dữ liệu; Attempt riêng trả 404; không cấp mới câu thuộc bài đã retire |
+
+Các ca dưới đây ghi nhận thiết kế P0 cũ; dùng để kiểm tra API DUE/MISTAKES, lịch/projection và phục hồi, không áp nguyên nhãn giao diện cho ba lựa chọn mới.
+
 Chạy Docker theo README, vào http://localhost:5173. Dùng hai tài khoản STUDENT khác nhau; không chạy bộ E2E vào database demo.
 
 | Ca | Thao tác | Kỳ vọng |

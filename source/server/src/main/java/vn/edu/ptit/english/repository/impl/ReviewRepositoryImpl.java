@@ -28,6 +28,27 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public long pendingCount(long userId) {
         return em.createQuery("select count(s)" + PENDING, Long.class).setParameter("userId", userId).getSingleResult();
     }
+    @Override public List<WrongLearnQuestion> wrongLearnQuestions(long userId) {
+        return em.createQuery("select i.originKey,q.objectiveId,max(s.id) from AnswerTrialEntity t,"
+            + " AttemptQuestionEntity i,AttemptEntity a,SubmissionEntity s,QuestionVersionEntity q"
+            + " where t.attemptQuestionId=i.id and i.attemptId=a.id and s.attemptId=a.id"
+            + " and i.questionVersionId=q.id and a.userId=:userId and a.mode=:mode"
+            + " and t.kind=:first and t.outcome=:wrong group by i.originKey,q.objectiveId", Object[].class)
+            .setParameter("userId", userId).setParameter("mode", vn.edu.ptit.english.enums.AttemptEnums.Mode.LEARN)
+            .setParameter("first", vn.edu.ptit.english.enums.AttemptEnums.TrialKind.FIRST)
+            .setParameter("wrong", vn.edu.ptit.english.enums.AttemptEnums.Outcome.INCORRECT)
+            .getResultList().stream().map(r -> new WrongLearnQuestion((String) r[0], ((Number) r[1]).longValue(), ((Number) r[2]).longValue())).toList();
+    }
+    @Override public List<CorrectReviewQuestion> correctReviewQuestions(long userId, long afterSubmissionId) {
+        // Read the immutable final outcome, not mutable correction trials or current answer keys.
+        return em.createQuery("select s from SubmissionEntity s,AttemptEntity a where s.attemptId=a.id"
+            + " and a.userId=:userId and a.mode=:mode and s.id>:after", SubmissionEntity.class)
+            .setParameter("userId", userId).setParameter("mode", vn.edu.ptit.english.enums.AttemptEnums.Mode.REVIEW)
+            .setParameter("after", afterSubmissionId).getResultList().stream()
+            .flatMap(s -> s.getResult().items().stream()
+                .filter(i -> i.finalOutcome() == vn.edu.ptit.english.enums.AttemptEnums.Outcome.CORRECT)
+                .map(i -> new CorrectReviewQuestion(i.originKey(), s.getId()))).toList();
+    }
     public List<ReviewProgressEntity> progress(long userId) { return progress.findByIdUserId(userId); }
     public Optional<ReviewProgressEntity> progress(ReviewObjectiveKey id) { return progress.findById(id); }
     public List<ReviewEvidenceEntity> evidence(long userId) { return evidence.findByIdUserId(userId); }

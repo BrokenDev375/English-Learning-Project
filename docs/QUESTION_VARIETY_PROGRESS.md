@@ -76,3 +76,9 @@ Bằng chứng lịch sử trước khi thêm phần nghe: đã có **320 ca bac
 Giáo viên soạn bài trong vòng được giao rồi gửi duyệt; ADMIN xuất bản theo luật main mới. Các bước xuất bản trực tiếp bằng TEACHER trong hướng dẫn/biên bản cũ là bằng chứng trước tích hợp. Script `seed-activity-sample.mjs` dùng ADMIN sau tích hợp. Hai script demo cũ `seed-demo-classroom.mjs` và `upgrade-beginner-lesson.mjs` còn theo luồng TEACHER xuất bản trực tiếp; chưa chuyển sang luồng duyệt V13, không dùng để nạp dữ liệu trên bản tích hợp.
 
 DB demo/baseline đã áp dụng V12 activities trước tích hợp có lịch sử Flyway khác V12 số vòng trên main. Không khởi động bản tích hợp trực tiếp với những volume này; giữ backup/volume, chưa thực hiện chuyển lịch sử DB local trong lượt commit/push này. DB mới và DB main chuẩn đến V13 dùng chuỗi V1–V14; kiểm thử migration cần Docker.
+
+## Tích hợp ôn luyện từ main — 30/10/2026
+
+Ghép main `4cbd4bc`, có commit ôn luyện `8e7bbc4`, vào nền addquestionsystem `1b860fc`. Git ghép tự động năm file cùng sửa; giữ cấu trúc activities, bài viết V15 và ba lựa chọn ôn ALL/PRIORITY/WRONG, cùng DUE/MISTAKES tương thích. Không thêm migration hoặc tự nạp học liệu.
+
+Bổ sung kiểm thử trong activity-variety: học viên nộp sai một câu GUIDED đọc điền từ, chọn WRONG theo chủ đề, nhận đúng câu gốc cùng một ô nhập thuộc lượt, khôi phục đáp án qua tải lại và nộp ôn đúng để giải quyết nguồn sai. Chuẩn bị/nộp bài dùng API; nhập ô và tải lại dùng trình duyệt. Build, backend liên quan và 33 ca browser được ghi riêng tại [biên bản tích hợp](../statics/results/addquestion-main-integration-validation.md).

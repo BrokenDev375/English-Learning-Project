@@ -104,6 +104,50 @@ test('18 questions keep activity order, inline drafts and immutable results acro
   expect(await (await page.request.get(`/api/attempts/${s.attemptId}/result`)).json()).toEqual(before);
 });
 
+test('wrong-question review preserves one guided cloze field and clears its original error after submission', async ({ page }) => {
+  test.setTimeout(120000);
+  const learned = await student(page.request);
+  const cloze = learned.activities!.find(activity => activity.kind === 'READING_CLOZE')!;
+  const original = learned.items.find(item => item.attemptQuestionId === cloze.attemptQuestionIds[0])!;
+  expect(original.practiceRole).toBe('GUIDED');
+  const answers = correct(learned);
+  const correctAnswer = answers.find(answer => answer.attemptQuestionId === original.attemptQuestionId)!.response;
+  if (correctAnswer.type !== 'FILL_BLANK') throw new Error('Expected a cloze answer');
+  await write(page.request, `/api/attempts/${learned.attemptId}/submit`, {
+    requestId: randomUUID(), baseRevision: learned.revision, playerState: learned.playerState,
+    answers: answers.map(answer => answer.attemptQuestionId !== original.attemptQuestionId ? answer : {
+      ...answer, response: { type: 'FILL_BLANK', values: correctAnswer.values.map(value => ({ ...value, value: 'wrong-word' })) },
+    }),
+  });
+  await write(page.request, '/api/me/review/sync', { requestId: randomUUID() });
+  const topicId = (await (await author.get('/api/author/units/' + sample.unitId)).json()).unit.topicId;
+  const dashboard = async () => (await (await page.request.get('/api/me/review?topicId=' + topicId)).json()).choices;
+  expect((await dashboard()).wrong).toBe(1);
+  const review = await write(page.request, '/api/attempts', {
+    requestId: randomUUID(), mode: 'REVIEW', reviewKind: 'WRONG', topicId, count: 10,
+  }) as Snapshot;
+  expect(review.items).toHaveLength(1);
+  expect(review.items[0].questionVersionId).toBe(original.questionVersionId);
+  expect(review.items[0].practiceRole).toBe('GUIDED');
+  expect(review.activities).toHaveLength(1);
+  expect(review.activities![0].kind).toBe('READING_CLOZE');
+  expect(review.activities![0].attemptQuestionIds).toEqual([review.items[0].attemptQuestionId]);
+  expect(JSON.stringify(review)).not.toMatch(/answerKey|acceptedAnswers|correctOptionId/);
+  await page.goto('/#/learning?attempt=' + review.attemptId);
+  await expect(page.locator('.inline-reading input')).toHaveCount(1);
+  const field = page.getByLabel('Điền từ câu 1', { exact: true });
+  await field.fill(correctAnswer.values[0].value);
+  await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ', { timeout: 20000 });
+  await page.reload(); await expect(field).toHaveValue(correctAnswer.values[0].value);
+  const current = await read(page.request, review.attemptId);
+  await write(page.request, `/api/attempts/${review.attemptId}/submit`, {
+    requestId: randomUUID(), baseRevision: current.revision, playerState: current.playerState,
+    answers: [{ attemptQuestionId: review.items[0].attemptQuestionId, response: correctAnswer }],
+  });
+  await write(page.request, '/api/me/review/sync', { requestId: randomUUID() });
+  expect((await dashboard()).wrong).toBe(0);
+});
+
 test('mobile inline fields survive a concurrent server draft and explicit revision conflict', async ({ page }) => {
   test.setTimeout(120000);
   await page.setViewportSize({ width: 390, height: 844 });

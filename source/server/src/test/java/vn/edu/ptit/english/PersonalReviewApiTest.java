@@ -214,6 +214,11 @@ class PersonalReviewApiTest {
         ok(c.call("POST", path + "/retry", correction), 200);
         assertThat(sync(c).path("processedSubmissions").asInt()).isZero();
         assertThat(state(c)).isEqualTo(before);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(1);
+        var wrong = ok(c.call("POST", "/api/attempts", review("WRONG", 10)), 201);
+        assertThat(wrong.path("items").size()).isEqualTo(1);
+        assertThat(wrong.path("items").get(0).path("originKey")).isEqualTo(s.path("items").get(0).path("originKey"));
+        assertThat(wrong.path("items").get(0).path("practiceRole").asText()).isEqualTo("GUIDED");
     }
     @Test void twoFreshSetsCanSuggestHigherDifficultyButRepeatingOldQuestionsCannot() throws Exception {
         var c = new Client().login(alice); submit(c, learn(c, lessonA), "yes"); sync(c);
@@ -264,6 +269,9 @@ class PersonalReviewApiTest {
         var c = new Client().login(alice); submit(c, learn(c, lessonA), "no"); sync(c);
         tx.executeWithoutResult(t -> lessonIds.forEach(id -> em.find(LessonEntity.class, id).retire()));
         assertThat(state(c).path("availableQuestionCount").asInt()).isZero();
+        assertThat(dashboard(c).path("choices")).isEqualTo(node("{\"all\":0,\"priority\":0,\"wrong\":0}"));
+        for (String kind : List.of("ALL", "PRIORITY", "WRONG"))
+            assertThat(ok(c.call("POST", "/api/attempts", review(kind, 5)), 409).path("code").asText()).isEqualTo("NO_QUESTIONS_AVAILABLE");
         assertThat(ok(c.call("POST", "/api/attempts", review("DUE", 5)), 409).path("code").asText()).isEqualTo("NO_QUESTIONS_AVAILABLE");
     }
     @Test void failureAfterProjectionWriteRollsBackProgressLedgerAndReceipt() throws Exception {
@@ -292,5 +300,121 @@ class PersonalReviewApiTest {
             assertThat(one.get().path("processedSubmissions").asInt() + two.get().path("processedSubmissions").asInt()).isEqualTo(1);
         } finally { executor.shutdownNow(); }
         assertThat(state(a).path("submissionCount").asInt()).isEqualTo(1);
+    }
+    @Test void allIncludesEveryPublishedVariantWithoutHistoryAndReviewOrPracticeErrorsDoNotBecomeRoundMistakes() throws Exception {
+        var c = new Client().login(alice);
+        assertThat(dashboard(c).path("choices")).isEqualTo(node("{\"all\":27,\"priority\":0,\"wrong\":0}"));
+        var all = ok(c.call("POST", "/api/attempts", review("ALL", 10)), 201);
+        var levels = new HashSet<String>();
+        for (var item : all.path("items")) {
+            assertThat(item.path("practiceRole").asText()).isEqualTo("REVIEW_VARIANT");
+            assertThat(item.path("wasSeenBefore").asBoolean()).isFalse(); levels.add(item.path("difficulty").asText());
+        }
+        assertThat(levels).contains("EASY", "MEDIUM");
+        submit(c, all, "no"); sync(c);
+        var practice = ok(c.call("POST", "/api/attempts", Map.of("requestId", key(), "mode", "PRACTICE", "topicId", topic, "difficulty", "EASY", "count", 1)), 201);
+        submit(c, practice, "no"); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isZero();
+        assertThat(dashboard(c).path("choices").path("priority").asInt()).isZero();
+        for (String kind : List.of("WRONG", "PRIORITY"))
+            assertThat(ok(c.call("POST", "/api/attempts", review(kind, 10)), 409).path("code").asText()).isEqualTo("NO_QUESTIONS_AVAILABLE");
+        // Completing one batch rotates to unused variants rather than repeating it.
+        var next = ok(c.call("POST", "/api/attempts", review("ALL", 10)), 201);
+        for (var item : next.path("items")) assertThat(item.path("wasSeenBefore").asBoolean()).isFalse();
+    }
+    @Test void wrongUsesOnlyOwnSubmittedRoundQuestionsAndClearsAfterReviewSuccessThenReopensAfterNewRoundErrors() throws Exception {
+        var c = new Client().login(alice); var other = new Client().login(bob);
+        var learned = learn(c, lessonA); submit(c, learned, "no"); sync(c);
+        submit(other, learn(other, lessonB), "no"); sync(other);
+        // A wrong check in an unfinished round is not a submitted result.
+        var unfinished = learn(c, lessonA2);
+        var check = json.createObjectNode().put("requestId", key()).put("baseRevision", 0);
+        check.set("response", node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"no\"}"));
+        ok(c.call("POST", "/api/attempts/" + unfinished.path("attemptId").asLong() + "/items/" + unfinished.path("items").get(0).path("attemptQuestionId").asLong() + "/check", check), 200);
+        assertThat(dashboard(c).path("choices")).isEqualTo(node("{\"all\":34,\"priority\":25,\"wrong\":7}"));
+        var command = review("WRONG", 10); var wrong = ok(c.call("POST", "/api/attempts", command), 201);
+        var expected = new HashSet<String>(); learned.path("items").forEach(i -> expected.add(i.path("originKey").asText()));
+        var actual = new HashSet<String>();
+        for (var item : wrong.path("items")) {
+            actual.add(item.path("originKey").asText());
+            assertThat(item.path("objectiveId").asLong()).isEqualTo(objectiveA);
+            assertThat(item.path("practiceRole").asText()).isIn("GUIDED", "INDEPENDENT");
+        }
+        assertThat(actual).isEqualTo(expected);
+        assertThat(wrong.path("items").size()).isEqualTo(7);
+        var replay = c.call("POST", "/api/attempts", command);
+        assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");
+        assertThat(ok(replay, 201)).isEqualTo(wrong);
+        assertThat(ok(c.call("POST", "/api/attempts", review("WRONG", 10)), 200).path("attemptId")).isEqualTo(wrong.path("attemptId"));
+        ok(other.call("GET", "/api/attempts/" + wrong.path("attemptId").asLong(), null), 404);
+        submit(c, wrong, "yes"); sync(c);
+        assertThat(dashboard(c).path("choices")).isEqualTo(node("{\"all\":27,\"priority\":0,\"wrong\":0}"));
+        submit(c, learn(c, lessonA), "yes"); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isZero();
+        submit(c, learn(c, lessonA), "no"); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(7);
+    }
+    @Test void priorityCombinesWrongRoundQuestionsWithOnlyVariantsOfTheirObjectivesAtEveryLevel() throws Exception {
+        var c = new Client().login(alice); var learned = learn(c, lessonA); submit(c, learned, "no");
+        assertThat(ok(c.call("POST", "/api/attempts", review("PRIORITY", 10)), 409).path("code").asText()).isEqualTo("REVIEW_SYNC_REQUIRED");
+        sync(c);
+        var priority = ok(c.call("POST", "/api/attempts", review("PRIORITY", 10)), 201);
+        var origins = new HashSet<String>(); learned.path("items").forEach(i -> origins.add(i.path("originKey").asText()));
+        int original = 0, variant = 0;
+        for (var item : priority.path("items")) {
+            assertThat(item.path("objectiveId").asLong()).isEqualTo(objectiveA);
+            if (origins.contains(item.path("originKey").asText())) original++;
+            else { assertThat(item.path("practiceRole").asText()).isEqualTo("REVIEW_VARIANT"); variant++; }
+        }
+        assertThat(original).isEqualTo(5); assertThat(variant).isEqualTo(5);
+        assertThat(priority.path("items").size()).isEqualTo(10);
+        assertThat(dashboard(c).toString()).doesNotContain("answerKey", "SECRET_", "transcript", "password", "storageKey");
+        // Topic filtering applies to both counts and selection.
+        var anotherTopic = tx.execute(t -> { var x = new TopicEntity(teacher.id(), key(), "Other", ""); em.persist(x); em.flush(); return x.getId(); });
+        assertThat(ok(c.call("GET", "/api/me/review?topicId=" + anotherTopic, null), 200).path("choices").path("all").asInt()).isZero();
+        assertThat(ok(c.call("POST", "/api/attempts", Map.of("requestId", key(), "mode", "REVIEW", "reviewKind", "ALL", "topicId", anotherTopic, "count", 10)), 409).path("code").asText()).isEqualTo("NO_QUESTIONS_AVAILABLE");
+    }
+    @Test void clearingRequiresCorrectSubmissionOfTheSameOriginNotVariantSuccessDraftOrLaterCorrection() throws Exception {
+        var c = new Client().login(alice); submit(c, learn(c, lessonA), "no"); sync(c);
+        var variant = ok(c.call("POST", "/api/attempts", review("ALL", 1)), 201);
+        assertThat(variant.path("items").get(0).path("practiceRole").asText()).isEqualTo("REVIEW_VARIANT");
+        submit(c, variant, "yes"); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(7);
+        var pair = ok(c.call("POST", "/api/attempts", review("PRIORITY", 2)), 201);
+        var guided = pair.path("items").get(0);
+        assertThat(guided.path("practiceRole").asText()).isEqualTo("GUIDED");
+        ok(c.call("PUT", "/api/attempts/" + pair.path("attemptId").asLong() + "/draft", answers(pair, "yes")), 200);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(7);
+        pair = refresh(c, pair);
+        var check = json.createObjectNode().put("requestId", key()).put("baseRevision", pair.path("revision").asLong());
+        check.set("response", node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"no\"}"));
+        ok(c.call("POST", "/api/attempts/" + pair.path("attemptId").asLong() + "/items/" + guided.path("attemptQuestionId").asLong() + "/check", check), 200);
+        // A correct final answer clears even if the guided FIRST was wrong.
+        submit(c, refresh(c, pair), "yes"); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(6);
+        var failed = ok(c.call("POST", "/api/attempts", review("WRONG", 2)), 201);
+        var body = answers(failed, "no"); ((ObjectNode) body.path("answers").get(1)).putNull("response");
+        ok(c.call("POST", "/api/attempts/" + failed.path("attemptId").asLong() + "/submit", body), 200); sync(c);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(6);
+        failed = refresh(c, failed);
+        var correction = json.createObjectNode().put("requestId", key()).put("baseRevision", failed.path("revision").asLong());
+        correction.set("response", node("{\"type\":\"SINGLE_CHOICE\",\"optionId\":\"yes\"}"));
+        ok(c.call("POST", "/api/attempts/" + failed.path("attemptId").asLong() + "/items/" + failed.path("items").get(0).path("attemptQuestionId").asLong() + "/retry", correction), 200);
+        assertThat(dashboard(c).path("choices").path("wrong").asInt()).isEqualTo(6);
+    }
+    @Test void aSharedQuestionUsesItsVariantSlotWhenAllSelectsItAsAPublishedVariant() throws Exception {
+        var learned = learn(new Client().login(alice), lessonA);
+        long versionId = learned.path("items").get(0).path("questionVersionId").asLong();
+        tx.executeWithoutResult(t -> {
+            var root = new LessonEntity(teacher.id(), em.find(LessonEntity.class, lessonA).getUnitId(), 3); em.persist(root); em.flush();
+            var data = new Lesson("Shared variant", "", node("[]"), List.of(objectiveA), List.of(new Slot(versionId, "REVIEW_VARIANT", 0)));
+            var version = new LessonVersionEntity(root.getId(), 1, data); em.persist(version); em.flush();
+            root.initialDraft(version); root.publish(); lessonIds.add(root.getId());
+        });
+        var c = new Client().login(bob);
+        var all = ok(c.call("POST", "/api/attempts", review("ALL", 1)), 201);
+        assertThat(all.path("items").get(0).path("questionVersionId").asLong()).isEqualTo(versionId);
+        assertThat(all.path("items").get(0).path("practiceRole").asText()).isEqualTo("REVIEW_VARIANT");
+        assertThat(dashboard(c).path("choices").path("all").asInt()).isEqualTo(28);
     }
 }
