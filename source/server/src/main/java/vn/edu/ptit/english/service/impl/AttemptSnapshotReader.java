@@ -44,7 +44,35 @@ public class AttemptSnapshotReader {
         Long submission=attempts.submission(attempt.getId()).map(SubmissionEntity::getId).orElse(null);
         return new Snapshot(attempt.getId(),attempt.getMode(),attempt.getState(),attempt.getLessonVersionId(),attempt.getRevision(),
             attempt.getCreatedAt(),attempt.getUpdatedAt(),attempt.getSubmittedAt(),List.copyOf(items),List.copyOf(materials.values()),
-            attempt.getPlayerState(),submission,attempt.getLessonVersionId()==null?null:lesson(attempt.getLessonVersionId()));
+            attempt.getPlayerState(),submission,attempt.getLessonVersionId()==null?null:lesson(attempt.getLessonVersionId()),activities(attempt,stored));
+    }
+    private JsonNode activities(AttemptEntity attempt,List<AttemptQuestionEntity> items) {
+        var result=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+        var sources=attempts.slotLessonVersions(items.stream().map(AttemptQuestionEntity::getLessonQuestionId).filter(Objects::nonNull).toList());
+        var versionIds=new TreeSet<Long>(sources.values());if(attempt.getLessonVersionId()!=null)versionIds.add(attempt.getLessonVersionId());
+        for(long versionId:versionIds) {
+            var version=versions.lessonVersion(versionId).orElseThrow(AuthoringAccess::missing);
+            var selected=new HashMap<Long,AttemptQuestionEntity>();
+            for(var item:items)if(Objects.equals(attempt.getLessonVersionId(),versionId)||Objects.equals(sources.get(item.getLessonQuestionId()),versionId))selected.put(item.getQuestionVersionId(),item);
+            for(var activity:version.data().activities()) {
+                var ids=new ArrayList<Long>();activity.path("questionVersionIds").forEach(id->{if(selected.containsKey(id.asLong()))ids.add(id.asLong());});
+                if(ids.isEmpty())continue;
+                var publicActivity=result.addObject().put("id",versionId+":"+activity.path("id").asText()).put("kind",activity.path("kind").asText());
+                var publicIds=publicActivity.putArray("attemptQuestionIds");ids.forEach(id->publicIds.add(selected.get(id).getId()));
+                var materials=new HashSet<Long>();ids.forEach(id->{var q=content.questionVersion(id).data();if(q.materialVersionId()!=null)materials.add(q.materialVersionId());});
+                var passages=publicActivity.putArray("passages");
+                for(var passage:activity.path("passages")) {
+                    if(!materials.contains(passage.path("materialVersionId").asLong()))continue;
+                    var target=passages.addObject().put("materialVersionId",passage.path("materialVersionId").asLong()).putArray("parts");
+                    for(var part:passage.path("parts")) {
+                        if(part.path("kind").asText().equals("TEXT"))target.addObject().put("kind","TEXT").put("text",part.path("text").asText());
+                        else if(ids.contains(part.path("questionVersionId").asLong()))target.addObject().put("kind","BLANK").put("attemptQuestionId",selected.get(part.path("questionVersionId").asLong()).getId()).put("blankId",part.path("blankId").asText());
+                        else target.addObject().put("kind","TEXT").put("text","____");
+                    }
+                }
+            }
+        }
+        return result;
     }
     private void reorder(ObjectNode content,String field,List<String> order) {
         if(order.isEmpty()) return;

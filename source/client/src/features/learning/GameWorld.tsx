@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { Answer, Item, Result, Snapshot } from './types';
+import type { Answer, Item, Result, Snapshot, LearningActivity } from './types';
+import { activityKinds } from '../content/authoring';
 import { BridgeScene, GameKey, IslandScene, TreasureChest } from './GameArtwork';
 import './gameplay.css';
 
@@ -16,12 +17,13 @@ export function sameGameAnswer(a: Answer | null, b: Answer | null): boolean {
   return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b));
 }
 
-export function GameWorld({ items, current, filled, select }: { items: Item[]; current: Item; filled: number; select: (item: Item) => void }) {
+export function GameWorld({ items, activities, current, filled, select }: { items: Item[]; activities?: LearningActivity[]; current: Item; filled: number; select: (item: Item) => void }) {
   const games = items.filter((item, i) => items.findIndex(other => other.question.type === item.question.type) === i);
+  const shortcuts = activities?.length ? activities.map(a => ({ id: a.id, label: activityKinds[a.kind], item: items.find(i => i.attemptQuestionId === a.attemptQuestionIds[0])!, active: a.attemptQuestionIds.includes(current.attemptQuestionId) })) : games.map(item => ({ id: item.question.type, label: gameNames[item.question.type], item, active: current.question.type === item.question.type }));
   return <section className="game-world" aria-label="Săn kho báu">
     <div className="game-world-heading"><div><span className="eyebrow">HÀNH TRÌNH TIẾNG ANH</span><h2>Săn kho báu</h2></div><span className="game-progress">{filled}/{items.length} thử thách đã điền</span></div>
     <IslandScene progress={filled / items.length} />
-    <div className="game-world-bottom"><p>Hoàn thành các thử thách. Nộp bài để mở những rương trả lời đúng!</p><nav className="game-shortcuts" aria-label="Chọn trò chơi">{games.map(item => <button type="button" key={item.question.type} aria-current={current.question.type === item.question.type ? 'true' : undefined} onClick={() => { select(item); requestAnimationFrame(() => document.getElementById('active-game-question')?.scrollIntoView({ block: 'start' })); }}><span aria-hidden="true">{symbols[item.question.type]}</span>{gameNames[item.question.type]}</button>)}</nav></div>
+    <div className="game-world-bottom"><p>Hoàn thành các thử thách. Nộp bài để mở những rương trả lời đúng!</p><nav className="game-shortcuts" aria-label="Chọn trò chơi">{shortcuts.map(shortcut => <button type="button" key={shortcut.id} aria-current={shortcut.active ? 'true' : undefined} onClick={() => { select(shortcut.item); requestAnimationFrame(() => document.getElementById('active-game-question')?.scrollIntoView({ block: 'start' })); }}><span aria-hidden="true">{symbols[shortcut.item.question.type]}</span>{shortcut.label}</button>)}</nav></div>
   </section>;
 }
 

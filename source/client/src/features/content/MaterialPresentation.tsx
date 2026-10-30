@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MaterialContent } from './materials';
+import type { ReactNode } from 'react';
 
-export default function MaterialPresentation({ material }: { material: MaterialContent }) {
+export default function MaterialPresentation({ material, readingContent }: { material: MaterialContent; readingContent?: ReactNode }) {
   const [failed, setFailed] = useState(false);
   const audio = useRef<HTMLAudioElement>(null);
   const assetId = material.assetId;
@@ -16,7 +17,7 @@ export default function MaterialPresentation({ material }: { material: MaterialC
   }
   return <article className="material-presentation">
     <h2>{material.title || 'Tài liệu chưa đặt tên'}</h2>
-    {material.kind === 'READING' && <p className="reading-text">{material.readingText || 'Chưa có nội dung đoạn đọc.'}</p>}
+    {material.kind === 'READING' && (readingContent ?? <p className="reading-text">{material.readingText || 'Chưa có nội dung đoạn đọc.'}</p>)}
     {material.kind !== 'AUDIO' && assetId && <figure><img src={'/api/assets/' + assetId} alt={material.altText ?? ''} onError={() => setFailed(true)} />
       {material.kind === 'IMAGE' && material.caption && <figcaption>{material.caption}</figcaption>}</figure>}
     {material.kind === 'AUDIO' && <><audio ref={audio} controls preload="metadata" src={'/api/assets/' + assetId} onError={() => setFailed(true)}

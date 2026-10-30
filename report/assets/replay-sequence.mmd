@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant C as Client
+    participant S as Spring Boot
+    participant D as MySQL
+    C->>C: Lưu pending command
+    C->>S: Mutation requestId K
+    S->>D: Nghiệp vụ và receipt cùng transaction
+    D-->>S: Commit
+    S--xC: Response bị mất
+    C->>S: Replay nguyên key và payload
+    S->>D: Đọc receipt K
+    S-->>C: Status và body đã lưu
+    C->>S: GET đối soát trạng thái hiện tại

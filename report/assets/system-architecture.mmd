@@ -1,0 +1,7 @@
+flowchart TB
+    C[Trình duyệt React và IndexedDB] <-->|HTTP JSON và WebSocket| P[Nginx hoặc Vite]
+    P <--> S[Một backend Spring Boot]
+    S --> D[(MySQL 8.4)]
+    S --> A[AssetStorage và volume file]
+    S --- R[RAM session và registry socket]
+    S --- W[Worker và outbox DB]

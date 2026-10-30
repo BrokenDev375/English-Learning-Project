@@ -249,6 +249,20 @@ POST `/api/attempts` mode LEARN kiểm tra khóa tại server sau actor lock và
 
 Số vòng không lưu vào Submission và không thay đổi FIRST/điểm/XP. API mới không cấp khóa đáp án. Không migration, không backfill hoặc tự hoàn thành bài cũ.
 
+## Bài 18 câu và hoạt động đọc — 28/10/2026
+
+Bài viết tự luận cuối Unit dùng luồng và bảng riêng V15, ngoài Attempt/Submission tự chấm M03. Xem [hợp đồng bài viết](UNIT_WRITING_API.md) và [OpenAPI](openapi-writing.json). RoundProgress có `writing` tùy chọn; nộp bài viết mở vòng sau mà không cần đợi giáo viên chấm.
+
+LessonCreate/Update/Version có `activities` tùy chọn, lưu theo LessonVersion bằng V14. Thiếu trường hoặc danh sách rỗng dùng cấu trúc cũ; dữ liệu tính hash receipt bài cũ không tự thêm trường rỗng. Mỗi activity có `id`, `kind`, `questionVersionIds`, `passages`. Mỗi bài chọn 1–7 dạng khác nhau theo thứ tự CHOICE, MATCHING, ORDERING, FILL, READING_CLOZE, READING_CHOICE, LISTENING_CHOICE; được bỏ dạng chưa cần. Tổng **15–20 câu LEARN**, mỗi phần ít nhất hai câu gồm một GUIDED đầu tiên rồi INDEPENDENT; REVIEW_VARIANT nằm ngoài danh sách hoạt động. Xuất bản kiểm tra đúng 15–20 câu duy nhất, role/type/thứ tự và toàn bộ slot; nháp được phép chưa hoàn tất. Cấu trúc sáu và bảy phần cũ đủ 18 câu vẫn hợp lệ.
+
+Mỗi phần đọc nếu có dùng MaterialVersion ví dụ riêng cho GUIDED và một MaterialVersion chính dùng chung cho các INDEPENDENT. LISTENING_CHOICE yêu cầu MaterialVersion AUDIO và 3–6 option/câu; transcript chỉ trả qua feedback/result theo quyền hiện hành. READING_CHOICE yêu cầu đúng bốn option/câu. READING_CLOZE yêu cầu một blank/câu và đủ hai passage. Passage có `materialVersionId`, `parts`; phần TEXT là `{kind:"TEXT",text}`, phần BLANK là `{kind:"BLANK",questionVersionId,blankId}`. Thay từng BLANK bằng `____` rồi nối các phần phải khớp readingText của đúng MaterialVersion; mỗi câu/blank được ánh xạ đúng một lần, không cho tham chiếu ngoài hoạt động/học liệu.
+
+Snapshot lượt mới thêm `activities` khi có dữ liệu. Activity công khai chỉ có `id`, `kind`, `attemptQuestionIds`, `passages`; BLANK dùng `attemptQuestionId` thay questionVersionId. Chỉ trả material/item thuộc lượt. Với REVIEW/PRACTICE chỉ chọn một số câu của nhóm, các ô không thuộc lượt được thay bằng TEXT `____`; không trả khóa hoặc buộc gửi thêm đáp án ngoài lượt. Nguồn cấu trúc được đọc từ LessonVersion của lesson_question_id đã chốt, không tìm theo phiên bản đang công bố.
+
+GET `/api/lessons/{id}` thêm `activitySummary` tùy chọn gồm `{kind,questionCount}` theo thứ tự hoạt động; không trả cấu trúc ô, ID học liệu hoặc đáp án trước tạo lượt. Hợp đồng Snapshot/LessonPublic cũ giữ nguyên khi không có metadata mới.
+
+LEARN tạo mới lưu vị trí theo activities, không gom toàn bộ GUIDED lên đầu; lượt cũ giữ vị trí đã lưu. Điền từ trực tiếp trong đoạn vẫn gửi Answer FILL_BLANK theo từng item, không thêm kiểu đáp án hoặc endpoint chấm nhóm. Chấm/submit/complete/receipt/XP dùng luật hiện hành. Xem [triển khai và bài mẫu](../../docs/QUESTION_VARIETY_PROGRESS.md).
+
 ### V12 — số vòng lưu cố định
 
 Unit thêm roundNumber (INT dương, tối đa 2147483647, duy nhất toàn hệ thống kể cả vòng chưa công bố). number trong RoundProgress bằng unit.roundNumber, không đánh lại từ tập công bố, trang hoặc bộ lọc. roundNumber quyết định thứ tự và prerequisite; stage/sortOrder vẫn được đọc/ghi để tương thích nhưng không còn quyết định thứ tự vòng.

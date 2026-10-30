@@ -33,7 +33,7 @@ class OrderingMigrationTest {
                 try(var rows=s.executeQuery("SELECT CONCAT(prompt,'|',content_json,'|',answer_json,'|',source_json) FROM question_versions WHERE version_no=1")){rows.next();original=rows.getString(1);}
             }
             var flyway=Flyway.configure().dataSource(mysql.getJdbcUrl(),mysql.getUsername(),mysql.getPassword()).load();
-            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(5);flyway.validate();
+            assertThat(flyway.migrate().migrationsExecuted).isEqualTo(7);flyway.validate();
             try(var connection=mysql.createConnection("");var s=connection.createStatement()) {
                 try(var rows=s.executeQuery("SELECT CONCAT(prompt,'|',content_json,'|',answer_json,'|',source_json) FROM question_versions WHERE version_no=1")){rows.next();assertThat(rows.getString(1)).isEqualTo(original);}
                 assertThat(s.executeUpdate(insertOrdering)).isEqualTo(1);

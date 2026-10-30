@@ -45,7 +45,7 @@ export default function LearningWorkspace({ user }: { user: User }) {
     {user.role === 'STUDENT' && <div className="learning-tabs" role="tablist" aria-label="Học và luyện tập">{[['catalog', 'Chơi theo vòng'], ['review', 'Ôn tập cá nhân'], ['history', 'Lịch sử làm bài']].map(([key, label]) => <button role="tab" key={key} aria-selected={tab === key} onClick={() => { if (!command) { setError(''); setTab(key); } }}>{label}</button>)}</div>}
     {error && <div className="message error" role="alert">{error}</div>}
     {command && <div className="message warning" role="status">{busy ? 'Đang xác nhận và mở lượt làm bạn đã chọn…' : 'Chưa nhận được xác nhận tạo lượt. Gửi lại đúng thao tác trước khi chọn lượt mới.'}{!busy && <button className="button secondary" onClick={() => void start(null)}>Gửi lại yêu cầu tạo lượt</button>}</div>}
-    {user.role !== 'STUDENT' || tab === 'catalog' ? <LearningCatalog student={user.role === 'STUDENT'} start={lessonId => void start({ mode: 'LEARN', lessonId })} disabled={busy || !!command} /> : tab === 'review' ? <PersonalReview userId={user.id} start={input => void start(input)} disabled={busy || !!command} /> : <AttemptHistory />}
+    {user.role !== 'STUDENT' || tab === 'catalog' ? <LearningCatalog userId={user.id} student={user.role === 'STUDENT'} start={lessonId => void start({ mode: 'LEARN', lessonId })} disabled={busy || !!command} /> : tab === 'review' ? <PersonalReview userId={user.id} start={input => void start(input)} disabled={busy || !!command} /> : <AttemptHistory />}
   </>;
 }
 function AttemptHistory() {
