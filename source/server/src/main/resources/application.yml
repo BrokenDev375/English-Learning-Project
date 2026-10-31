@@ -37,6 +37,10 @@ spring:
       fail-on-unknown-properties: true
       accept-float-as-int: false
 app:
+  session:
+    idle-timeout-seconds: ${SESSION_IDLE_TIMEOUT_SECONDS:300}
+    idle-warning-seconds: ${SESSION_IDLE_WARNING_SECONDS:30}
+    idle-sweep-ms: ${SESSION_IDLE_SWEEP_MS:5000}
   assets:
     directory: ${ASSET_DIRECTORY:./data/assets}
     probe-executable: ${MEDIA_PROBE_EXECUTABLE:ffprobe}

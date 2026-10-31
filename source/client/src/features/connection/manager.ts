@@ -1,4 +1,5 @@
 import { api, ApiError, requestId } from '../../api';
+import { activityTabId } from '../session/tab';
 
 export type ConnectionState = 'connecting' | 'connected' | 'interrupted' | 'auth-required';
 export const connectionConfig = { heartbeatMs: 25000, ackMs: 10000, backoffMs: 1000, maxBackoffMs: 30000, pollMs: 30000 };
@@ -18,7 +19,7 @@ export class ConnectionManager {
   private deadline?: number;
   private retries = 0;
   private generation = 0;
-  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean; contest?: number }>();
+  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean; tabId?: string; contest?: number }>();
   private presenceWanted = false;
   private presenceReady = false;
   private resources = new Set<number>();
@@ -26,9 +27,11 @@ export class ConnectionManager {
   private contests = new Set<number>();
   private contestReady = new Set<number>();
   constructor(private userId: number, private random = Math.random, private student = false) {}
-  start() { window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
+  private tabChanged = () => { if (state === 'connected') this.send('HEARTBEAT'); };
+  start() { window.addEventListener('session-tab-changed', this.tabChanged); window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
   stop() {
     this.stopped = true; this.generation++; window.removeEventListener('online', this.wake); window.removeEventListener('focus', this.wake);
+    window.removeEventListener('session-tab-changed', this.tabChanged);
     this.clear(); this.socket?.close(); this.socket = null;
   }
   private clear() {
@@ -50,9 +53,10 @@ export class ConnectionManager {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
     const id = requestId();
+    const tabId = ['HELLO', 'HEARTBEAT'].includes(type) ? activityTabId() : undefined;
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
-    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE', contest: type === 'SUBSCRIBE' ? contestId : undefined });
-    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(contestId === undefined ? {} : { contestId }) }));
+    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, contest: type === 'SUBSCRIBE' ? contestId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE', tabId });
+    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(contestId === undefined ? {} : { contestId }), ...(tabId ? { tabId } : {}) }));
   }
   private connect() {
     if (this.stopped || this.socket) return;
@@ -75,6 +79,8 @@ export class ConnectionManager {
         if (state !== 'connected') {
           this.retries = 0; publish('connected');
           this.beat = window.setInterval(() => this.send('HEARTBEAT'), connectionConfig.heartbeatMs);
+          // Registration may rotate the document ID while HELLO awaits ACK (e.g. remount/recovery).
+          if (command.tabId && command.tabId !== activityTabId()) this.send('HEARTBEAT');
           this.resources.forEach(id => this.send('SUBSCRIBE', id));
           this.contests.forEach(id => this.send('SUBSCRIBE', undefined, 'CONTEST', id));
           if (this.student) {
@@ -111,9 +117,11 @@ export class ConnectionManager {
       // A restart/failed handshake often closes with 1006, not the explicit 1008.
       // A focus/online event may start a replacement while this check awaits HTTP.
       // Only the current connection generation may expire auth or schedule retries.
-      void event;
+      if (event.reason === 'IDLE_TIMEOUT') {
+        publish('auth-required'); window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: 'SESSION_IDLE_TIMEOUT' } })); return;
+      }
       try { const user = await api<{ id: number }>('/api/auth/me', 'GET', undefined, true); if (!current()) return; if (user.id !== this.userId) throw new ApiError(401, 'USER_CHANGED', 'Tài khoản đã thay đổi.'); }
-      catch (e) { if (!current()) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new Event('session-expired')); return; } }
+      catch (e) { if (!current()) return; if (e instanceof ApiError && e.status === 401) { publish('auth-required'); window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: e.code } })); return; } }
       if (current()) this.retry = window.setTimeout(() => { if (current()) this.connect(); }, Math.min(connectionConfig.maxBackoffMs, connectionConfig.backoffMs * 2 ** Math.min(this.retries++, 5)) * (0.75 + this.random() * 0.25));
     };
   }

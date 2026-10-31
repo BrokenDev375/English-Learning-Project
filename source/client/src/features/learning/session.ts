@@ -8,8 +8,8 @@ import type { Row } from './storage/database';
 import { watchAttempt } from '../connection/manager';
 import { syncReviewAfterSubmission } from './storage/journal';
 import { validRecoveryState } from './storage/validation';
-import { clearWritingSessions, writingDirty, writingUnpersisted } from '../writing/session';
-import { clearContestSessions, contestDirty, contestUnpersisted } from '../contests/session';
+import { clearWritingSessions, suspendWritingSessions, writingDirty, writingUnpersisted } from '../writing/session';
+import { clearContestSessions, suspendContestSessions, contestDirty, contestUnpersisted } from '../contests/session';
 
 interface SessionState {
   snapshot: Snapshot | null; draft: Draft | null; result: Result | null; busy: boolean; loading: boolean;
@@ -44,8 +44,9 @@ export class AttemptSession {
   private maxRevision = -1;
   private manualSaveRequired = false;
   private quarantined = false;
+  private authPaused = false;
   constructor(readonly id: number, readonly userId: number) { this.stamp = userEpoch(); }
-  private current() { return isCurrent(this.userId, this.stamp); }
+  private current() { return !this.authPaused && isCurrent(this.userId, this.stamp); }
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     if (this.listeners.size === 1) { this.unwatch = watchAttempt(this.id); window.addEventListener('learning-recover', this.recover); window.addEventListener('attempt-invalidation', this.invalidate); this.poll = window.setInterval(this.recover, 30000); }
@@ -63,7 +64,7 @@ export class AttemptSession {
     const { snapshot, draft, result, pending, pendingAck, conflict, hints, feedback } = this.value;
     const row: WorkingRow = { key: this.key(), userId: this.userId, version: 1, writerId: writerId(), attemptId: this.id, generation: this.generation, updatedAt: Date.now(), manualSaveRequired: this.manualSaveRequired, state: clone({ snapshot, draft, result, pending, pendingAck, conflict, hints, feedback }) };
     this.writes = this.writes.catch(() => {}).then(async () => {
-      if (!this.current()) return;
+      if (!isCurrent(this.userId, this.stamp)) return;
       try {
         await writeRows(this.userId, this.stamp, { workingDrafts: [row] }, deleteCommand ? { commands: [`${this.userId}:${deleteCommand}`] } : {});
         if (this.current() && this.generation === row.generation) this.update({ localSaved: true, storageError: this.quarantined ? 'Có bản tại máy không hợp lệ đã được cách ly, không phát lại. Bản máy chủ được dùng để đối chiếu.' : '' }, false);
@@ -206,7 +207,8 @@ export class AttemptSession {
       playerRestoreVersion: this.value.playerRestoreVersion + (keepDraft ? 0 : 1) });
     if (s.state === 'SUBMITTED') void this.load();
   }
-  dispose() { window.clearTimeout(this.serverTimer); window.clearTimeout(this.localTimer); window.clearInterval(this.poll); this.unwatch?.(); window.removeEventListener('learning-recover', this.recover); window.removeEventListener('attempt-invalidation', this.invalidate); }
+  dispose() { window.clearTimeout(this.serverTimer); window.clearTimeout(this.localTimer); window.clearInterval(this.poll); this.unwatch?.(); this.unwatch = undefined; window.removeEventListener('learning-recover', this.recover); window.removeEventListener('attempt-invalidation', this.invalidate); }
+  pauseForAuthentication() { this.authPaused = true; this.dispose(); return this.hydrated && this.value.snapshot ? this.persist() : Promise.resolve(); }
 }
 const sessions = new Map<string, AttemptSession>();
 let pendingCreate: ReturnType<typeof createCommand> | null = null;
@@ -223,6 +225,16 @@ export function sessionFor(userId: number, attemptId: number) {
 }
 export async function clearLearningSessions() { const previous = owner; clearWritingSessions(); clearContestSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); if (previous !== undefined) await purgeStorage(previous); }
 export function forgetLearningUser() { clearWritingSessions(); clearContestSessions(); sessions.forEach(s => s.dispose()); sessions.clear(); owner = undefined; pendingCreate = null; activateStorage(undefined); }
+export async function suspendLearningUser() {
+  let timer: number | undefined;
+  const results = await Promise.race([
+    Promise.allSettled([...sessions.values()].map(s => s.pauseForAuthentication()).concat([suspendWritingSessions(), suspendContestSessions()])),
+    new Promise<'timeout'>(resolve => { timer = window.setTimeout(() => resolve('timeout'), 2000); }),
+  ]);
+  window.clearTimeout(timer);
+  forgetLearningUser();
+  return results === 'timeout' || results.some(r => r.status === 'rejected') ? ' Có dữ liệu chưa xác nhận lưu được tại máy.' : '';
+}
 export function hasUnsavedLearning() { return contestDirty() || writingDirty() || !!pendingCreate || [...sessions.values()].some(s => s.dirty || s.getSnapshot().pending); }
 export async function hasStoredUnsavedLearning(userId: number) {
   try {

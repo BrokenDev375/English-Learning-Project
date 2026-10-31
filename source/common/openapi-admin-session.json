@@ -1,0 +1,845 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Idle session and admin monitoring API",
+    "version": "1.2.0"
+  },
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/auth/session": {
+      "get": {
+        "operationId": "readSessionDeadline",
+        "responses": {
+          "200": {
+            "description": "Current session deadline; reading does not renew",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDeadline"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/activity": {
+      "post": {
+        "operationId": "reportSessionActivity",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-TOKEN",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Maximum 1024 UTF-8 bytes after JSON parsing",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Activity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current session deadline; reading does not renew",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDeadline"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "See behavior contract ADMIN_SESSION_MONITORING_API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/sessions": {
+      "get": {
+        "operationId": "listAdminSessions",
+        "description": "Live-socket accounts, deduplicated by user. Filters apply before summary and pagination. Unknown or duplicate query parameters are rejected.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "STUDENT",
+                "TEACHER",
+                "ADMIN"
+              ]
+            }
+          },
+          {
+            "name": "activity",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HOME",
+                "LEARN",
+                "REVIEW",
+                "RESULT",
+                "CATALOG",
+                "ACCOUNT",
+                "PROFILE",
+                "REWARDS",
+                "LEADERBOARD",
+                "AUTHORING",
+                "ADMIN_USERS",
+                "STATISTICS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ADMIN only; ephemeral local snapshot; reads never renew sessions",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitoringPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, revoked or idle session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current role is not ADMIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{sessionRef}": {
+      "get": {
+        "operationId": "readAdminSession",
+        "parameters": [
+          {
+            "name": "sessionRef",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ADMIN only; ephemeral local snapshot; reads never renew sessions",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store, private"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitoringDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, revoked or idle session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current role is not ADMIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session reference expired or not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    },
+    "schemas": {
+      "SessionDeadline": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sessionGeneration",
+          "serverTime",
+          "lastInteractionAt",
+          "idleExpiresAt",
+          "warningAt"
+        ],
+        "properties": {
+          "sessionGeneration": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serverTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastInteractionAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "idleExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warningAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tabId",
+          "seq",
+          "activity",
+          "visibility",
+          "interaction"
+        ],
+        "properties": {
+          "tabId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "activity": {
+            "type": "string",
+            "enum": [
+              "HOME",
+              "LEARN",
+              "REVIEW",
+              "RESULT",
+              "CATALOG",
+              "ACCOUNT",
+              "PROFILE",
+              "REWARDS",
+              "LEADERBOARD",
+              "AUTHORING",
+              "ADMIN_USERS",
+              "STATISTICS",
+              "OTHER"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "VISIBLE",
+              "HIDDEN"
+            ]
+          },
+          "interaction": {
+            "type": "boolean"
+          },
+          "attemptId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 9223372036854775807
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "seq": {
+                  "const": 0
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "interaction": {
+                  "const": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "fieldErrors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "MonitoredUser": {
+        "type": "object",
+        "required": [
+          "userId",
+          "fullName",
+          "email",
+          "role",
+          "accountStatus"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "STUDENT",
+              "TEACHER",
+              "ADMIN"
+            ]
+          },
+          "accountStatus": {
+            "enum": [
+              "ACTIVE"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoredContext": {
+        "type": "object",
+        "required": [
+          "activity",
+          "attemptId",
+          "lessonTitle",
+          "roundNumber"
+        ],
+        "properties": {
+          "activity": {
+            "enum": [
+              "HOME",
+              "LEARN",
+              "REVIEW",
+              "RESULT",
+              "CATALOG",
+              "ACCOUNT",
+              "PROFILE",
+              "REWARDS",
+              "LEADERBOARD",
+              "AUTHORING",
+              "ADMIN_USERS",
+              "STATISTICS",
+              "OTHER"
+            ]
+          },
+          "attemptId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "lessonTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "roundNumber": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoredTab": {
+        "type": "object",
+        "required": [
+          "tabRef",
+          "connected",
+          "visibility",
+          "lastInteractionAt",
+          "lastSeenAt",
+          "context"
+        ],
+        "properties": {
+          "tabRef": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "visibility": {
+            "enum": [
+              "VISIBLE",
+              "HIDDEN"
+            ]
+          },
+          "lastInteractionAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "context": {
+            "$ref": "#/components/schemas/MonitoredContext"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoredSession": {
+        "type": "object",
+        "required": [
+          "sessionRef",
+          "loginAt",
+          "lastInteractionAt",
+          "idleExpiresAt",
+          "interactionState",
+          "connected",
+          "openConnections",
+          "tabCount"
+        ],
+        "properties": {
+          "sessionRef": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loginAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastInteractionAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "idleExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "interactionState": {
+            "enum": [
+              "ACTIVE",
+              "IDLE"
+            ]
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "openConnections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tabCount": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoredAccount": {
+        "type": "object",
+        "required": [
+          "user",
+          "primaryContext",
+          "visibility",
+          "interactionState",
+          "lastInteractionAt",
+          "idleExpiresAt",
+          "validSessionCount",
+          "tabCount",
+          "openConnections",
+          "sessions"
+        ],
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/MonitoredUser"
+          },
+          "primaryContext": {
+            "$ref": "#/components/schemas/MonitoredContext"
+          },
+          "visibility": {
+            "enum": [
+              "VISIBLE",
+              "HIDDEN",
+              "UNKNOWN"
+            ]
+          },
+          "interactionState": {
+            "enum": [
+              "ACTIVE",
+              "IDLE"
+            ]
+          },
+          "lastInteractionAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "idleExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validSessionCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tabCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "openConnections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredSession"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoringSummary": {
+        "type": "object",
+        "required": [
+          "connectedAccounts",
+          "validSessions",
+          "tabs",
+          "openConnections",
+          "activities",
+          "idleAccounts"
+        ],
+        "properties": {
+          "connectedAccounts": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "validSessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tabs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "openConnections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "idleAccounts": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoringPage": {
+        "type": "object",
+        "required": [
+          "serverTime",
+          "basis",
+          "summary",
+          "items",
+          "totalElements",
+          "page",
+          "size"
+        ],
+        "properties": {
+          "serverTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "const": "LOCAL_BACKEND_LIVE_SOCKET"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/MonitoringSummary"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredAccount"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonitoringDetail": {
+        "type": "object",
+        "required": [
+          "serverTime",
+          "basis",
+          "user",
+          "session",
+          "tabs"
+        ],
+        "properties": {
+          "serverTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "const": "LOCAL_BACKEND_LIVE_SOCKET"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MonitoredUser"
+          },
+          "session": {
+            "$ref": "#/components/schemas/MonitoredSession"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredTab"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

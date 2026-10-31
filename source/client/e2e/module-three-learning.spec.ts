@@ -35,65 +35,6 @@ async function fill(page: Page, item: Item) {
 async function settled(page: Page) { await expect(page.locator('.learning-status')).not.toContainText('Đang gửi'); }
 async function save(page: Page) { await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ'); }
 async function submit(page: Page) { await page.getByRole('button', { name: 'Nộp bài', exact: true }).click(); await expect(page.getByRole('dialog')).toBeVisible(); await page.getByRole('button', { name: 'Xác nhận nộp bài', exact: true }).click(); }
-async function seekAudio(page: Page, seconds: number) {
-  const audio = page.locator('audio');
-  await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.readyState)).toBeGreaterThanOrEqual(1);
-  await audio.evaluate(async (p: HTMLAudioElement, target) => {
-    p.pause();
-    if (Math.abs(p.currentTime - target) < 0.005) return;
-    await new Promise<void>(resolve => { p.addEventListener('seeked', () => resolve(), { once: true }); p.currentTime = target; });
-  }, seconds);
-}
-
-for (const keepLocal of [false, true]) test('two-tab audio ' + (keepLocal ? 'keeps the selected local position' : 'restores the selected server position'), async ({ page }) => {
-  await student(page); const s = await start(page);
-  const index = s.items.findIndex(i => s.materials.some(m => m.kind === 'AUDIO' && m.materialVersionId === i.materialVersionId));
-  expect(index).toBeGreaterThanOrEqual(0);
-  const materialId = s.items[index].materialVersionId;
-  await select(page, index); await seekAudio(page, 1); await save(page);
-  const tab = await page.context().newPage();
-  try {
-    await tab.goto(page.url()); await expect(tab.locator('.question-nav button')).toHaveCount(10);
-    await expect.poll(() => tab.locator('audio').evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(1, 1);
-    await seekAudio(tab, 2);
-    // Keep a dirty local position before the remote invalidation arrives.
-    await seekAudio(page, 7); await save(page);
-    await expect(tab.getByRole('heading', { name: 'Đối chiếu bài làm', exact: true })).toBeVisible();
-    tab.once('dialog', dialog => dialog.accept());
-    await tab.getByRole('button', { name: keepLocal ? 'Giữ bản đang nhập sau đối chiếu' : 'Dùng bản máy chủ', exact: true }).click();
-    await expect.poll(() => tab.locator('audio').evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(keepLocal ? 2 : 7, 1);
-    await expect.poll(() => tab.locator('audio').evaluate((p: HTMLAudioElement) => p.seeking)).toBe(false);
-    if (keepLocal) await save(tab);
-    else await expect(tab.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true })).toBeDisabled();
-    expect((await snapshot(tab)).playerState.audioPositions.find(p => p.materialVersionId === materialId)?.seconds).toBeCloseTo(keepLocal ? 2 : 7, 1);
-  } finally { await tab.close(); }
-});
-
-test('a delayed save ACK preserves a newer local audio position', async ({ page }) => {
-  await student(page); const s = await start(page);
-  const index = s.items.findIndex(i => s.materials.some(m => m.kind === 'AUDIO' && m.materialVersionId === i.materialVersionId));
-  expect(index).toBeGreaterThanOrEqual(0);
-  const materialId = s.items[index].materialVersionId;
-  await select(page, index); await seekAudio(page, 1); await save(page); await seekAudio(page, 2);
-  let release!: () => void, committed!: () => void;
-  const gate = new Promise<void>(resolve => { release = resolve; });
-  const reached = new Promise<void>(resolve => { committed = resolve; });
-  await page.route('**/api/attempts/*/draft', async route => {
-    const response = await route.fetch(); expect(response.status()).toBe(200); committed(); await gate;
-    return route.fulfill({ response });
-  }, { times: 1 });
-  try {
-    await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await reached;
-    await seekAudio(page, 4);
-  } finally { release(); }
-  await settled(page);
-  await expect.poll(() => page.locator('audio').evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(4, 1);
-  await expect(page.locator('.learning-status')).toContainText('Chưa lưu lên máy chủ');
-  expect((await snapshot(page)).playerState.audioPositions.find(p => p.materialVersionId === materialId)?.seconds).toBeCloseTo(2, 1);
-  await save(page);
-  expect((await snapshot(page)).playerState.audioPositions.find(p => p.materialVersionId === materialId)?.seconds).toBeCloseTo(4, 1);
-});
-
 test('LEARN renders all answer types, saves/restores, completes, corrects and updates catalog progress', async ({ page }) => {
   test.setTimeout(90000); await student(page); const s = await start(page); const url = page.url();
   expect(s.items.map(i => i.question.type)).toEqual(expect.arrayContaining(['SINGLE_CHOICE', 'FILL_BLANK', 'MATCHING']));
@@ -180,18 +121,6 @@ test('401 keeps draft and command across login; 503 keeps the next command pendi
   await expect(page.locator('.answer-fields').getByRole('radio').last()).toBeChecked(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ');
   await page.locator('.answer-fields').getByRole('radio').first().check(); await page.getByRole('button', { name: 'Lưu nháp lên máy chủ', exact: true }).click(); await expect(page.getByRole('alert')).toContainText('Chưa lưu được'); await expect(page.locator('.learning-status')).not.toContainText('Đã lưu trên máy chủ');
   await page.getByRole('button', { name: 'Gửi lại thao tác và đối soát', exact: true }).click(); await expect(page.locator('.learning-status')).toContainText('Đã lưu trên máy chủ'); expect(calls).toBe(4);
-});
-test('real audio restores absolute position and clamps to the supplied segment on mobile', async ({ page }) => {
-  await student(page); const s = await start(page); const index = s.items.findIndex(i => s.materials.some(m => m.kind === 'AUDIO' && m.materialVersionId === i.materialVersionId)); expect(index).toBeGreaterThanOrEqual(0);
-  // Override only segment metadata to cover nonzero bounds, using the real seeded audio and backend draft storage.
-  await page.route('**/api/attempts/' + s.attemptId, async route => { const r = await route.fetch(); const body = await r.json() as Snapshot; body.materials.filter(m => m.kind === 'AUDIO').forEach(m => { m.startSeconds = 1; m.endSeconds = 3; }); return route.fulfill({ response: r, json: body }); });
-  await page.reload(); await expect(page.locator('.question-nav button')).toHaveCount(10); await select(page, index);
-  const audio = page.locator('audio'); await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.readyState)).toBeGreaterThanOrEqual(1);
-  await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(1, 1);
-  await audio.evaluate((p: HTMLAudioElement) => { p.currentTime = 2; }); await expect(page.locator('.learning-status')).toContainText('Chưa lưu lên máy chủ'); await save(page);
-  await page.reload(); await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.currentTime)).toBeCloseTo(2, 1);
-  await audio.evaluate((p: HTMLAudioElement) => { p.currentTime = 5; }); await expect.poll(() => audio.evaluate((p: HTMLAudioElement) => p.currentTime)).toBeLessThanOrEqual(3.01);
-  await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: 'test-results/module-3-runner-mobile.png', fullPage: true });
 });
 test('lost create response survives sidebar navigation and replays the exact command', async ({ page }) => {
   await student(page); let original: unknown; let calls = 0;

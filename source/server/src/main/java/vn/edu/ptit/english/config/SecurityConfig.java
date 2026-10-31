@@ -39,12 +39,13 @@ public class SecurityConfig {
         return new ServletListenerRegistrationBean<>(connections);
     }
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper json, CsrfTokenRepository tokens,
-                                                  SecurityContextRepository contexts, AccountGuard guard) throws Exception {
+                                                  SecurityContextRepository contexts, AccountGuard guard, SessionActivityRegistry activity) throws Exception {
         return http
             .csrf(csrf -> csrf.csrfTokenRepository(tokens).csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
             .securityContext(context -> context.securityContextRepository(contexts).requireExplicitSave(true))
             .requestCache(cache -> cache.disable())
-            .addFilterAfter(new AccountGuardFilter(guard, json), SecurityContextHolderFilter.class)
+            .addFilterAfter(new SessionIdleFilter(activity, json), SecurityContextHolderFilter.class)
+            .addFilterAfter(new AccountGuardFilter(guard, json), SessionIdleFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/login", "/api/auth/register", "/error").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

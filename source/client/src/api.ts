@@ -6,7 +6,11 @@ export class ApiError extends Error {
 interface Csrf { token: string; headerName: string }
 let csrf: Csrf | null = null;
 let csrfPending: Promise<Csrf> | null = null;
-export function resetCsrf() { csrf = null; csrfPending = null; }
+let csrfEpoch = 0;
+let authEpoch = 0;
+export const authenticationEpoch = () => authEpoch;
+export function advanceAuthentication() { authEpoch++; resetCsrf(); }
+export function resetCsrf() { csrfEpoch++; csrf = null; csrfPending = null; }
 async function fetchTimed(path: string, init: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 15000);
@@ -22,15 +26,20 @@ async function fetchTimed(path: string, init: RequestInit): Promise<Response> {
 async function csrfToken(): Promise<Csrf> {
   if (csrf) return csrf;
   if (!csrfPending) {
-    csrfPending = fetchTimed('/api/auth/csrf', { method: 'GET' }).then(async (response) => {
+    const generation = csrfEpoch;
+    const pending = fetchTimed('/api/auth/csrf', { method: 'GET' }).then(async (response) => {
       if (!response.ok) throw new ApiError(response.status, 'CSRF_UNAVAILABLE', 'Chưa chuẩn bị được phiên đăng nhập. Vui lòng thử lại.');
-      csrf = await response.json() as Csrf;
+      const next = await response.json() as Csrf;
+      if (generation !== csrfEpoch) throw new ApiError(0, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
+      csrf = next;
       return csrf;
-    }).finally(() => { csrfPending = null; });
+    }).finally(() => { if (csrfPending === pending) csrfPending = null; });
+    csrfPending = pending;
   }
   return csrfPending;
 }
 export async function api<T>(path: string, method = 'GET', body?: unknown, allowUnauthorized = false, retried = false): Promise<T> {
+  const epoch = authEpoch;
   const headers: Record<string, string> = { Accept: 'application/json' };
   const multipart = body instanceof FormData;
   if (body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
@@ -38,18 +47,23 @@ export async function api<T>(path: string, method = 'GET', body?: unknown, allow
     const token = await csrfToken();
     headers[token.headerName] = token.token;
   }
+  if (epoch !== authEpoch) throw new ApiError(0, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
   const response = await fetchTimed(path, { method, headers, body: body === undefined ? undefined : multipart ? body : JSON.stringify(body) });
+  if (epoch !== authEpoch) throw new ApiError(0, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
   if (!response.ok) {
     const failure = await response.json().catch(() => ({})) as { code?: string; message?: string; fieldErrors?: Record<string, string> };
+    if (epoch !== authEpoch) throw new ApiError(0, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
     if (response.status === 403 && failure.code === 'CSRF_INVALID' && !retried) {
       resetCsrf();
       return api<T>(path, method, body, allowUnauthorized, true);
     }
-    if (response.status === 401 && !allowUnauthorized) window.dispatchEvent(new Event('session-expired'));
+    if (response.status === 401 && !allowUnauthorized) window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: failure.code, epoch } }));
     throw new ApiError(response.status, failure.code ?? 'REQUEST_FAILED', failure.message ?? 'Yêu cầu chưa thành công. Vui lòng thử lại.', failure.fieldErrors);
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const result = await response.json() as T;
+  if (epoch !== authEpoch) throw new ApiError(0, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
+  return result;
 }
 export function errorMessage(error: unknown): string { return error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại.'; }
 export function requestId(): string {

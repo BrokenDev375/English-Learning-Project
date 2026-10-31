@@ -1,5 +1,7 @@
 # English Learning
 
+**Tích hợp nhánh giám sát phiên với main (31/10):** giữ đầy đủ activities, bài viết, ôn tập và cuộc thi, cùng idle/session monitoring và nghe tối đa hai lượt. Chuỗi migration dùng V1–V18; V14 là activities, V18 là audio. DB theo main V17 nâng bằng V18; DB từng chạy V14 audio của nhánh cũ cần chuyển lịch sử riêng trước khi chạy source tích hợp. Xem [cách xử lý conflict và database](docs/ADMIN_MAIN_INTEGRATION.md), [kiểm thử sau tích hợp](statics/results/admin-main-integration-validation.md).
+
 **Cuộc thi online:** menu **Cuộc thi** gồm Cuộc thi, **Kho bộ đề** và **Phân quyền** theo vai trò. ADMIN cấp riêng quyền ra đề/giám sát; giáo viên tạo bộ đề để dành, gửi duyệt; ADMIN chọn một bộ đề đã duyệt khi tạo cuộc thi và phân công giám thị. Chọn bộ đề bằng danh sách có tìm kiếm/phân trang; tìm giám thị theo tên/email, giữ các mục đã tick khi chuyển trang. Form thiết lập gọn, không nhập từng câu; bộ đề dùng lại được, cuộc thi giữ snapshot riêng. Có phòng chờ, lưu/tiếp tục bài, cảnh báo rời màn/trừ giờ, thu hồi, đáp án/BXH/lưu trữ. Source V16–V17; bản thử riêng **http://localhost:15223/#/contests** đã nâng V17 sau sao lưu, demo 15183 giữ nguyên. Xem [luồng](docs/ONLINE_CONTESTS.md), [API](source/common/ONLINE_CONTESTS_API.md), [kiểm tra](statics/results/contest-paper-library-validation.md).
 
 **Môi trường đang dùng để test (29/10):** http://localhost:5176 chạy project `english-learning-integrated`, dùng DB riêng với học liệu mẫu gốc. Baseline cũ và demo `english-learning-main` đã dừng, volume vẫn giữ nguyên; các DB V12 activities cũ chưa được chuyển lịch sử migration sang main mới. Xem [cách chạy và dữ liệu](docs/BASELINE_TESTING.md).
@@ -50,6 +52,16 @@ M04 bổ sung ba lựa chọn ôn cá nhân: tất cả, ưu tiên và câu sai 
 ## M06 — kết nối và phục hồi
 
 LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave server; journal giữ request qua reload, socket có reconnect/heartbeat và presence nhiều tab. Xem [tiến độ M06](docs/M06_PROGRESS.md), [cách thử](docs/M06_MANUAL_TEST_CASES.md), [kết quả kiểm tra](statics/results/module-6-validation.md). Chưa có PWA/login offline hoặc tải trước toàn bộ audio.
+
+## Phiên không tương tác và giám sát quản trị
+
+Phần nghe trong lượt làm/chữa bài hiện **không cho tua, tối đa hai lượt bắt đầu phát mỗi đoạn audio trong một Attempt**. Pause/nghe tiếp không trừ thêm; câu dùng chung audio dùng chung lượt, reload không hoàn lại lượt đã bắt đầu. Bộ đếm lưu server bằng migration V18; không cần reset volume. Xem [quy tắc nghe và API](docs/AUDIO_LISTENING_POLICY.md).
+
+Mọi vai trò tự hết phiên sau **5 phút không tương tác**, cảnh báo trước **30 giây** và có nút **Tiếp tục làm việc**. Heartbeat, polling, autosave và audio phát liên tục không tự gia hạn. Các tab cùng phiên dùng chung deadline; các phiên đăng nhập riêng độc lập. Khi hết phiên, nháp/journal đã lưu tại máy được giữ để đúng user đăng nhập lại và tiếp tục; đây là luồng khác với đăng xuất chủ động có purge. Nếu ghi local bị lỗi hoặc quá thời gian chờ, thông báo nêu rõ phần chưa xác nhận lưu.
+
+ADMIN vào **Quản lý tài khoản → Giám sát hoạt động** để xem số tài khoản online/đang học/đang ôn/không tương tác, lọc tên/email/vai trò/chức năng và mở **Xem phiên**. Chi tiết có thời gian đăng nhập, tương tác, hạn phiên, kết nối và từng tab; cùng tài khoản nhiều tab vẫn chỉ có một dòng. **Khóa** dùng luồng quản trị hiện có và thu hồi mọi phiên của tài khoản; mở khóa cần đăng nhập mới. Khi mất phản hồi thao tác, giao diện GET đối soát hoặc yêu cầu **Kiểm tra trạng thái**, không tự gửi lại mutation chưa rõ kết quả. Dữ liệu lỗi giữ lần đọc gần nhất và có nhãn chưa cập nhật.
+
+Backend và client cần được rebuild cùng nhau; client cũ không có tracker sẽ hết phiên dù vẫn mở trang. Cấu hình `SESSION_IDLE_TIMEOUT_SECONDS` (300), `SESSION_IDLE_WARNING_SECONDS` (30), `SESSION_IDLE_SWEEP_MS` (5000) có mặc định trong Compose, không cần ghi lại mật khẩu hoặc reset volume. Đã triển khai và nghiệm thu bước 0–5: backend 361/361, browser hồi quy 137/137 cùng các lượt idle/audio/default 300s thật, restart/recreate và khóa REVIEW. Xem [bàn giao/cách thử](docs/ADMIN_SESSION_MONITORING_HANDOFF.md), [biên bản đầy đủ](statics/results/admin-session-step5-validation.md), [tiến độ](docs/ADMIN_SESSION_MONITORING_PROGRESS.md) và [API](source/common/ADMIN_SESSION_MONITORING_API.md). Script tích hợp: `npm run test:session-acceptance` trong `source/client`, dùng stack riêng, không reset volume demo.
 
 ## M04 — ôn tập cá nhân
 
