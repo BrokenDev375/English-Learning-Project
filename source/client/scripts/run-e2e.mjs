@@ -7,6 +7,8 @@ const clientRoot = fileURLToPath(new URL('../', import.meta.url));
 const projectRoot = resolve(clientRoot, '../..');
 const cli = fileURLToPath(import.meta.resolve('@playwright/test/cli'));
 const sharedTarget = process.env.E2E_BASE_URL;
+const projectName = process.env.E2E_PROJECT_NAME ?? 'english-learning-e2e';
+if (!/^english-learning-e2e(?:-[a-z0-9-]+)?$/.test(projectName)) throw new Error('E2E_PROJECT_NAME must use the isolated english-learning-e2e prefix.');
 const env = {
   ...process.env,
   APP_PORT: process.env.E2E_APP_PORT ?? '5174',
@@ -16,8 +18,6 @@ const env = {
 };
 env.WS_ALLOWED_ORIGINS = `http://localhost:${env.APP_PORT},http://127.0.0.1:${env.APP_PORT}`;
 env.E2E_BASE_URL = sharedTarget ?? `http://127.0.0.1:${env.APP_PORT}`;
-const projectName = process.env.E2E_PROJECT_NAME ?? 'english-learning-e2e';
-if (!/^english-learning-e2e(?:-[a-z0-9-]+)?$/.test(projectName)) throw new Error('E2E_PROJECT_NAME must use the english-learning-e2e prefix.');
 const compose = ['compose', '--project-name', projectName, '--file', 'compose.yml'];
 function docker(args, quiet = false) {
   const result = spawnSync('docker', [...compose, ...args], { cwd: projectRoot, env, encoding: 'utf8', stdio: quiet ? 'pipe' : 'inherit' });

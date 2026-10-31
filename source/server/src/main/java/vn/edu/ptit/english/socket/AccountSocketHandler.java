@@ -72,6 +72,10 @@ public class AccountSocketHandler extends TextWebSocketHandler {
             } else if (!type.equals("HELLO") && !type.equals("HEARTBEAT")) {
                 code = "UNSUPPORTED_TYPE";
             }
+            if(code==null && (type.equals("HELLO") || type.equals("HEARTBEAT")) && input.has("tabId")) {
+                if(!input.path("tabId").isTextual() || !input.path("tabId").asText().matches("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")) code="INVALID_MESSAGE";
+                else connections.bindTab(raw.getId(),input.path("tabId").asText());
+            }
             if (code == null && (type.equals("HELLO") || type.equals("HEARTBEAT"))) connections.heartbeat(raw.getId());
         } catch (Exception ex) { code = "INVALID_MESSAGE"; }
         var sender = (WebSocketSession) raw.getAttributes().get("sender");

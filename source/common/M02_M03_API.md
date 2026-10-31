@@ -1,5 +1,7 @@
 # Quy tắc API M02–M03
 
+Bổ sung 29/10/2026: [audio không tua/tối đa hai lượt](../../docs/AUDIO_LISTENING_POLICY.md) có GET `/api/attempts/{id}/audio/{materialVersionId}` và POST `.../start`, receipt/owner/CSRF và bảng V14 riêng. Không thay payload PlayerState hoặc hash command nháp/nộp cũ; xem hợp đồng bổ sung trước khi dùng luật seek/restore audio lịch sử.
+
 Hợp đồng 1.0.0 — 16/10/2026. Cập nhật 17/10: đã triển khai API M02 danh mục tác giả, asset/material, questions/lessons, copy câu, chi tiết Unit/thứ tự bài và learner catalog. PublishedContentReader đã có cho M03. Bộ seed 6 bài/90 câu đã hoàn thành, kèm 13 tài liệu và 7 file thật. API attempt/progress M03 chưa triển khai. Xem [tiến độ M02](../../docs/M02_PROGRESS.md).
 
 Đọc cùng [bàn giao](../../docs/M02_M03_HANDOFF.md), [OpenAPI](openapi-m02-m03.json), [ví dụ](examples-m02-m03.json), [API M01](API.md). OpenAPI định nghĩa DTO chính xác; tài liệu này định nghĩa giao dịch, quyền và luồng.

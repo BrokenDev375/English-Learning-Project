@@ -64,6 +64,18 @@ test('paper chooser cancels without losing selection; proctor checks survive fil
   const search=proctors.getByRole('searchbox',{name:'Tìm giám thị',exact:true});await search.fill('no-match');await expect(proctors.getByText('Không tìm thấy giám thị phù hợp.',{exact:true})).toBeVisible();await expect(proctors.getByRole('listitem')).toHaveCount(2);await search.fill('slow');await page.waitForRequest(r=>r.url().includes('q=slow'));await search.fill('fast');await expect(proctors.getByRole('checkbox',{name:/Fast result/})).toBeVisible();await expect.poll(()=>slowDone.value).toBe(true);await expect(proctors.getByText('Obsolete slow result',{exact:true})).toHaveCount(0);await proctors.getByRole('button',{name:'Bỏ giám thị First page proctor',exact:true}).click();await expect(proctors.getByRole('listitem')).toHaveCount(1);
 });
 
+test('authentication expiry retains contest route and unsaved answers through recovery and claim',async({page,playwright,baseURL})=>{
+  test.setTimeout(120000);const admin=await playwright.request.newContext({baseURL});const credentials=await makeStudent(page.request);const c=await prepare(admin,page.request);await enter(page,c.id);await expect(page.locator('.contest-exam')).toBeVisible({timeout:45000});
+  await page.getByRole('radio',{name:/Hello/}).check();
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('session-expired',{detail:{code:'SESSION_IDLE_TIMEOUT'}})));
+  await expect(page.getByLabel('Email',{exact:true})).toBeVisible();expect(page.url()).toContain(`contest=${c.id}`);
+  await page.getByLabel('Email',{exact:true}).fill(credentials.email);await page.getByLabel('Mật khẩu',{exact:true}).fill(credentials.password);await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();
+  await page.getByRole('button',{name:'Khôi phục bài thi',exact:true}).click();await page.getByRole('checkbox',{name:/Tôi đã đọc/}).check();await page.getByRole('button',{name:'Tiếp tục làm bài',exact:true}).click();
+  await expect(page.getByRole('radio',{name:/Hello/})).toBeChecked();await expect(page.locator('.contest-toolbar')).toContainText('Đã lưu trên máy chủ');
+  const restored=await(await page.request.get(`/api/me/contests/${c.id}`)).json();expect(Object.values(restored.answers)).toContainEqual({type:'SINGLE_CHOICE',optionId:'hello'});
+  await close(admin,c.id);await admin.dispose();
+});
+
 test('monitor separates approval, exam progress and room connection and keeps statuses visible on mobile',async({page})=>{
   await loginAdmin(page.request);const paper=await approvedPaper(page.request);const c=await write(page.request,'/api/author/contests',contestSettings(paper.id));let phase='PUBLISHED';
   await page.route(new RegExp(`/api/author/contests/${c.id}/monitor(?:\\?|$)`),async route=>{

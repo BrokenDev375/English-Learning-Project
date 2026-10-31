@@ -2,6 +2,8 @@
 
 Ngày 21/10/2026, nền M03/M04 `57f2951`. Giữ nguyên [API M03](M02_M03_API.md), [M04](M04_API.md) và session/CSRF M01. Không thêm JWT, bảng SQL hoặc sửa migration V1–V5.
 
+Cập nhật 29/10/2026: policy idle và giám sát ADMIN tại [hợp đồng phiên](ADMIN_SESSION_MONITORING_API.md). GET, heartbeat, reconnect, autosave và replay không gia hạn deadline tương tác 300s. Hết phiên dừng sender/flush local có giới hạn, giữ pending key/payload và journal; auth mới cùng user mới hydrate/replay/GET đối soát. Callback auth cũ không chạy trong vòng mới. HELLO/HEARTBEAT có tabId tùy chọn để gắn context giám sát, không dùng writer ID của M06 và không cấp quyền. Restart/recreate mất auth RAM nhưng giữ dữ liệu đã commit. Script nghiệm thu tích hợp hiện tại: `npm run test:session-acceptance` trong source/client; xem [bàn giao](../../docs/ADMIN_SESSION_MONITORING_HANDOFF.md) và [bằng chứng](../../statics/results/admin-session-step5-validation.md), không dùng số test M06 cũ thay thế lượt này.
+
 ## 1. Presence riêng tư qua HTTP
 
 `GET /api/me/connections`: user đang đăng nhập, mọi vai trò; AccountGuard kiểm tra trạng thái/security_version hiện hành. Không nhận userId từ client. Response 200, `Cache-Control: private, no-store`:

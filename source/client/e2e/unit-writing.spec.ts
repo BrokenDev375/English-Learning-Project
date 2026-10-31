@@ -104,6 +104,19 @@ test('lost submit acknowledgement survives reload and replays the identical comm
   await expect(page.getByText('Chờ giáo viên chấm', { exact: true })).toBeVisible(); expect(sent).toHaveLength(2); expect(sent[0]).toBe(sent[1]);
   expect((await (await page.request.get(`/api/me/units/${unit}/writing`)).json()).history).toHaveLength(1);
 });
+test('authentication expiry flushes a writing edit before the local debounce and restores it after login', async ({ page }) => {
+  const credentials = await student(page.request); await page.goto(`/#/learning?unit=${unit}`);
+  await page.getByRole('button', { name: 'Bắt đầu viết', exact: true }).click();
+  const text = 'This writing edit must survive immediate authentication expiry.';
+  await page.getByLabel('Bài viết của bạn', { exact: true }).fill(text);
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('session-expired', { detail: { code: 'SESSION_IDLE_TIMEOUT' } })));
+  await expect(page.getByLabel('Email', { exact: true })).toBeVisible();
+  await page.getByLabel('Email', { exact: true }).fill(credentials.email); await page.getByLabel('Mật khẩu', { exact: true }).fill(credentials.password);
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await page.getByRole('button', { name: 'Khôi phục bản tại máy', exact: true }).click();
+  await expect(page.getByLabel('Bài viết của bạn', { exact: true })).toHaveValue(text);
+});
+
 test('two tabs require an explicit comparison instead of overwriting the newer draft', async ({ page, context }) => {
   test.setTimeout(150000); await student(page.request); await page.goto(`/#/learning?unit=${unit}`); await page.getByRole('button', { name: 'Bắt đầu viết', exact: true }).click();
   const other = await context.newPage(); await other.goto(`/#/learning?unit=${unit}`); await expect(other.getByLabel('Bài viết của bạn', { exact: true })).toBeVisible();

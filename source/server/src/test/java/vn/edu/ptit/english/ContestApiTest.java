@@ -111,13 +111,13 @@ class ContestApiTest extends AuthoringFixture {
     }
     @Test void aPenaltyBiggerThanTheRemainingTimeEndsNowWithoutRewindingActualDuration()throws Exception{
         var c=prepare(true);start(c);ok(c.learner().send("POST","/api/me/contests/"+c.id()+"/save",answerCommand(c,"yes")),200);
-        time.now=c.end().minusSeconds(300);hidden(c,true);hidden(c,false);var ended=hidden(c,true);assertThat(ended.path("participation").path("submitted").asBoolean()).isTrue();
+        time.now=c.end().minusSeconds(300);c.learner().login(learner);c.admin().login(admin);hidden(c,true);hidden(c,false);var ended=hidden(c,true);assertThat(ended.path("participation").path("submitted").asBoolean()).isTrue();
         assertThat(Instant.parse(ended.path("participation").path("deadline").asText())).isEqualTo(time.now);
         close(c);var result=view(c).path("result");assertThat(result.path("correctCount").asInt()).isEqualTo(2);assertThat(result.path("elapsedMillis").asLong()).isEqualTo(1500_000);
     }
     @Test void lateDraftIsRejectedAndWorkerUsesTheDeadlineNotItsLateProcessingTime()throws Exception{
         var c=prepare(true);start(c);ok(c.learner().send("POST","/api/me/contests/"+c.id()+"/save",answerCommand(c,"no")),200);var late=answerCommand(c,"yes");
-        time.now=c.end().plusSeconds(30);assertThat(c.learner().send("POST","/api/me/contests/"+c.id()+"/save",late).statusCode()).isEqualTo(409);
+        time.now=c.end().plusSeconds(30);c.learner().login(learner);assertThat(c.learner().send("POST","/api/me/contests/"+c.id()+"/save",late).statusCode()).isEqualTo(409);
         var replay=c.learner().send("POST","/api/me/contests/"+c.id()+"/save",late);assertThat(replay.statusCode()).isEqualTo(409);assertThat(replay.headers().firstValue("Idempotent-Replayed")).contains("true");contests.tick(c.id());
         var result=view(c).path("result");assertThat(result.path("correctCount").asInt()).isZero();assertThat(Instant.parse(result.path("submittedAt").asText())).isEqualTo(c.end());assertThat(result.path("elapsedMillis").asLong()).isEqualTo(1800_000);
         contests.tick(c.id());assertThat(count("contest_submissions")).isEqualTo(1);

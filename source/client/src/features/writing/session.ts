@@ -9,11 +9,11 @@ interface State { view: Learner | null; text: string; busy: boolean; error: stri
 const sessions = new Map<string, WritingSession>();
 export class WritingSession {
   private state: State = { view: null, text: '', busy: false, error: '', pending: null, conflict: null, recovery: null, localSaved: false };
-  private listeners = new Set<() => void>(); private stamp = userEpoch(); private localTimer = 0; private serverTimer = 0; private disposed = false;
+  private listeners = new Set<() => void>(); private stamp = userEpoch(); private localTimer = 0; private serverTimer = 0; private disposed = false; private authPaused = false;
   private lane: Promise<void> = Promise.resolve(); private unsavedLocal = false;
   private generation = 0;
   constructor(private user: number, private unit: number) {}
-  private current = () => !this.disposed && isCurrent(this.user, this.stamp);
+  private current = () => !this.disposed && !this.authPaused && isCurrent(this.user, this.stamp);
   getSnapshot = () => this.state;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   get dirty() { return !!this.state.pending || (!!this.state.view?.work && this.state.text !== this.state.view.work.text); }
@@ -23,7 +23,7 @@ export class WritingSession {
   private persist() {
     const { view, text, pending } = this.state; const dirty = this.dirty; const key = this.key();
     this.lane = this.lane.catch(() => {}).then(async () => {
-      if (!this.current() || !view) return;
+      if (this.disposed || !isCurrent(this.user, this.stamp) || !view) return;
       await writeRows(this.user, this.stamp, dirty ? { workingDrafts: [{ key, userId: this.user, version: 1, kind: 'writing', unitId: this.unit, writerId: writerId(), updatedAt: Date.now(), view, text, pending } as Local] } : {}, dirty ? {} : { workingDrafts: [key] });
     }); return this.lane;
   }
@@ -43,7 +43,7 @@ export class WritingSession {
     finally { this.update({ busy: false }); }
   }
   edit(text: string) {
-    if (this.state.busy || this.state.pending || this.state.conflict) return;
+    if (!this.current() || this.state.busy || this.state.pending || this.state.conflict) return;
     const generation = ++this.generation;
     this.unsavedLocal = true; this.update({ text, localSaved: false, error: '' });
     window.clearTimeout(this.localTimer); window.clearTimeout(this.serverTimer);
@@ -96,6 +96,7 @@ export class WritingSession {
     this.update({ view: this.state.conflict, conflict: null, pending: null }); await this.persist().catch(e => this.update({ error: errorMessage(e) }));
     // No automatic overwrite after selecting local text; the learner must save explicitly.
   }
+  pauseForAuthentication() { this.authPaused = true; window.clearTimeout(this.localTimer); window.clearTimeout(this.serverTimer); return this.persist(); }
   dispose() { this.disposed = true; window.clearTimeout(this.localTimer); window.clearTimeout(this.serverTimer); }
 }
 function validView(v: Learner, unit: number) {
@@ -114,3 +115,5 @@ export function writingSession(user: number, unit: number) { const key = `${user
 export function clearWritingSessions() { sessions.forEach(s => s.dispose()); sessions.clear(); }
 export const writingDirty = () => [...sessions.values()].some(s => s.dirty);
 export const writingUnpersisted = () => [...sessions.values()].some(s => s.unpersisted);
+
+export const suspendWritingSessions = () => Promise.all([...sessions.values()].map(s => s.pauseForAuthentication())).then(() => {});

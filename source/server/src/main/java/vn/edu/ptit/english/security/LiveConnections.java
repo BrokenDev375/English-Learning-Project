@@ -23,6 +23,7 @@ public class LiveConnections implements HttpSessionListener {
         final WebSocketSession session;
         final Role role;
         volatile boolean presenceSubscribed;
+        volatile String tabId;
         final Set<Long> subscriptions = ConcurrentHashMap.newKeySet();
         final Set<Long> contests = ConcurrentHashMap.newKeySet();
         volatile long lastSeen;
@@ -38,12 +39,27 @@ public class LiveConnections implements HttpSessionListener {
     private final ObjectMapper json;
     private OnlineSnapshot announcedPresence = new OnlineSnapshot(Set.of(), 0);
     private boolean publishingPresence;
+    private boolean presenceDirty;
+    private long lastPresenceSent = -1000;
+    private SessionActivityRegistry activity;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void sessionActivity(SessionActivityRegistry activity) {
+        this.activity=activity;
+        activity.onChanged(this::activityChanged);
+        activity.onClosing(id -> sockets.forEach((key,socket) -> {
+            if(socket.httpSessionId.equals(id)) {
+                sockets.remove(key,socket);
+                try {socket.session.close(new CloseStatus(1008,"IDLE_TIMEOUT"));}catch(IOException | RuntimeException ignored){}
+            }
+        }));
+    }
     public LiveConnections(Clock clock, ObjectMapper json, @Value("${app.socket.presence-timeout-ms:75000}") long timeout) {
         if (timeout < 500 || timeout > 300000) throw new IllegalArgumentException("Invalid presence timeout");
         this.clock = clock; this.json = json; this.timeout = timeout;
     }
 
     public void register(HttpSession session, long userId) {
+        if(activity!=null)activity.register(session,userId);
         sessions.put(session.getId(), new Session(userId, session));
     }
     public void attach(WebSocketSession session, UserPrincipal actor, String httpSessionId) {
@@ -51,8 +67,20 @@ public class LiveConnections implements HttpSessionListener {
         presenceChanged();
     }
     public void detach(String id) { if (sockets.remove(id) != null) presenceChanged(); }
+    public void bindTab(String id, String tabId) {
+        var socket=sockets.get(id);
+        if(socket!=null && !java.util.Objects.equals(socket.tabId,tabId)) {socket.tabId=tabId;activityChanged();}
+    }
+    /** Internal join keys, never an API DTO. */
+    public record SocketSnapshot(String sessionId, String tabId, long userId) {}
+    public java.util.List<SocketSnapshot> monitoringSnapshot() {
+        long now=clock.millis();
+        return sockets.values().stream().filter(s->s.session.isOpen() && now-s.lastSeen<timeout)
+            .map(s->new SocketSnapshot(s.httpSessionId,s.tabId,s.userId)).toList();
+    }
     public boolean allowMessage(String id) {
         var socket = sockets.get(id); if (socket == null) return false;
+        if(activity!=null && !activity.current(socket.httpSessionId))return false;
         synchronized (socket) {
             long now = clock.millis();
             if (now - socket.lastSeen >= timeout) { expire(socket); presenceChanged(); return false; }
@@ -63,7 +91,9 @@ public class LiveConnections implements HttpSessionListener {
     }
     public void heartbeat(String id) {
         var socket = sockets.get(id);
-        if (socket != null) { long now = clock.millis(); boolean stale = now - socket.lastSeen >= timeout; socket.lastSeen = now; if (stale) presenceChanged(); }
+        if (socket != null) { long now = clock.millis(); boolean stale = now - socket.lastSeen >= timeout; socket.lastSeen = now;
+            if(activity!=null)activity.socketSeen(socket.httpSessionId,socket.tabId);
+            if (stale) presenceChanged(); }
     }
     public boolean subscribePresence(String id, boolean enabled) {
         var socket = sockets.get(id);
@@ -106,6 +136,7 @@ public class LiveConnections implements HttpSessionListener {
     }
     @Scheduled(fixedDelayString = "${app.socket.sweep-ms:5000}")
     public void sweep() {
+        if(activity!=null)activity.sweep();
         sockets.forEach((id, socket) -> { if (!socket.session.isOpen() || clock.millis() - socket.lastSeen >= timeout) expire(socket); });
         presenceChanged();
     }
@@ -114,21 +145,26 @@ public class LiveConnections implements HttpSessionListener {
         try { socket.session.close(new CloseStatus(1001, "HEARTBEAT_TIMEOUT")); } catch (IOException | RuntimeException ignored) {}
     }
     /** Invalidation only: admins re-read the authorized snapshot, including after subscription ACK. */
+    private synchronized void activityChanged() { presenceDirty=true;flushPresence(); }
     private synchronized void presenceChanged() {
+        var current=onlineSnapshot();
+        if(!current.equals(announcedPresence)) {announcedPresence=current;presenceDirty=true;}
+        flushPresence();
+    }
+    @Scheduled(fixedDelay = 1000)
+    public synchronized void flushPresence() {
+        if(!presenceDirty || clock.millis()-lastPresenceSent<1000)return;
         if (publishingPresence) return;
         publishingPresence = true;
+        presenceDirty=false;
+        lastPresenceSent=clock.millis();
         try {
-            for (;;) {
-                var current = onlineSnapshot();
-                if (current.equals(announcedPresence)) return;
-                announcedPresence = current;
                 for (var socket : sockets.values()) {
                     if (socket.role != Role.ADMIN || !socket.presenceSubscribed || !socket.session.isOpen()
                         || clock.millis() - socket.lastSeen >= timeout) continue;
                     try { socket.session.sendMessage(new TextMessage("{\"version\":1,\"type\":\"PRESENCE_CHANGED\"}")); }
-                    catch (IOException | RuntimeException ignored) { expire(socket); }
+                    catch (IOException | RuntimeException ignored) { expire(socket);presenceDirty=true; }
                 }
-            }
         } finally { publishingPresence = false; }
     }
     public vn.edu.ptit.english.dto.ConnectionViews.Presence presence(long userId) {
@@ -176,6 +212,7 @@ public class LiveConnections implements HttpSessionListener {
     }
     @Override public void sessionDestroyed(HttpSessionEvent event) {
         String id = event.getSession().getId();
+        if(activity!=null)activity.remove(id);
         sessions.remove(id);
         sockets.forEach((key, connection) -> {
             if (connection.httpSessionId.equals(id)) { sockets.remove(key, connection); close(connection.session); }

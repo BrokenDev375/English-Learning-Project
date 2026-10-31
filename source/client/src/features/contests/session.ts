@@ -11,11 +11,11 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a ?? {}) === JSON.string
 const sessions = new Map<string, ContestSession>();
 export class ContestSession {
   private state: State = { view: null, answers: {}, busy: false, error: '', pending: null, conflict: null, recovery: null, active: false, localSaved: true };
-  private listeners = new Set<() => void>(); private stamp = userEpoch(); private disposed = false; private timer = 0; private heartbeat = 0;
+  private listeners = new Set<() => void>(); private stamp = userEpoch(); private disposed = false; private authPaused = false; private timer = 0; private heartbeat = 0;
   private visibility: boolean[] = []; private attached = 0; private loading = false;
   private lane: Promise<void> = Promise.resolve(); private needsLocal = false;
   constructor(private user: number, private contest: number) {}
-  private current = () => !this.disposed && isCurrent(this.user, this.stamp);
+  private current = () => !this.disposed && !this.authPaused && isCurrent(this.user, this.stamp);
   getSnapshot = () => this.state;
   subscribe = (f: () => void) => { this.listeners.add(f); return () => { this.listeners.delete(f); }; };
   get dirty() { return !!this.state.pending || this.visibility.length > 0 || !same(this.state.answers, this.state.view?.answers); }
@@ -26,7 +26,7 @@ export class ContestSession {
     const { view, answers, pending } = this.state, visibility = [...this.visibility], dirty = this.dirty, key = this.key();
     this.needsLocal = true;
     this.lane = this.lane.catch(() => {}).then(async () => {
-      if (!this.current() || !view) return;
+      if (this.disposed || !isCurrent(this.user, this.stamp) || !view) return;
       await writeRows(this.user, this.stamp, dirty ? { workingDrafts: [{ key, userId: this.user, version: 1, kind: 'contest', contestId: this.contest, writerId: writerId(), updatedAt: Date.now(), view, answers, pending, visibility } as Local] } : {}, dirty ? {} : { workingDrafts: [key] });
     });
     const latest = this.lane;
@@ -55,7 +55,7 @@ export class ContestSession {
     finally { this.loading = false; }
   }
   edit(id: string, answer: Answer | null) {
-    if (!this.state.active || this.state.busy || this.state.pending || this.state.recovery || this.state.conflict) return;
+    if (!this.current() || !this.state.active || this.state.busy || this.state.pending || this.state.recovery || this.state.conflict) return;
     this.update({ answers: { ...this.state.answers, [id]: answer }, localSaved: false });
     void this.persist().catch(e => this.update({ error: errorMessage(e) }));
     window.clearTimeout(this.timer); this.timer = window.setTimeout(() => { void this.send('save'); }, 1000);
@@ -71,7 +71,7 @@ export class ContestSession {
       await this.persist(); if (!this.current()) return;
       const view = await api<Learner>(`/api/me/contests/${this.contest}/${pending.action}`, 'POST', pending.body); if (!this.current()) return;
       if (pending.action === 'visibility') this.visibility.shift();
-      const preserve = pending.action === 'visibility';
+      const preserve = ['visibility','claim','check-in'].includes(pending.action);
       this.update({ pending: null }); this.accept(view, preserve);
       if (['check-in','claim'].includes(pending.action)) this.update({ active: true });
       // A receipt can contain an earlier snapshot after a lost acknowledgement.
@@ -106,7 +106,7 @@ export class ContestSession {
     catch (e) { this.update({ error: errorMessage(e) }); if (e instanceof ApiError && e.status >= 400 && e.status < 500) { this.update({ active: false }); await this.load(); } }
   }
   leave(hidden: boolean) {
-    if (!this.state.active || this.state.view?.contest.state !== 'RUNNING' || this.state.recovery || this.state.conflict) return;
+    if (!this.current() || !this.state.active || this.state.view?.contest.state !== 'RUNNING' || this.state.recovery || this.state.conflict) return;
     // Compare against the last queued signal, or the server after reload/claim.
     // A local default of false would leave a returning candidate marked hidden.
     if (hidden === (this.visibility.at(-1) ?? this.state.view.participation?.tabHidden)) return;
@@ -139,9 +139,12 @@ export class ContestSession {
     this.update({ view: fresh, answers: keep && fresh.paper ? this.state.answers : fresh.answers ?? {}, conflict: null, pending: null });
     await this.persist().catch(e => this.update({ error: errorMessage(e) }));
   }
+  pauseForAuthentication() { this.authPaused = true; window.clearTimeout(this.timer); window.clearInterval(this.heartbeat); return this.persist(); }
   dispose() { this.disposed = true; window.clearTimeout(this.timer); window.clearInterval(this.heartbeat); }
 }
 export function contestSession(user: number, contest: number) { const key = `${user}:${contest}`; if (!sessions.has(key)) sessions.set(key, new ContestSession(user, contest)); return sessions.get(key)!; }
 export function clearContestSessions() { sessions.forEach(s => s.dispose()); sessions.clear(); }
 export const contestDirty = () => [...sessions.values()].some(s => s.dirty);
 export const contestUnpersisted = () => [...sessions.values()].some(s => s.unpersisted);
+
+export const suspendContestSessions = () => Promise.all([...sessions.values()].map(s => s.pauseForAuthentication())).then(() => {});
