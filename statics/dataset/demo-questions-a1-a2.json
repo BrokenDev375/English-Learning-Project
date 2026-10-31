@@ -1,0 +1,3208 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "demo-a1-a2-1.0.0",
+  "source": {
+    "label": "English Learning — bộ demo tự biên soạn có hỗ trợ AI",
+    "url": null,
+    "license": "Dùng cho học tập và trình diễn dự án"
+  },
+  "sets": [
+    {
+      "key": "school-day",
+      "title": "A school day",
+      "level": "A1",
+      "description": "Thói quen học tập, giờ giấc, đồ dùng và hoạt động tại trường.",
+      "reading": {
+        "title": "Mai at Riverside School",
+        "text": "Mai is twelve years old. She lives near Riverside School and walks there with her brother. Their first lesson starts at eight o’clock. Mai likes English because she enjoys learning new words. On Tuesdays, she brings a small dictionary to class.\n\nAt lunchtime, Mai and her friend Anna eat in the school garden. Mai has rice and vegetables, while Anna has a cheese sandwich. After lunch, they visit the library. Students can borrow two books at a time and must return them after one week.\n\nSchool finishes at four o’clock. Mai plays badminton on Wednesdays, but on other days she goes straight home. In the evening, she does her homework before dinner. She packs her school bag before going to bed."
+      },
+      "questions": [
+        {
+          "key": "single-choice-walk",
+          "type": "SINGLE_CHOICE",
+          "prompt": "According to the passage, how does Mai get to school?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "By bus"
+              },
+              {
+                "id": "o1",
+                "text": "On foot"
+              },
+              {
+                "id": "o2",
+                "text": "By train"
+              },
+              {
+                "id": "o3",
+                "text": "By bicycle"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o1"
+          },
+          "explanation": "Mai walks to school with her brother, tức là đi bộ.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Đọc kỹ câu hỏi; nếu có đoạn đọc, tìm chi tiết liên quan trước khi chọn."
+        },
+        {
+          "key": "fill-blank-be",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of be.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "I "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " in class 6A."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "am"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Chủ ngữ I đi với am.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Dựa vào từ gợi ý, chủ ngữ và dấu hiệu thời gian để chọn đúng dạng từ."
+        },
+        {
+          "key": "matching-objects",
+          "type": "MATCHING",
+          "prompt": "Ghép đồ dùng học tập với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "pencil"
+              },
+              {
+                "id": "l1",
+                "text": "notebook"
+              },
+              {
+                "id": "l2",
+                "text": "ruler"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "thước kẻ"
+              },
+              {
+                "id": "r1",
+                "text": "vở ghi"
+              },
+              {
+                "id": "r0",
+                "text": "bút chì"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "pencil: bút chì; notebook: vở ghi; ruler: thước kẻ.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Đọc cả hai cột và ghép mỗi mục đúng một lần."
+        },
+        {
+          "key": "ordering-intro",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu giới thiệu bản thân.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t3",
+                "text": "student."
+              },
+              {
+                "id": "t2",
+                "text": "a"
+              },
+              {
+                "id": "t1",
+                "text": "am"
+              },
+              {
+                "id": "t0",
+                "text": "I"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3"
+              ]
+            ]
+          },
+          "explanation": "I am a student. — Dùng I am để giới thiệu.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Tìm từ viết hoa mở đầu, chủ ngữ, động từ và từ có dấu kết thúc câu."
+        },
+        {
+          "key": "single-choice-library",
+          "type": "SINGLE_CHOICE",
+          "prompt": "How many books can students borrow at a time?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "One"
+              },
+              {
+                "id": "o1",
+                "text": "Three"
+              },
+              {
+                "id": "o2",
+                "text": "Four"
+              },
+              {
+                "id": "o3",
+                "text": "Two"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o3"
+          },
+          "explanation": "Đoạn đọc quy định học sinh được mượn hai cuốn mỗi lần.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-study",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of study.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "My sister "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " English every evening."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "studies"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Chủ ngữ số ít my sister dùng studies; đổi y thành ies sau phụ âm.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-subjects",
+          "type": "MATCHING",
+          "prompt": "Ghép môn học với nội dung phù hợp.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "Maths"
+              },
+              {
+                "id": "l1",
+                "text": "History"
+              },
+              {
+                "id": "l2",
+                "text": "Geography"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "maps and places"
+              },
+              {
+                "id": "r1",
+                "text": "events in the past"
+              },
+              {
+                "id": "r0",
+                "text": "numbers and calculations"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "Maths: numbers and calculations; History: events in the past; Geography: maps and places.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-routine",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu kể về giờ bắt đầu học.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "eight."
+              },
+              {
+                "id": "t3",
+                "text": "at"
+              },
+              {
+                "id": "t2",
+                "text": "start"
+              },
+              {
+                "id": "t1",
+                "text": "lessons"
+              },
+              {
+                "id": "t0",
+                "text": "Our"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "Our lessons start at eight. — Chủ ngữ số nhiều lessons dùng start.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-badminton",
+          "type": "SINGLE_CHOICE",
+          "prompt": "When does Mai play badminton?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "On Wednesdays"
+              },
+              {
+                "id": "o1",
+                "text": "On Mondays"
+              },
+              {
+                "id": "o2",
+                "text": "On Fridays"
+              },
+              {
+                "id": "o3",
+                "text": "Every day"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o0"
+          },
+          "explanation": "Đoạn cuối ghi Mai chơi cầu lông vào thứ Tư.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-at",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with at, in or on.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "Our first lesson starts "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " eight o’clock."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "at"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Dùng at trước giờ cụ thể.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-places",
+          "type": "MATCHING",
+          "prompt": "Ghép địa điểm trong trường với hoạt động phù hợp.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "library"
+              },
+              {
+                "id": "l1",
+                "text": "canteen"
+              },
+              {
+                "id": "l2",
+                "text": "playground"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "play outdoor games"
+              },
+              {
+                "id": "r1",
+                "text": "buy lunch"
+              },
+              {
+                "id": "r0",
+                "text": "borrow books"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "library: borrow books; canteen: buy lunch; playground: play outdoor games.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-question",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi về môn học yêu thích.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "subject?"
+              },
+              {
+                "id": "t3",
+                "text": "favourite"
+              },
+              {
+                "id": "t2",
+                "text": "your"
+              },
+              {
+                "id": "t1",
+                "text": "is"
+              },
+              {
+                "id": "t0",
+                "text": "What"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "What is your favourite subject? — What đứng đầu câu hỏi, sau đó là is và chủ ngữ.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-does",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Choose the correct sentence about a daily habit.",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "He go to school every day."
+              },
+              {
+                "id": "o1",
+                "text": "He going to school every day."
+              },
+              {
+                "id": "o2",
+                "text": "He goes to school every day."
+              },
+              {
+                "id": "o3",
+                "text": "He gone to school every day."
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o2"
+          },
+          "explanation": "Hiện tại đơn với chủ ngữ he dùng goes.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-have",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of have.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "We "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " lunch at school every day."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "have"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Chủ ngữ we dùng have ở hiện tại đơn.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-verbs",
+          "type": "MATCHING",
+          "prompt": "Ghép động từ với cụm từ để tạo hoạt động học tập.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "do"
+              },
+              {
+                "id": "l1",
+                "text": "raise"
+              },
+              {
+                "id": "l2",
+                "text": "pack"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "your school bag"
+              },
+              {
+                "id": "r1",
+                "text": "your hand"
+              },
+              {
+                "id": "r0",
+                "text": "your homework"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "do: your homework; raise: your hand; pack: your school bag.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-homework",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu về hoạt động trước bữa tối.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "dinner."
+              },
+              {
+                "id": "t4",
+                "text": "before"
+              },
+              {
+                "id": "t3",
+                "text": "homework"
+              },
+              {
+                "id": "t2",
+                "text": "her"
+              },
+              {
+                "id": "t1",
+                "text": "does"
+              },
+              {
+                "id": "t0",
+                "text": "She"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "She does her homework before dinner. — Does phù hợp với she; before dinner chỉ thời điểm.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-time",
+          "type": "SINGLE_CHOICE",
+          "prompt": "A lesson starts at 9:00. It is 8:45 now. How long is it until the lesson starts?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Forty-five minutes"
+              },
+              {
+                "id": "o1",
+                "text": "Fifteen minutes"
+              },
+              {
+                "id": "o2",
+                "text": "Thirty minutes"
+              },
+              {
+                "id": "o3",
+                "text": "One hour"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o1"
+          },
+          "explanation": "Từ 8:45 đến 9:00 còn 15 phút.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-read",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of read.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "Anna "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " a book before bed every night."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "reads"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Chủ ngữ Anna số ít nên động từ read thêm s.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-times",
+          "type": "MATCHING",
+          "prompt": "Ghép cách nói giờ với giờ dạng số.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "half past seven"
+              },
+              {
+                "id": "l1",
+                "text": "quarter past nine"
+              },
+              {
+                "id": "l2",
+                "text": "quarter to ten"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "9:45"
+              },
+              {
+                "id": "r1",
+                "text": "9:15"
+              },
+              {
+                "id": "r0",
+                "text": "7:30"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "half past seven: 7:30; quarter past nine: 9:15; quarter to ten: 9:45.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-negative",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu phủ định về lịch học.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t6",
+                "text": "Sundays."
+              },
+              {
+                "id": "t5",
+                "text": "on"
+              },
+              {
+                "id": "t4",
+                "text": "classes"
+              },
+              {
+                "id": "t3",
+                "text": "have"
+              },
+              {
+                "id": "t2",
+                "text": "not"
+              },
+              {
+                "id": "t1",
+                "text": "do"
+              },
+              {
+                "id": "t0",
+                "text": "We"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5",
+                "t6"
+              ]
+            ]
+          },
+          "explanation": "We do not have classes on Sundays. — Phủ định hiện tại đơn với we dùng do not và động từ nguyên mẫu.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-review-choice",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Which sentence is a polite request for help in class?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Give me that now!"
+              },
+              {
+                "id": "o1",
+                "text": "I never need help."
+              },
+              {
+                "id": "o2",
+                "text": "Help is a subject."
+              },
+              {
+                "id": "o3",
+                "text": "Could you help me, please?"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o3"
+          },
+          "explanation": "Could you ... please? là cách đề nghị giúp đỡ lịch sự.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-review-fill",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of do.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "My brother "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " his homework after school."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "does"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "My brother là ngôi thứ ba số ít, do đổi thành does.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-review-matching",
+          "type": "MATCHING",
+          "prompt": "Ghép hoạt động của học sinh với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "take notes"
+              },
+              {
+                "id": "l1",
+                "text": "ask a question"
+              },
+              {
+                "id": "l2",
+                "text": "work in pairs"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "làm việc theo cặp"
+              },
+              {
+                "id": "r1",
+                "text": "đặt câu hỏi"
+              },
+              {
+                "id": "r0",
+                "text": "ghi chép"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "take notes: ghi chép; ask a question: đặt câu hỏi; work in pairs: làm việc theo cặp.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-review-ordering",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi về giờ học.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "finish?"
+              },
+              {
+                "id": "t3",
+                "text": "school"
+              },
+              {
+                "id": "t2",
+                "text": "does"
+              },
+              {
+                "id": "t1",
+                "text": "time"
+              },
+              {
+                "id": "t0",
+                "text": "What"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "What time does school finish? — Does đứng trước chủ ngữ school trong câu hỏi hiện tại đơn.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        }
+      ]
+    },
+    {
+      "key": "food-market",
+      "title": "At the weekend market",
+      "level": "A1–A2",
+      "description": "Mua thực phẩm, số lượng, giá tiền và cách gọi món lịch sự.",
+      "reading": {
+        "title": "A Saturday shopping list",
+        "text": "On Saturday morning, Ben and his mother go to a market near their home. They take two cloth bags because they do not want to use plastic bags. Their shopping list includes apples, carrots, bread and milk.\n\nAt the fruit stall, apples cost two pounds a kilo. Ben’s mother buys two kilos. The seller gives Ben a small orange to try. Ben likes it, but they do not buy oranges because there are some at home. Next, they buy a loaf of brown bread from a bakery. The bread is still warm.\n\nBefore going home, they stop at a café. Ben orders a glass of water, and his mother has a cup of tea. They sit outside for ten minutes. At home, Ben puts the milk in the fridge and helps his mother prepare lunch."
+      },
+      "questions": [
+        {
+          "key": "single-choice-bags",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Why do Ben and his mother take cloth bags?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "To keep bread warm"
+              },
+              {
+                "id": "o1",
+                "text": "To carry school books"
+              },
+              {
+                "id": "o2",
+                "text": "To avoid using plastic bags"
+              },
+              {
+                "id": "o3",
+                "text": "To give them to the seller"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o2"
+          },
+          "explanation": "Họ mang túi vải vì không muốn dùng túi nhựa.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Đọc kỹ câu hỏi; nếu có đoạn đọc, tìm chi tiết liên quan trước khi chọn."
+        },
+        {
+          "key": "fill-blank-any",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the question with some or any.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "Do you have "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " bananas?"
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "any"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Trong câu hỏi trung tính về số lượng thường dùng any.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Dựa vào từ gợi ý, chủ ngữ và dấu hiệu thời gian để chọn đúng dạng từ."
+        },
+        {
+          "key": "matching-food",
+          "type": "MATCHING",
+          "prompt": "Ghép thực phẩm với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "carrot"
+              },
+              {
+                "id": "l1",
+                "text": "cheese"
+              },
+              {
+                "id": "l2",
+                "text": "grape"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "quả nho"
+              },
+              {
+                "id": "r1",
+                "text": "phô mai"
+              },
+              {
+                "id": "r0",
+                "text": "cà rốt"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "carrot: cà rốt; cheese: phô mai; grape: quả nho.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Đọc cả hai cột và ghép mỗi mục đúng một lần."
+        },
+        {
+          "key": "ordering-polite",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành lời gọi món lịch sự.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "please."
+              },
+              {
+                "id": "t4",
+                "text": "rice,"
+              },
+              {
+                "id": "t3",
+                "text": "some"
+              },
+              {
+                "id": "t2",
+                "text": "like"
+              },
+              {
+                "id": "t1",
+                "text": "would"
+              },
+              {
+                "id": "t0",
+                "text": "I"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "I would like some rice, please. — Would like dùng để gọi món lịch sự.",
+          "practiceRole": "GUIDED",
+          "difficulty": "EASY",
+          "hint": "Tìm từ viết hoa mở đầu, chủ ngữ, động từ và từ có dấu kết thúc câu."
+        },
+        {
+          "key": "single-choice-price",
+          "type": "SINGLE_CHOICE",
+          "prompt": "How much do the two kilos of apples cost altogether?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Four pounds"
+              },
+              {
+                "id": "o1",
+                "text": "Two pounds"
+              },
+              {
+                "id": "o2",
+                "text": "Six pounds"
+              },
+              {
+                "id": "o3",
+                "text": "Eight pounds"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o0"
+          },
+          "explanation": "Táo giá hai bảng mỗi ki-lô; hai ki-lô giá bốn bảng.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-loaf",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the phrase. Use the word meaning ổ bánh mì.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "A "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " of bread."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "loaf"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Cụm a loaf of bread chỉ một ổ bánh mì.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-containers",
+          "type": "MATCHING",
+          "prompt": "Ghép đơn vị với mặt hàng thường dùng.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "a loaf of"
+              },
+              {
+                "id": "l1",
+                "text": "a bottle of"
+              },
+              {
+                "id": "l2",
+                "text": "a kilo of"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "potatoes"
+              },
+              {
+                "id": "r1",
+                "text": "water"
+              },
+              {
+                "id": "r0",
+                "text": "bread"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "a loaf of: bread; a bottle of: water; a kilo of: potatoes.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-price",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi giá những quả táo.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "apples?"
+              },
+              {
+                "id": "t3",
+                "text": "these"
+              },
+              {
+                "id": "t2",
+                "text": "are"
+              },
+              {
+                "id": "t1",
+                "text": "much"
+              },
+              {
+                "id": "t0",
+                "text": "How"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "How much are these apples? — These apples là số nhiều nên dùng are.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-drink",
+          "type": "SINGLE_CHOICE",
+          "prompt": "What does Ben order at the café?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "A cup of tea"
+              },
+              {
+                "id": "o1",
+                "text": "A glass of orange juice"
+              },
+              {
+                "id": "o2",
+                "text": "A cup of coffee"
+              },
+              {
+                "id": "o3",
+                "text": "A glass of water"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o3"
+          },
+          "explanation": "Ben gọi một cốc nước; mẹ của Ben uống trà.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-much",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the price question with much or many.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "How "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " is this cheese?"
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "much"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "How much is ...? dùng để hỏi giá.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-shops",
+          "type": "MATCHING",
+          "prompt": "Ghép cửa hàng với mặt hàng đặc trưng.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "bakery"
+              },
+              {
+                "id": "l1",
+                "text": "butcher’s"
+              },
+              {
+                "id": "l2",
+                "text": "greengrocer’s"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "fruit and vegetables"
+              },
+              {
+                "id": "r1",
+                "text": "meat"
+              },
+              {
+                "id": "r0",
+                "text": "fresh bread"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "bakery: fresh bread; butcher’s: meat; greengrocer’s: fruit and vegetables.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-need",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu nói về danh sách mua hàng.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "milk."
+              },
+              {
+                "id": "t4",
+                "text": "of"
+              },
+              {
+                "id": "t3",
+                "text": "bottles"
+              },
+              {
+                "id": "t2",
+                "text": "two"
+              },
+              {
+                "id": "t1",
+                "text": "need"
+              },
+              {
+                "id": "t0",
+                "text": "We"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "We need two bottles of milk. — Two bottles of milk chỉ hai chai sữa.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-some",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Choose the correct sentence.",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "There is some apples."
+              },
+              {
+                "id": "o1",
+                "text": "There are some apples."
+              },
+              {
+                "id": "o2",
+                "text": "There are an apples."
+              },
+              {
+                "id": "o3",
+                "text": "There is a apples."
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o1"
+          },
+          "explanation": "Apples là danh từ đếm được số nhiều nên dùng there are some.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-are",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the correct form of be.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "There "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " three carrots in the bag."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "are"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Three carrots là số nhiều nên dùng are.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-adjectives",
+          "type": "MATCHING",
+          "prompt": "Ghép tính từ miêu tả đồ ăn với nghĩa.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "sweet"
+              },
+              {
+                "id": "l1",
+                "text": "salty"
+              },
+              {
+                "id": "l2",
+                "text": "sour"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "chua"
+              },
+              {
+                "id": "r1",
+                "text": "mặn"
+              },
+              {
+                "id": "r0",
+                "text": "ngọt"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "sweet: ngọt; salty: mặn; sour: chua.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-negative",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu nói không còn bánh mì.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "left."
+              },
+              {
+                "id": "t4",
+                "text": "bread"
+              },
+              {
+                "id": "t3",
+                "text": "any"
+              },
+              {
+                "id": "t2",
+                "text": "not"
+              },
+              {
+                "id": "t1",
+                "text": "is"
+              },
+              {
+                "id": "t0",
+                "text": "There"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "There is not any bread left. — Bread là danh từ không đếm được, dùng is not any.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-request",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Which question asks about the price of a sandwich?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "How many sandwiches are there?"
+              },
+              {
+                "id": "o1",
+                "text": "Where is the sandwich?"
+              },
+              {
+                "id": "o2",
+                "text": "How much is this sandwich?"
+              },
+              {
+                "id": "o3",
+                "text": "When do you eat a sandwich?"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o2"
+          },
+          "explanation": "How much is ...? hỏi giá của một vật số ít.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-an",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with a or an.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "I would like "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " orange, please."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "an"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Orange bắt đầu bằng âm nguyên âm nên dùng an.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-requests",
+          "type": "MATCHING",
+          "prompt": "Ghép lời nói với mục đích giao tiếp.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "How much is it?"
+              },
+              {
+                "id": "l1",
+                "text": "Can I have the menu?"
+              },
+              {
+                "id": "l2",
+                "text": "The bill, please."
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "ask to pay"
+              },
+              {
+                "id": "r1",
+                "text": "ask to see the dishes"
+              },
+              {
+                "id": "r0",
+                "text": "ask the price"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "How much is it?: ask the price; Can I have the menu?: ask to see the dishes; The bill, please.: ask to pay.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-question",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi số lượng cà rốt.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "want?"
+              },
+              {
+                "id": "t4",
+                "text": "you"
+              },
+              {
+                "id": "t3",
+                "text": "do"
+              },
+              {
+                "id": "t2",
+                "text": "carrots"
+              },
+              {
+                "id": "t1",
+                "text": "many"
+              },
+              {
+                "id": "t0",
+                "text": "How"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "How many carrots do you want? — How many đi với danh từ đếm được số nhiều.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "single-choice-review-choice",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Which container usually holds milk in a shopping list?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "A carton"
+              },
+              {
+                "id": "o1",
+                "text": "A loaf"
+              },
+              {
+                "id": "o2",
+                "text": "A slice"
+              },
+              {
+                "id": "o3",
+                "text": "A bowl of bread"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o0"
+          },
+          "explanation": "A carton of milk là một hộp sữa; loaf và slice thường dùng với bánh mì.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-review-fill",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the question with much or many.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "How "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " eggs do we need?"
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "many"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Eggs là danh từ đếm được số nhiều nên dùng how many.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "matching-review-matching",
+          "type": "MATCHING",
+          "prompt": "Ghép vật dụng ăn uống với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "spoon"
+              },
+              {
+                "id": "l1",
+                "text": "fork"
+              },
+              {
+                "id": "l2",
+                "text": "plate"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "đĩa đựng thức ăn"
+              },
+              {
+                "id": "r1",
+                "text": "dĩa"
+              },
+              {
+                "id": "r0",
+                "text": "thìa"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "spoon: thìa; fork: dĩa; plate: đĩa đựng thức ăn.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        },
+        {
+          "key": "ordering-review-ordering",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành lời đề nghị dùng trà.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t6",
+                "text": "tea?"
+              },
+              {
+                "id": "t5",
+                "text": "of"
+              },
+              {
+                "id": "t4",
+                "text": "cup"
+              },
+              {
+                "id": "t3",
+                "text": "a"
+              },
+              {
+                "id": "t2",
+                "text": "like"
+              },
+              {
+                "id": "t1",
+                "text": "you"
+              },
+              {
+                "id": "t0",
+                "text": "Would"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5",
+                "t6"
+              ]
+            ]
+          },
+          "explanation": "Would you like a cup of tea? — Would you like ...? là lời mời lịch sự.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "EASY",
+          "hint": null
+        }
+      ]
+    },
+    {
+      "key": "weekend-trip",
+      "title": "A weekend in Green Town",
+      "level": "A2",
+      "description": "Đọc lịch trình, phương tiện, chỉ đường và kể chuyến đi đã qua.",
+      "reading": {
+        "title": "Linh and Tom visit Green Town",
+        "text": "Last Sunday, Linh and Tom travelled to Green Town by train. They left at nine in the morning, and the journey took forty minutes. At the station, they bought a map from a small information desk.\n\nFirst, they walked to the town museum. It was opposite the library, next to a flower shop. The museum opened at ten, so they waited in a nearby park for twenty minutes. Inside, they saw old photographs and learnt about the town’s first railway. Tickets were free for students.\n\nFor lunch, they ate vegetable noodles at a restaurant by the river. In the afternoon, they rented bicycles and rode to a lake. It started to rain at three, so they returned the bicycles and took a bus back to the station. Linh enjoyed the museum most, while Tom liked the bicycle ride. They arrived home before dinner."
+      },
+      "questions": [
+        {
+          "key": "single-choice-transport",
+          "type": "SINGLE_CHOICE",
+          "prompt": "How did Linh and Tom travel to Green Town?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "By bicycle"
+              },
+              {
+                "id": "o1",
+                "text": "By car"
+              },
+              {
+                "id": "o2",
+                "text": "By bus"
+              },
+              {
+                "id": "o3",
+                "text": "By train"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o3"
+          },
+          "explanation": "Câu đầu cho biết họ đến Green Town bằng tàu hỏa.",
+          "practiceRole": "GUIDED",
+          "difficulty": "MEDIUM",
+          "hint": "Đọc kỹ câu hỏi; nếu có đoạn đọc, tìm chi tiết liên quan trước khi chọn."
+        },
+        {
+          "key": "fill-blank-went",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the past simple of go.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "We "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " to the museum yesterday."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "went"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Go là động từ bất quy tắc, quá khứ là went.",
+          "practiceRole": "GUIDED",
+          "difficulty": "MEDIUM",
+          "hint": "Dựa vào từ gợi ý, chủ ngữ và dấu hiệu thời gian để chọn đúng dạng từ."
+        },
+        {
+          "key": "matching-places",
+          "type": "MATCHING",
+          "prompt": "Ghép địa điểm với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "station"
+              },
+              {
+                "id": "l1",
+                "text": "museum"
+              },
+              {
+                "id": "l2",
+                "text": "bridge"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "cây cầu"
+              },
+              {
+                "id": "r1",
+                "text": "bảo tàng"
+              },
+              {
+                "id": "r0",
+                "text": "nhà ga"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "station: nhà ga; museum: bảo tàng; bridge: cây cầu.",
+          "practiceRole": "GUIDED",
+          "difficulty": "MEDIUM",
+          "hint": "Đọc cả hai cột và ghép mỗi mục đúng một lần."
+        },
+        {
+          "key": "ordering-where",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi đường đến nhà ga.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "station?"
+              },
+              {
+                "id": "t3",
+                "text": "nearest"
+              },
+              {
+                "id": "t2",
+                "text": "the"
+              },
+              {
+                "id": "t1",
+                "text": "is"
+              },
+              {
+                "id": "t0",
+                "text": "Where"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "Where is the nearest station? — Where is ...? dùng để hỏi vị trí.",
+          "practiceRole": "GUIDED",
+          "difficulty": "MEDIUM",
+          "hint": "Tìm từ viết hoa mở đầu, chủ ngữ, động từ và từ có dấu kết thúc câu."
+        },
+        {
+          "key": "single-choice-arrival",
+          "type": "SINGLE_CHOICE",
+          "prompt": "What time did they arrive in Green Town?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "At 9:00"
+              },
+              {
+                "id": "o1",
+                "text": "At 9:40"
+              },
+              {
+                "id": "o2",
+                "text": "At 10:00"
+              },
+              {
+                "id": "o3",
+                "text": "At 10:40"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o1"
+          },
+          "explanation": "Họ khởi hành lúc 9:00, đi mất 40 phút nên đến lúc 9:40.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-opposite",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence. Use the word meaning đối diện.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "The station is "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " the bank."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "opposite"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Opposite chỉ vị trí đối diện.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "matching-directions",
+          "type": "MATCHING",
+          "prompt": "Ghép chỉ dẫn với nghĩa tiếng Việt.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "turn left"
+              },
+              {
+                "id": "l1",
+                "text": "go straight"
+              },
+              {
+                "id": "l2",
+                "text": "cross the road"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "băng qua đường"
+              },
+              {
+                "id": "r1",
+                "text": "đi thẳng"
+              },
+              {
+                "id": "r0",
+                "text": "rẽ trái"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "turn left: rẽ trái; go straight: đi thẳng; cross the road: băng qua đường.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "ordering-past",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu kể chuyến thăm bảo tàng.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "Sunday."
+              },
+              {
+                "id": "t4",
+                "text": "last"
+              },
+              {
+                "id": "t3",
+                "text": "museum"
+              },
+              {
+                "id": "t2",
+                "text": "the"
+              },
+              {
+                "id": "t1",
+                "text": "visited"
+              },
+              {
+                "id": "t0",
+                "text": "They"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "They visited the museum last Sunday. — Visited là quá khứ đơn của visit.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "single-choice-museum",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Where was the museum?",
+          "reading": true,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Opposite the library"
+              },
+              {
+                "id": "o1",
+                "text": "Behind the station"
+              },
+              {
+                "id": "o2",
+                "text": "Inside the park"
+              },
+              {
+                "id": "o3",
+                "text": "Between two restaurants"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o0"
+          },
+          "explanation": "Đoạn hai nói bảo tàng nằm đối diện thư viện.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-took",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the past simple of take.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "They "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " a bus back to the station."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "took"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Quá khứ đơn của take là took.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "matching-past-verbs",
+          "type": "MATCHING",
+          "prompt": "Ghép động từ nguyên mẫu với dạng quá khứ.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "see"
+              },
+              {
+                "id": "l1",
+                "text": "eat"
+              },
+              {
+                "id": "l2",
+                "text": "leave"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "left"
+              },
+              {
+                "id": "r1",
+                "text": "ate"
+              },
+              {
+                "id": "r0",
+                "text": "saw"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "see: saw; eat: ate; leave: left.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "ordering-directions",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành chỉ dẫn rẽ phải tại đèn giao thông.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "lights."
+              },
+              {
+                "id": "t4",
+                "text": "traffic"
+              },
+              {
+                "id": "t3",
+                "text": "the"
+              },
+              {
+                "id": "t2",
+                "text": "at"
+              },
+              {
+                "id": "t1",
+                "text": "right"
+              },
+              {
+                "id": "t0",
+                "text": "Turn"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "Turn right at the traffic lights. — Turn right at ... chỉ địa điểm cần rẽ phải.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "single-choice-past",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Choose the correct past simple sentence.",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "They goed to the lake."
+              },
+              {
+                "id": "o1",
+                "text": "They go to the lake yesterday."
+              },
+              {
+                "id": "o2",
+                "text": "They went to the lake yesterday."
+              },
+              {
+                "id": "o3",
+                "text": "They goes to the lake yesterday."
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o2"
+          },
+          "explanation": "Quá khứ đơn của go là went; yesterday chỉ thời gian quá khứ.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-by",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with by or on.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "We usually travel "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " train."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "by"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Dùng by train để nói đi bằng tàu hỏa.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "matching-transport",
+          "type": "MATCHING",
+          "prompt": "Ghép phương tiện với nơi khởi hành.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "plane"
+              },
+              {
+                "id": "l1",
+                "text": "train"
+              },
+              {
+                "id": "l2",
+                "text": "ferry"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "ferry terminal"
+              },
+              {
+                "id": "r1",
+                "text": "railway station"
+              },
+              {
+                "id": "r0",
+                "text": "airport"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "plane: airport; train: railway station; ferry: ferry terminal.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "ordering-negative",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu phủ định về chuyến đi hôm qua.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t6",
+                "text": "yesterday."
+              },
+              {
+                "id": "t5",
+                "text": "bus"
+              },
+              {
+                "id": "t4",
+                "text": "by"
+              },
+              {
+                "id": "t3",
+                "text": "travel"
+              },
+              {
+                "id": "t2",
+                "text": "not"
+              },
+              {
+                "id": "t1",
+                "text": "did"
+              },
+              {
+                "id": "t0",
+                "text": "We"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5",
+                "t6"
+              ]
+            ]
+          },
+          "explanation": "We did not travel by bus yesterday. — Sau did not dùng động từ nguyên mẫu travel.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "single-choice-sign",
+          "type": "SINGLE_CHOICE",
+          "prompt": "A sign says “Turn left at the next street.” What should you do?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Go straight past every street"
+              },
+              {
+                "id": "o1",
+                "text": "Take the next street on your left"
+              },
+              {
+                "id": "o2",
+                "text": "Turn right immediately"
+              },
+              {
+                "id": "o3",
+                "text": "Return to your starting point"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o1"
+          },
+          "explanation": "Turn left at the next street nghĩa là rẽ trái tại phố tiếp theo.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-did",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the question with do, does or did.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "Where "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " you stay last weekend?"
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "did"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Last weekend là quá khứ; dùng did và động từ nguyên mẫu stay.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "matching-travel",
+          "type": "MATCHING",
+          "prompt": "Ghép từ/cụm từ du lịch với nghĩa.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "journey"
+              },
+              {
+                "id": "l1",
+                "text": "entrance fee"
+              },
+              {
+                "id": "l2",
+                "text": "timetable"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "bảng giờ chạy"
+              },
+              {
+                "id": "r1",
+                "text": "phí vào cửa"
+              },
+              {
+                "id": "r0",
+                "text": "chuyến đi"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "journey: chuyến đi; entrance fee: phí vào cửa; timetable: bảng giờ chạy.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "ordering-question",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi thời gian chuyến đi.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t5",
+                "text": "take?"
+              },
+              {
+                "id": "t4",
+                "text": "journey"
+              },
+              {
+                "id": "t3",
+                "text": "the"
+              },
+              {
+                "id": "t2",
+                "text": "did"
+              },
+              {
+                "id": "t1",
+                "text": "long"
+              },
+              {
+                "id": "t0",
+                "text": "How"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4",
+                "t5"
+              ]
+            ]
+          },
+          "explanation": "How long did the journey take? — How long hỏi khoảng thời gian; sau did dùng take.",
+          "practiceRole": "INDEPENDENT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "single-choice-review-choice",
+          "type": "SINGLE_CHOICE",
+          "prompt": "Which word describes a ticket for travelling to a place and back?",
+          "reading": false,
+          "content": {
+            "options": [
+              {
+                "id": "o0",
+                "text": "Single"
+              },
+              {
+                "id": "o1",
+                "text": "Platform"
+              },
+              {
+                "id": "o2",
+                "text": "Return"
+              },
+              {
+                "id": "o3",
+                "text": "Entrance"
+              }
+            ]
+          },
+          "answerKey": {
+            "correctOptionId": "o2"
+          },
+          "explanation": "A return ticket là vé khứ hồi; a single ticket là vé một chiều.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "fill-blank-review-fill",
+          "type": "FILL_BLANK",
+          "prompt": "Complete the sentence with the past simple of buy.",
+          "reading": false,
+          "content": {
+            "parts": [
+              {
+                "kind": "TEXT",
+                "text": "Linh "
+              },
+              {
+                "kind": "BLANK",
+                "blankId": "word"
+              },
+              {
+                "kind": "TEXT",
+                "text": " a map at the station."
+              }
+            ]
+          },
+          "answerKey": {
+            "blanks": [
+              {
+                "blankId": "word",
+                "acceptedAnswers": [
+                  "bought"
+                ]
+              }
+            ],
+            "caseSensitive": false,
+            "normalizeWhitespace": true
+          },
+          "explanation": "Quá khứ đơn của buy là bought.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "matching-review-matching",
+          "type": "MATCHING",
+          "prompt": "Ghép giới từ vị trí với nghĩa.",
+          "reading": false,
+          "content": {
+            "leftItems": [
+              {
+                "id": "l0",
+                "text": "between"
+              },
+              {
+                "id": "l1",
+                "text": "behind"
+              },
+              {
+                "id": "l2",
+                "text": "next to"
+              }
+            ],
+            "rightItems": [
+              {
+                "id": "r2",
+                "text": "ở bên cạnh"
+              },
+              {
+                "id": "r1",
+                "text": "ở phía sau"
+              },
+              {
+                "id": "r0",
+                "text": "ở giữa hai vật"
+              }
+            ]
+          },
+          "answerKey": {
+            "pairs": [
+              {
+                "leftId": "l0",
+                "rightId": "r0"
+              },
+              {
+                "leftId": "l1",
+                "rightId": "r1"
+              },
+              {
+                "leftId": "l2",
+                "rightId": "r2"
+              }
+            ]
+          },
+          "explanation": "between: ở giữa hai vật; behind: ở phía sau; next to: ở bên cạnh.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        },
+        {
+          "key": "ordering-review-ordering",
+          "type": "ORDERING",
+          "prompt": "Sắp xếp thành câu hỏi về chuyến thăm đã qua.",
+          "reading": false,
+          "content": {
+            "tokens": [
+              {
+                "id": "t4",
+                "text": "trip?"
+              },
+              {
+                "id": "t3",
+                "text": "the"
+              },
+              {
+                "id": "t2",
+                "text": "enjoy"
+              },
+              {
+                "id": "t1",
+                "text": "you"
+              },
+              {
+                "id": "t0",
+                "text": "Did"
+              }
+            ]
+          },
+          "answerKey": {
+            "acceptedOrders": [
+              [
+                "t0",
+                "t1",
+                "t2",
+                "t3",
+                "t4"
+              ]
+            ]
+          },
+          "explanation": "Did you enjoy the trip? — Câu hỏi quá khứ đơn bắt đầu bằng did và dùng enjoy nguyên mẫu.",
+          "practiceRole": "REVIEW_VARIANT",
+          "difficulty": "MEDIUM",
+          "hint": null
+        }
+      ]
+    }
+  ]
+}
