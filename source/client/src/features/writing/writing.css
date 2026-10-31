@@ -1,0 +1,27 @@
+.writing-panel { margin-top: 1.5rem; padding: clamp(1rem, 3vw, 2rem); }
+.writing-heading, .writing-actions { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+.writing-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
+.writing-label { display: grid; gap: .6rem; font-weight: 700; margin: 1rem 0; }
+.writing-label textarea { width: 100%; box-sizing: border-box; min-height: 15rem; font: inherit; line-height: 1.7; padding: 1rem; border: 1px solid #c8d8d1; border-radius: 12px; resize: vertical; }
+.writing-requirements ul, .writing-grade ul { padding-left: 1.4rem; line-height: 1.8; }
+.writing-requirements { padding: 1rem; background: #f3f8f5; border-radius: 12px; margin: 1rem 0; }
+.writing-state { font-weight: 700; color: #16634f; }
+.writing-conflict, .writing-confirm { padding: 1rem; margin: 1rem 0; border: 2px solid #bd8644; border-radius: 12px; background: #fffaf0; }
+.writing-conflict pre { white-space: pre-wrap; max-height: 16rem; overflow: auto; }
+.writing-history details { padding: 1rem 0; border-top: 1px solid #d8e4df; }
+.writing-history summary { cursor: pointer; font-weight: 700; }
+.writing-criteria-edit { display: grid; grid-template-columns: minmax(0, 1fr) 6rem auto; gap: .6rem; align-items: end; margin: .6rem 0; }
+.writing-criteria-edit label, .writing-mark { display: grid; gap: .4rem; }
+.writing-mark { border: 1px solid #d8e4df; border-radius: 10px; padding: 1rem; margin: .7rem 0; }
+.writing-mark input[type=checkbox] { width: auto; margin-right: .5rem; }
+.writing-queue { display: grid; gap: .7rem; }
+.writing-queue button { text-align: left; padding: 1rem; }
+.writing-function-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.8rem; }
+.writing-function-card { padding: clamp(1.4rem, 3vw, 2.4rem); display: flex; flex-direction: column; align-items: flex-start; }
+.writing-function-number { font-size: 1rem; font-weight: 800; color: #26745a; background: #e7f2eb; border-radius: 12px; padding: .65rem .85rem; }
+.writing-function-card h2 { margin: 1.2rem 0 .5rem; }
+.writing-function-card p { color: #617267; line-height: 1.75; margin: 0 0 1.5rem; flex: 1; }
+.writing-function-card .button { min-width: 10rem; }
+.writing-back { display: block; margin-bottom: 1.2rem; }
+@media (max-width: 700px) { .writing-function-grid { grid-template-columns: 1fr; gap: 1rem; } }
+@media (max-width: 600px) { .writing-criteria-edit { grid-template-columns: minmax(0, 1fr) 5rem; } .writing-criteria-edit button { grid-column: 1 / -1; justify-self: start; } }

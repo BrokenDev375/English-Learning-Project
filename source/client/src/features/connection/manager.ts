@@ -19,11 +19,13 @@ export class ConnectionManager {
   private deadline?: number;
   private retries = 0;
   private generation = 0;
-  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean; tabId?: string }>();
+  private pending = new Map<string, { timer: number; subscribed?: number; presence?: boolean; tabId?: string; contest?: number }>();
   private presenceWanted = false;
   private presenceReady = false;
   private resources = new Set<number>();
   private ready = new Set<number>();
+  private contests = new Set<number>();
+  private contestReady = new Set<number>();
   constructor(private userId: number, private random = Math.random, private student = false) {}
   private tabChanged = () => { if (state === 'connected') this.send('HEARTBEAT'); };
   start() { window.addEventListener('session-tab-changed', this.tabChanged); window.addEventListener('online', this.wake); window.addEventListener('focus', this.wake); this.connect(); }
@@ -34,25 +36,27 @@ export class ConnectionManager {
   }
   private clear() {
     window.clearTimeout(this.retry); window.clearTimeout(this.deadline); window.clearInterval(this.beat);
-    this.pending.forEach(p => window.clearTimeout(p.timer)); this.pending.clear(); this.ready.clear(); this.presenceReady = false;
+    this.pending.forEach(p => window.clearTimeout(p.timer)); this.pending.clear(); this.ready.clear(); this.contestReady.clear(); this.presenceReady = false;
   }
   private wake = () => { recoverLearning(); if (!this.stopped && !this.socket && state !== 'auth-required') { window.clearTimeout(this.retry); this.connect(); } };
   subscribe(id: number) { this.resources.add(id); if (state === 'connected') this.send('SUBSCRIBE', id); }
   unsubscribe(id: number) { this.resources.delete(id); this.ready.delete(id); if (state === 'connected') this.send('UNSUBSCRIBE', id); }
+  subscribeContest(id: number) { this.contests.add(id); if (state === 'connected') this.send('SUBSCRIBE', undefined, 'CONTEST', id); }
+  unsubscribeContest(id: number) { this.contests.delete(id); this.contestReady.delete(id); if (state === 'connected') this.send('UNSUBSCRIBE', undefined, 'CONTEST', id); }
   get presenceLive() { return this.presenceReady && state === 'connected'; }
   watchPresence(enabled: boolean) {
     this.presenceWanted = enabled;
     if (!enabled) { this.presenceReady = false; publish(state); }
     if (state === 'connected') this.send(enabled ? 'SUBSCRIBE' : 'UNSUBSCRIBE', undefined, 'PRESENCE');
   }
-  private send(type: string, attemptId?: number, resource?: 'GAMIFICATION' | 'LEAGUE' | 'PRESENCE') {
+  private send(type: string, attemptId?: number, resource?: 'GAMIFICATION' | 'LEAGUE' | 'PRESENCE' | 'CONTEST', contestId?: number) {
     const socket = this.socket;
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
     const id = requestId();
     const tabId = ['HELLO', 'HEARTBEAT'].includes(type) ? activityTabId() : undefined;
     const timer = window.setTimeout(() => { if (socket === this.socket) socket.close(); }, connectionConfig.ackMs);
-    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE', tabId });
-    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(tabId ? { tabId } : {}) }));
+    this.pending.set(id, { timer, subscribed: type === 'SUBSCRIBE' ? attemptId : undefined, contest: type === 'SUBSCRIBE' ? contestId : undefined, presence: type === 'SUBSCRIBE' && resource === 'PRESENCE', tabId });
+    socket.send(JSON.stringify({ version: 1, type, requestId: id, ...(attemptId === undefined ? {} : { attemptId }), ...(resource ? { resource } : {}), ...(contestId === undefined ? {} : { contestId }), ...(tabId ? { tabId } : {}) }));
   }
   private connect() {
     if (this.stopped || this.socket) return;
@@ -64,7 +68,7 @@ export class ConnectionManager {
     this.deadline = window.setTimeout(() => socket.close(), connectionConfig.ackMs);
     socket.onmessage = e => {
       if (this.stopped || this.socket !== socket) return;
-      let m: { version?: number; type?: string; userId?: number; requestId?: string; attemptId?: number; revision?: number };
+      let m: { version?: number; type?: string; userId?: number; requestId?: string; attemptId?: number; revision?: number; contestId?: number };
       try { m = JSON.parse(e.data); } catch { socket.close(); return; }
       if (m.version !== 1) { socket.close(); return; }
       if (m.type === 'CONNECTED') {
@@ -78,15 +82,18 @@ export class ConnectionManager {
           // Registration may rotate the document ID while HELLO awaits ACK (e.g. remount/recovery).
           if (command.tabId && command.tabId !== activityTabId()) this.send('HEARTBEAT');
           this.resources.forEach(id => this.send('SUBSCRIBE', id));
+          this.contests.forEach(id => this.send('SUBSCRIBE', undefined, 'CONTEST', id));
           if (this.student) {
             for (const resource of ['GAMIFICATION', 'LEAGUE'] as const) this.send('SUBSCRIBE', undefined, resource);
             window.dispatchEvent(new Event('gamification:changed')); window.dispatchEvent(new Event('league:changed'));
           }
           if (this.presenceWanted) this.send('SUBSCRIBE', undefined, 'PRESENCE');
           recoverLearning();
+          if (!this.student) window.dispatchEvent(new Event('contest-permissions:changed'));
         }
         if (command.subscribed) { this.ready.add(command.subscribed); window.dispatchEvent(new CustomEvent('attempt-invalidation', { detail: { attemptId: command.subscribed, revision: -1 } })); }
         if (command.presence && this.presenceWanted) { this.presenceReady = true; publish(state); window.dispatchEvent(new Event('presence:changed')); }
+        if (command.contest && this.contests.has(command.contest)) { this.contestReady.add(command.contest); window.dispatchEvent(new CustomEvent('contest:changed', { detail: { contestId: command.contest } })); }
       } else if (m.type === 'ERROR' && m.requestId) {
         const command = this.pending.get(m.requestId); if (command) window.clearTimeout(command.timer); this.pending.delete(m.requestId);
       } else if (m.type === 'ATTEMPT_CHANGED' && Number.isSafeInteger(m.attemptId) && Number.isSafeInteger(m.revision) && this.ready.has(m.attemptId!)) {
@@ -97,6 +104,10 @@ export class ConnectionManager {
         window.dispatchEvent(new Event('league:changed'));
       } else if (m.type === 'PRESENCE_CHANGED' && this.presenceWanted && this.presenceReady) {
         window.dispatchEvent(new Event('presence:changed'));
+      } else if (m.type === 'CONTEST_PERMISSIONS_CHANGED') {
+        window.dispatchEvent(new Event('contest-permissions:changed'));
+      } else if (m.type === 'CONTEST_CHANGED' && Number.isSafeInteger(m.contestId) && this.contestReady.has(m.contestId!)) {
+        window.dispatchEvent(new CustomEvent('contest:changed', { detail: { contestId: m.contestId } }));
       }
     };
     socket.onerror = () => socket.close();
@@ -117,6 +128,7 @@ export class ConnectionManager {
 }
 let active: ConnectionManager | null = null;
 const watched = new Map<number, number>();
+const watchedContests = new Map<number, number>();
 let presenceWatchers = 0;
 export const presenceSnapshot = () => active?.presenceLive ?? false;
 export function watchPresence() {
@@ -126,10 +138,15 @@ export function watchPresence() {
 export function startConnections(userId: number, student = false) {
   active?.stop(); const manager = new ConnectionManager(userId, Math.random, student); active = manager;
   watched.forEach((_, id) => manager.subscribe(id)); manager.start();
+  watchedContests.forEach((_, id) => manager.subscribeContest(id));
   if (presenceWatchers) manager.watchPresence(true);
   return () => { manager.stop(); if (active === manager) active = null; };
 }
 export function watchAttempt(id: number) {
   watched.set(id, (watched.get(id) ?? 0) + 1); active?.subscribe(id);
   return () => { const count = (watched.get(id) ?? 1) - 1; if (count) watched.set(id, count); else { watched.delete(id); active?.unsubscribe(id); } };
+}
+export function watchContest(id: number) {
+  watchedContests.set(id, (watchedContests.get(id) ?? 0) + 1); active?.subscribeContest(id);
+  return () => { const count = (watchedContests.get(id) ?? 1) - 1; if (count) watchedContests.set(id, count); else { watchedContests.delete(id); active?.unsubscribeContest(id); } };
 }

@@ -5,6 +5,10 @@ import vn.edu.ptit.english.entity.*;
 
 /** Writes run under the actor lock, in the service transaction. */
 public interface ReviewRepository {
+    record WrongLearnQuestion(String originKey, long objectiveId, long submissionId) {}
+    record CorrectReviewQuestion(String originKey, long submissionId) {}
+    List<WrongLearnQuestion> wrongLearnQuestions(long userId);
+    List<CorrectReviewQuestion> correctReviewQuestions(long userId, long afterSubmissionId);
     List<SubmissionEntity> pending(long userId, int limit);
     long pendingCount(long userId);
     List<ReviewProgressEntity> progress(long userId);

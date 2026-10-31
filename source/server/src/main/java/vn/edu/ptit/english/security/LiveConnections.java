@@ -25,6 +25,7 @@ public class LiveConnections implements HttpSessionListener {
         volatile boolean presenceSubscribed;
         volatile String tabId;
         final Set<Long> subscriptions = ConcurrentHashMap.newKeySet();
+        final Set<Long> contests = ConcurrentHashMap.newKeySet();
         volatile long lastSeen;
         long window; int messages;
         Socket(long userId, Role role, String httpSessionId, WebSocketSession session, long now) {
@@ -107,6 +108,32 @@ public class LiveConnections implements HttpSessionListener {
         }
     }
     public void unsubscribe(String id, long attemptId) { var socket = sockets.get(id); if (socket != null) socket.subscriptions.remove(attemptId); }
+    public boolean subscribeContest(String id,long contestId,boolean enabled) {
+        var socket=sockets.get(id);if(socket==null)return false;
+        if(!enabled){socket.contests.remove(contestId);return true;}
+        if(!socket.contests.contains(contestId)&&socket.contests.size()>=4)return false;
+        socket.contests.add(contestId);return true;
+    }
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void contestChanged(vn.edu.ptit.english.socket.ContestChanged event) {
+        sockets.forEach((id,socket)->{
+            if(socket.session.isOpen()&&socket.contests.contains(event.contestId())
+                &&(event.userId()==null||socket.userId==event.userId()||socket.role!=Role.STUDENT)) {
+                try{socket.session.sendMessage(new TextMessage(json.writeValueAsString(Map.of("version",1,"type","CONTEST_CHANGED","contestId",event.contestId()))));}
+                catch(IOException|RuntimeException ignored){expire(socket);}
+            }
+        });
+    }
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void contestPermissionsChanged(vn.edu.ptit.english.socket.ContestPermissionsChanged event) {
+        sockets.forEach((id,socket)->{
+            if(socket.userId==event.userId()&&socket.session.isOpen()) {
+                if(!event.canProctor())socket.contests.clear();
+                try{socket.session.sendMessage(new TextMessage("{\"version\":1,\"type\":\"CONTEST_PERMISSIONS_CHANGED\"}"));}
+                catch(IOException|RuntimeException ignored){expire(socket);}
+            }
+        });
+    }
     @Scheduled(fixedDelayString = "${app.socket.sweep-ms:5000}")
     public void sweep() {
         if(activity!=null)activity.sweep();

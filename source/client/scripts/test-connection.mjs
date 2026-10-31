@@ -163,4 +163,27 @@ for (const outcome of ['401', 'success']) {
   assert.equal(socket.sent.at(-1).tabId, latestTab, 'do not wait 25 seconds with the old tab binding');
   manager.stop();
 }
-console.log('PASS: 12 deterministic manager scenarios, including tab changes before and after HELLO ACK.');
+{
+  const f=fixture(), manager=new f.module.ConnectionManager(7,()=>0);
+  let changed=0; f.window.addEventListener('contest:changed',()=>changed++);
+  manager.subscribeContest(99); manager.start(); const first=f.sockets[0];
+  first.message({type:'CONNECTED',userId:7}); first.message({type:'ACK',requestId:first.sent.at(-1).requestId});
+  const subscription=first.sent.find(m=>m.resource==='CONTEST'); assert.equal(subscription.contestId,99);
+  first.message({type:'CONTEST_CHANGED',contestId:99}); assert.equal(changed,0,'wait for subscription acknowledgement');
+  first.message({type:'ACK',requestId:subscription.requestId}); assert.equal(changed,1);
+  first.message({type:'CONTEST_CHANGED',contestId:98}); assert.equal(changed,1);
+  first.message({type:'CONTEST_CHANGED',contestId:99}); assert.equal(changed,2);
+  await first.close(1006); await f.advance(750); const second=f.sockets[1];
+  second.message({type:'CONNECTED',userId:7}); second.message({type:'ACK',requestId:second.sent.at(-1).requestId});
+  const again=second.sent.find(m=>m.resource==='CONTEST'); assert.equal(again.contestId,99);
+  second.message({type:'ACK',requestId:again.requestId}); assert.equal(changed,3);
+  manager.unsubscribeContest(99); second.message({type:'CONTEST_CHANGED',contestId:99}); first.message({type:'CONTEST_CHANGED',contestId:99}); assert.equal(changed,3);
+  manager.stop();
+}
+{
+  const f=fixture(), manager=new f.module.ConnectionManager(7,()=>0);
+  let changed=0;f.window.addEventListener('contest-permissions:changed',()=>changed++);manager.start();const socket=f.sockets[0];
+  socket.message({type:'CONNECTED',userId:7});socket.message({type:'ACK',requestId:socket.sent.at(-1).requestId});assert.equal(changed,1,'reconnect also reconciles current contest permissions');
+  socket.message({type:'CONTEST_PERMISSIONS_CHANGED'});assert.equal(changed,2);manager.stop();socket.message({type:'CONTEST_PERMISSIONS_CHANGED'});assert.equal(changed,2);
+}
+console.log('PASS: 14 deterministic manager scenarios, including session tab rebinding and contest subscriptions.');

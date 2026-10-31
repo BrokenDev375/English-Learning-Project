@@ -13,9 +13,11 @@ public class AccountSocketHandler extends TextWebSocketHandler {
     private final LiveConnections connections;
     private final AccountGuard guard;
     private final vn.edu.ptit.english.service.ConnectionService access;
-    public AccountSocketHandler(ObjectMapper json, LiveConnections connections, AccountGuard guard, vn.edu.ptit.english.service.ConnectionService access) {
+    private final vn.edu.ptit.english.service.ContestService contests;
+    public AccountSocketHandler(ObjectMapper json, LiveConnections connections, AccountGuard guard, vn.edu.ptit.english.service.ConnectionService access,vn.edu.ptit.english.service.ContestService contests) {
         this.json = json; this.connections = connections; this.guard = guard;
         this.access = access;
+        this.contests = contests;
     }
     @Override public void afterConnectionEstablished(WebSocketSession raw) throws Exception {
         var session = new ConcurrentWebSocketSessionDecorator(raw, 5000, 65536);
@@ -45,6 +47,13 @@ public class AccountSocketHandler extends TextWebSocketHandler {
                 code = "INVALID_MESSAGE";
             } else if (type.equals("SUBSCRIBE") || type.equals("UNSUBSCRIBE")) {
                 if (input.has("resource")) {
+                    if(input.path("resource").asText().equals("CONTEST")) {
+                        var id=input.path("contestId");
+                        if(input.size()!=5||!id.isIntegralNumber()||!id.canConvertToLong()||id.asLong()<1||id.asLong()>9007199254740991L
+                            ||!requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))code="INVALID_SUBSCRIPTION";
+                        else if(!contests.canSubscribe(id.asLong(),actor))code="RESOURCE_NOT_FOUND";
+                        else if(!connections.subscribeContest(raw.getId(),id.asLong(),type.equals("SUBSCRIBE")))code="SUBSCRIPTION_LIMIT";
+                    } else {
                     boolean presence = input.path("resource").asText().equals("PRESENCE");
                     if (actor.role() != (presence ? vn.edu.ptit.english.enums.Role.ADMIN : vn.edu.ptit.english.enums.Role.STUDENT)) code = "FORBIDDEN";
                     else if (!input.path("resource").isTextual()
@@ -53,6 +62,7 @@ public class AccountSocketHandler extends TextWebSocketHandler {
                         || !requestId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) code = "INVALID_SUBSCRIPTION";
                     else if (presence) { if (!connections.subscribePresence(raw.getId(), type.equals("SUBSCRIBE"))) code = "FORBIDDEN"; }
                     else raw.getAttributes().put(input.path("resource").asText().equals("LEAGUE") ? "leagueSubscribed" : "gamificationSubscribed", type.equals("SUBSCRIBE"));
+                    }
                 } else {
                     var value = input.path("attemptId");
                     if (!value.isIntegralNumber() || !value.canConvertToLong() || !access.canSubscribe(value.asLong(), actor)) code = "RESOURCE_NOT_FOUND";

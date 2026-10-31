@@ -26,10 +26,13 @@ public class ReviewQuestionPool {
         this.content = content; this.attempts = attempts;
     }
     public Pool read(long userId, Long topicId) {
+        return read(userId, topicId, false);
+    }
+    public Pool read(long userId, Long topicId, boolean includeGuided) {
         var byVersion = new LinkedHashMap<Long, Candidate>();
         for (var lesson : content.activeLessons(topicId)) {
             for (var slot : lesson.questions()) {
-                if (slot.practiceRole().equals("GUIDED")) continue;
+                if (!includeGuided && slot.practiceRole().equals("GUIDED")) continue;
                 var q = content.questionVersion(slot.questionVersionId()); var data = q.data();
                 var candidate = new Candidate(q.versionId(), q.originKey(), data.objectiveId(), data.topicId(),
                     data.difficulty(), slot.practiceRole(), data.materialVersionId(), slot.position());

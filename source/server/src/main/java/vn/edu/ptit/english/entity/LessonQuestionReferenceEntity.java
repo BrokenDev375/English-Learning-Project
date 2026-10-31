@@ -8,4 +8,6 @@ public class LessonQuestionReferenceEntity {
     @Column(name="lesson_version_id") private long lessonVersionId;
     @Column(name="question_version_id") private long questionVersionId;
     protected LessonQuestionReferenceEntity(){}
+    public Long getId(){return id;}
+    public long getLessonVersionId(){return lessonVersionId;}
 }

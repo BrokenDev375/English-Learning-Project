@@ -37,6 +37,7 @@ Response Dashboard:
 - pendingSubmissions: số kết quả chưa đồng bộ, tính trên toàn bộ chủ đề của user.
 - totalObjectives / needsReviewCount / mistakeObjectives: tổng trong chủ đề đang lọc, trước lọc kind/phân trang.
 - objectives: CatalogPage với items, totalElements, page, size, totalPages.
+- choices: số nguồn câu khác nhau có thể cấp cho ba lựa chọn mới: `all`, `priority`, `wrong`. Áp dụng `topicId`, không bị giới hạn bởi `kind` hoặc phân trang danh sách mục tiêu. Chỉ tính câu còn trong bài đang công bố; không trả nội dung/đáp án của các câu này.
 
 Mỗi ObjectiveReview có:
 
@@ -71,15 +72,27 @@ Dùng nguyên hợp đồng M03 POST /api/attempts:
 {
   "requestId":"105a1998-93fc-4223-b404-65280324cb21",
   "mode":"REVIEW",
-  "reviewKind":"DUE",
+  "reviewKind":"PRIORITY",
   "topicId":null,
   "count":10
 }
 ```
 
-reviewKind là DUE hoặc MISTAKES. topicId phải có mặt, nhận ID hoặc null. count 1–10. 201 tạo mới/200 tiếp tục lượt cùng lựa chọn đang dở. Snapshot, các endpoint draft/submit/result/retry và quyền file giữ hợp đồng M03.
+Giao diện ngày 28/10 dùng ba `reviewKind`:
 
-Chọn tối đa count, có thể ít hơn khi thiếu câu, không trùng origin. REVIEW_VARIANT mới → INDEPENDENT mới → câu cũ ít/lâu gặp; chỉ cùng mục tiêu có lịch sử, đúng mức ưu tiên ôn và bài đang công bố. M03 kiểm tra lại ID/state, chốt phiên bản và exposure. Nhãn MISTAKES nghĩa là luyện mục tiêu còn sai, có thể dùng câu biến thể thay câu gốc.
+| reviewKind | Nguồn câu |
+|---|---|
+| ALL — Ôn tất cả | Câu sai ở vòng chơi chưa ôn đúng + toàn bộ câu gắn REVIEW_VARIANT trong bài đang công bố |
+| PRIORITY — Ôn ưu tiên | Câu sai chưa ôn đúng + REVIEW_VARIANT cùng Objective với những câu sai chưa được giải quyết |
+| WRONG — Ôn các câu sai | Chỉ các nguồn câu sai ở vòng chơi chưa ôn đúng, gồm GUIDED/INDEPENDENT |
+
+Nguồn sai lấy FIRST=INCORRECT từ LEARN đã có Submission của chính principal; lỗi chỉ xuất hiện ở PRACTICE/REVIEW, bỏ trống và lượt chưa nộp không tạo nguồn sai mới. Khi một REVIEW nộp sau lần LEARN sai gần nhất có `finalOutcome=CORRECT` cho **cùng originKey**, câu đó rời danh sách sai. Lưu nháp, làm đúng biến thể khác cùng Objective hoặc CORRECTION sau nộp không giải quyết câu gốc. Nếu LEARN sau lại sai, nguồn câu được thêm lại. Không sửa/xóa FIRST, Submission hoặc dữ liệu bài cũ. Thứ tự Submission ID xác định sự kiện mới hơn dưới actor lock; không dựa updatedAt của lần chữa bài.
+
+Ba lựa chọn mới không lọc theo currentDifficulty, mốc lịch hoặc yêu cầu Objective đã học đối với toàn bộ biến thể của ALL. Chỉ cấp các phiên bản đang nằm trong bài công bố; origin sai cũ được nối tới phiên bản hiện có cùng nguồn, không tự mở lại bài đã retire. Khử trùng origin trong kho và lượt làm; số `choices` dùng cùng tập hợp với bộ chọn. ALL/WRONG ưu tiên câu ít/lâu gặp; PRIORITY xen kẽ một câu gốc sai và một biến thể liên quan, lấy tiếp từ nhóm còn câu khi một nhóm hết. Giữ các câu chung đoạn đọc/audio thành nhóm theo thứ tự biên soạn.
+
+topicId phải có mặt, nhận ID hoặc null. count 1–10. 201 tạo mới/200 tiếp tục lượt cùng mode/reviewKind/topicId/count đang dở, giữ snapshot và không tính lại bộ câu. Có thể cấp ít hơn count; rỗng trả NO_QUESTIONS_AVAILABLE. Câu GUIDED được giữ vai trò và hỗ trợ theo M03. Snapshot, draft/submit/result/retry và quyền file giữ hợp đồng M03.
+
+DUE và MISTAKES vẫn được chấp nhận để phục hồi request/lượt cũ, không hiển thị trên giao diện mới. Hai giá trị này giữ thuật toán P0: REVIEW_VARIANT mới → INDEPENDENT mới → câu cũ ít/lâu gặp, cùng mục tiêu có lịch sử và đúng mức ưu tiên ôn. MISTAKES cũ là luyện mục tiêu còn cờ lỗi sai, không đồng nghĩa WRONG mới. M03 tiếp tục kiểm tra ID/state, chốt phiên bản và exposure. Lịch 1–3–7, projection M04 và bằng chứng thưởng M05 không đổi.
 
 ## Lỗi
 

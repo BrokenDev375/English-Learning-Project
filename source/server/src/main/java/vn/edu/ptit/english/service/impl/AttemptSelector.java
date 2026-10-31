@@ -34,18 +34,25 @@ public class AttemptSelector {
                 .sorted(Comparator.comparingInt((vn.edu.ptit.english.dto.AuthoringData.Slot s)->s.practiceRole().equals("GUIDED")?0:1).thenComparingInt(s->s.position()))
                 .forEach(s->selected.add(new Selected(content.questionVersion(s.questionVersionId()),PracticeRole.valueOf(s.practiceRole()),
                     attempts.lessonSlot(lesson.versionId(),s.questionVersionId()).orElseThrow(AuthoringAccess::missing))));
+            if(!lesson.activities().isEmpty()) {
+                var order=vn.edu.ptit.english.dto.LessonActivities.order(lesson.activities());
+                selected.sort(Comparator.comparingInt(s->order.indexOf(s.question().versionId())));
+            }
             return checked(lesson.versionId(),selected);
         }
         ReviewSelectionProvider provider=input.mode()==Mode.REVIEW?review.getIfAvailable():null;
         if(input.mode()==Mode.REVIEW&&provider==null) throw conflict("REVIEW_NOT_READY","Chức năng ôn tập chưa sẵn sàng.");
         var candidates=new LinkedHashMap<Long,Selected>();
         for(var lesson:activeLessonsLocked(input.topicId())) for(var slot:lesson.questions()) {
-            if(slot.practiceRole().equals("GUIDED")) continue;
+            if(slot.practiceRole().equals("GUIDED") && !(input.mode()==Mode.REVIEW&&ReviewChoiceSelector.supports(input.reviewKind()))) continue;
             if(input.mode()==Mode.PRACTICE&&!slot.practiceRole().equals("INDEPENDENT"))continue;
             var q=content.questionVersion(slot.questionVersionId());
             if(input.mode()==Mode.PRACTICE&&!q.data().difficulty().equals(input.difficulty()))continue;
-            candidates.putIfAbsent(q.versionId(),new Selected(q,PracticeRole.valueOf(slot.practiceRole()),
-                attempts.lessonSlot(lesson.versionId(),q.versionId()).orElseThrow(AuthoringAccess::missing)));
+            var candidate=new Selected(q,PracticeRole.valueOf(slot.practiceRole()),
+                attempts.lessonSlot(lesson.versionId(),q.versionId()).orElseThrow(AuthoringAccess::missing));
+            if(input.mode()==Mode.REVIEW&&ReviewChoiceSelector.supports(input.reviewKind()))
+                candidates.merge(q.versionId(),candidate,(old,newer)->old.role()==PracticeRole.REVIEW_VARIANT?old:newer);
+            else candidates.putIfAbsent(q.versionId(),candidate);
         }
         var selected=new ArrayList<Selected>(); var origins=new HashSet<String>();
         if(input.mode()==Mode.REVIEW) {

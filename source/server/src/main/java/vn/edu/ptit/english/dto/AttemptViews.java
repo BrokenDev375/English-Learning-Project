@@ -27,7 +27,7 @@ public final class AttemptViews {
         boolean feedbackOpened,PublicQuestion question,Long materialVersionId,Answer response) {}
     public record Snapshot(long attemptId,Mode mode,State state,Long lessonVersionId,long revision,Instant createdAt,
         Instant updatedAt,Instant submittedAt,List<Item> items,List<PublicMaterial> materials,PlayerState playerState,
-        Long submissionId,LessonPublic lesson) {}
+        Long submissionId,LessonPublic lesson,@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY) JsonNode activities) {}
     public record Summary(long attemptId,Mode mode,State state,Long lessonVersionId,long revision,int totalQuestions,
         int answeredCount,Instant createdAt,Instant updatedAt,Instant submittedAt,Long submissionId) {}
     public record DraftAck(String requestId,long attemptId,long revision,State state,Instant savedAt,int answeredCount) {}
@@ -54,7 +54,10 @@ public final class AttemptViews {
                 independentFreshCorrectCount,lessonCompleted,items,materialFeedback);
         }
     }
-    public record RoundProgress(vn.edu.ptit.english.dto.CatalogViews.Unit unit,int totalLessons,int completedLessons,int startedLessons,String state,Long nextLessonId,int number,boolean locked,Long prerequisiteUnitId,Integer prerequisiteRoundNumber,String prerequisiteTitle) {}
+    public record RoundProgress(vn.edu.ptit.english.dto.CatalogViews.Unit unit,int totalLessons,int completedLessons,int startedLessons,String state,Long nextLessonId,int number,boolean locked,Long prerequisiteUnitId,Integer prerequisiteRoundNumber,String prerequisiteTitle,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) WritingData.Progress writing) {
+        public RoundProgress(vn.edu.ptit.english.dto.CatalogViews.Unit unit,int totalLessons,int completedLessons,int startedLessons,String state,Long nextLessonId,int number,boolean locked,Long prerequisiteUnitId,Integer prerequisiteRoundNumber,String prerequisiteTitle){this(unit,totalLessons,completedLessons,startedLessons,state,nextLessonId,number,locked,prerequisiteUnitId,prerequisiteRoundNumber,prerequisiteTitle,null);}
+    }
     public record LessonProgress(long lessonId,ProgressState state,Long lastAttemptId,Instant completedAt,
         Long lastCompletedVersionId,Long currentPublishedVersionId,boolean updateAvailable,BigDecimal lastScorePercent) {}
 }

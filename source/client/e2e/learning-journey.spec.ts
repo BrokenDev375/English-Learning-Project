@@ -112,7 +112,7 @@ test('ordering draft survives reload and home resume; submit completes the round
   await expect(page.locator('.game-vault-scene .bridge-scene')).toHaveAttribute('data-open', 'true');
   await expect(page.locator('.game-chests .is-open')).toHaveCount(3);
   const rounds = await (await page.request.get('/api/me/rounds?size=50')).json(); const round = rounds.items.find((r: { unit: { id: number } }) => r.unit.id === unitId); expect(round.completedLessons).toBe(1); expect(round.state).toBe('COMPLETED');
-  await page.goto('/#/learning?unit=' + unitId); await expect(page.locator('.round-overview')).toContainText('Đã hoàn thành 1/1 bài'); await expect(page.locator('.round-overview')).toContainText('hoàn thành tất cả bài');
+  await page.goto('/#/learning?unit=' + unitId); await expect(page.locator('.round-overview')).toContainText('Đã hoàn thành 1/1 bài'); await expect(page.locator('.round-overview')).toContainText('Bạn đã hoàn thành vòng này.');
   await page.reload(); await expect(page.locator('.round-overview')).toContainText('Đã hoàn thành 1/1 bài');
 });
 

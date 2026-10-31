@@ -1,5 +1,17 @@
 # English Learning
 
+**Tích hợp nhánh giám sát phiên với main (31/10):** giữ đầy đủ activities, bài viết, ôn tập và cuộc thi, cùng idle/session monitoring và nghe tối đa hai lượt. Chuỗi migration dùng V1–V18; V14 là activities, V18 là audio. DB theo main V17 nâng bằng V18; DB từng chạy V14 audio của nhánh cũ cần chuyển lịch sử riêng trước khi chạy source tích hợp. Xem [cách xử lý conflict và database](docs/ADMIN_MAIN_INTEGRATION.md), [kiểm thử sau tích hợp](statics/results/admin-main-integration-validation.md).
+
+**Cuộc thi online:** menu **Cuộc thi** gồm Cuộc thi, **Kho bộ đề** và **Phân quyền** theo vai trò. ADMIN cấp riêng quyền ra đề/giám sát; giáo viên tạo bộ đề để dành, gửi duyệt; ADMIN chọn một bộ đề đã duyệt khi tạo cuộc thi và phân công giám thị. Chọn bộ đề bằng danh sách có tìm kiếm/phân trang; tìm giám thị theo tên/email, giữ các mục đã tick khi chuyển trang. Form thiết lập gọn, không nhập từng câu; bộ đề dùng lại được, cuộc thi giữ snapshot riêng. Có phòng chờ, lưu/tiếp tục bài, cảnh báo rời màn/trừ giờ, thu hồi, đáp án/BXH/lưu trữ. Source V16–V17; bản thử riêng **http://localhost:15223/#/contests** đã nâng V17 sau sao lưu, demo 15183 giữ nguyên. Xem [luồng](docs/ONLINE_CONTESTS.md), [API](source/common/ONLINE_CONTESTS_API.md), [kiểm tra](statics/results/contest-paper-library-validation.md).
+
+**Môi trường đang dùng để test (29/10):** http://localhost:5176 chạy project `english-learning-integrated`, dùng DB riêng với học liệu mẫu gốc. Baseline cũ và demo `english-learning-main` đã dừng, volume vẫn giữ nguyên; các DB V12 activities cũ chưa được chuyển lịch sử migration sang main mới. Xem [cách chạy và dữ liệu](docs/BASELINE_TESTING.md).
+
+**Bài viết cuối vòng:** giáo viên phụ trách hoặc ADMIN vào Quản lý học liệu → **Bài viết cuối vòng** → chọn **Tạo bài viết** hoặc **Chấm bài**. Tạo bài viết để đặt đề, tiêu chí tổng 10 điểm và công bố; Chấm bài để xem bài nộp và chấm bằng checkbox trên màn hình riêng. Học sinh hoàn thành Lesson rồi lưu nháp/nộp bài viết; nộp là đủ mở vòng tiếp theo, không chờ chấm. Có nhận xét, cho sửa/nộp lại và lịch sử bất biến. V15 bổ sung dữ liệu riêng, không tự cấp XP hoặc thêm đề vào seed. Xem [hướng dẫn](docs/UNIT_WRITING.md), [API](source/common/UNIT_WRITING_API.md), [kiểm tra](statics/results/unit-writing-validation.md).
+
+**Bài 18 câu và đọc dài (28/10):** source hỗ trợ chọn các hoạt động theo thứ tự trắc nghiệm → ghép cặp → xếp từ → điền từ → đọc điền từ → đọc hiểu → nghe chọn đáp án, tổng 15–20 câu, mỗi phần một câu hướng dẫn. Đọc điền từ nhập trực tiếp trong đoạn; ví dụ hướng dẫn dùng đoạn riêng. V14 lưu cấu trúc theo phiên bản sau tích hợp main, giữ lượt/bài cũ. Xem [triển khai và cách tạo bài mẫu](docs/QUESTION_VARIETY_PROGRESS.md), [kế hoạch](docs/QUESTION_VARIETY_IMPLEMENTATION_PLAN.md), [kiểm tra](statics/results/question-variety-validation.md). Demo cũ và baseline giữ dữ liệu riêng; môi trường integrated không tự nạp bài mẫu bổ sung. Script `node scripts/seed-activity-sample.mjs` mặc định chỉ mô tả; thêm `--apply` mới ghi qua API bằng ADMIN vào origin local đã chọn.
+
+**Dữ liệu demo bổ sung (lịch sử trước V13):** đã nạp 6 học sinh giả lập có lịch sử/XP/bảng xếp hạng, 2 Unit, 4 bài, 36 câu và 4 bài đọc trên local ngày 27/10/2026. Script `seed-demo-classroom.mjs` còn dùng TEACHER tạo vòng và xuất bản trực tiếp, chưa tương thích quy trình phân công/duyệt V13; không chạy `--apply` trên bản tích hợp. Xem [tài khoản và giới hạn](docs/DEMO_CLASSROOM.md), [kết quả kiểm tra](statics/results/demo-classroom-validation.md). Giữ checkpoint `.test-state/demo-classroom/` và volume cũ.
+
 M07 bổ sung **Hồ sơ học tập** cho STUDENT, **Thống kê học liệu** cho TEACHER và **Thống kê học tập** cho ADMIN: kết quả lần đầu theo chủ đề/mục tiêu, lịch sử, bài hoàn thành, nội dung cần ôn, độ khó và câu thường sai. Giảng viên chỉ xem số tổng hợp LEARN trong Unit mình làm chủ, không xem hồ sơ từng học viên; có lọc Unit/khoảng thời gian, hiệu quả từng bài và mức dùng hỗ trợ. Xem [tiến độ](docs/M07_PROGRESS.md), [API](source/common/M07_API.md), [cách thử](docs/M07_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-7-validation.md).
 
 M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migration. Sau tích hợp M05/M06, hồ sơ đọc XP/cấp độ/streak/huy hiệu/Giải đấu tuần từ dịch vụ M05; số kết nối chỉ tính socket còn mở trong cửa sổ heartbeat M06 trên một backend.
@@ -12,7 +24,7 @@ M07 chỉ đọc dữ liệu học và thưởng đã commit, không thêm migra
 
 Mở Docker Desktop rồi chạy **`start-main.cmd`** từ thư mục dự án. Script dùng project `english-learning-main`, giữ volume hiện có, giao diện **http://localhost:5176**, API **http://localhost:8083/api/health**. Đây là bản đang dùng cho lần demo M05 này; `start.cmd` bên dưới dùng project/cổng mặc định khác.
 
-Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Ôn tập cá nhân giải thích điều kiện thưởng; giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
+Đăng nhập `student@english.local` / `Student@12345` hoặc đăng ký học viên mới, mở **Phần thưởng học tập**. Trang chủ có tổng XP/cấp độ/streak/huy hiệu và trần XP hôm nay; kết quả bài có phần XP và lý do; trang phần thưởng có ba huy hiệu và lịch sử chi tiết. Giải đấu hiển thị thời gian tuần còn lại theo máy chủ.
 
 1. Chọn bài/chủ đề chưa từng làm, tự trả lời đúng các câu độc lập rồi nộp: mỗi nguồn câu mới hợp lệ được **5 XP**, tối đa **200 XP/ngày**. Câu GUIDED, câu đã gặp, trả lời sai/thiếu hoặc chữa lại không tạo XP câu mới.
 2. Nộp đủ ít nhất `min(3, số câu độc lập được giao)` câu độc lập tự làm và đúng ít nhất một câu để ghi nhận ngày hoạt động. Streak tính theo ngày Việt Nam; làm lại câu cũ vẫn có thể giữ streak.
@@ -33,7 +45,7 @@ Nhóm tối đa 25 người cùng bậc, chỉ xét lên/xuống khi có ít nh�
 
 Sau hết tuần có 2 phút xử lý bài nộp thuộc tuần cũ, rồi job tự chốt từng nhóm và lưu **Lịch sử tuần của bạn**. Nguồn xét quá mốc vẫn có thể nhận XP cá nhân nhưng không thay bảng tuần cũ. Không có nút đổi giờ/chốt tuần sớm trong app thật; kiểm tra biên tuần dùng Clock trong test riêng.
 
-M04 bổ sung ôn tập cá nhân từ kết quả M03: ưu tiên mục tiêu còn sai/tới mốc, chọn câu biến thể và gợi ý mức luyện. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/module-4-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
+M04 bổ sung ba lựa chọn ôn cá nhân: tất cả, ưu tiên và câu sai ở vòng chơi. Nộp lượt ôn đúng chính câu gốc sẽ bỏ câu đó khỏi danh sách sai; chơi vòng sau lại sai thì thêm lại. Xem [tiến độ M04](docs/M04_PROGRESS.md), [cách thử](docs/M04_MANUAL_TEST_CASES.md) và [kiểm tra](statics/results/review-choices-validation.md). Luồng làm bài/lưu/nộp/chữa M03 tiếp tục được dùng chung.
 
 Ứng dụng học và ôn tập tiếng Anh theo mô hình client–server. M01 có tài khoản/quản trị và nền session/WebSocket; M02 có học liệu phiên bản và seed 6 bài/90 câu; M03 có lượt làm bài; M04 có ôn tập cá nhân. XP và Giải đấu tuần thuộc M05.
 
@@ -43,7 +55,7 @@ LEARN/PRACTICE/REVIEW tự lưu tại máy bằng IndexedDB rồi autosave serve
 
 ## Phiên không tương tác và giám sát quản trị
 
-Phần nghe trong lượt làm/chữa bài hiện **không cho tua, tối đa hai lượt bắt đầu phát mỗi đoạn audio trong một Attempt**. Pause/nghe tiếp không trừ thêm; câu dùng chung audio dùng chung lượt, reload không hoàn lại lượt đã bắt đầu. Bộ đếm lưu server bằng migration V14; không cần reset volume. Xem [quy tắc nghe và API](docs/AUDIO_LISTENING_POLICY.md).
+Phần nghe trong lượt làm/chữa bài hiện **không cho tua, tối đa hai lượt bắt đầu phát mỗi đoạn audio trong một Attempt**. Pause/nghe tiếp không trừ thêm; câu dùng chung audio dùng chung lượt, reload không hoàn lại lượt đã bắt đầu. Bộ đếm lưu server bằng migration V18; không cần reset volume. Xem [quy tắc nghe và API](docs/AUDIO_LISTENING_POLICY.md).
 
 Mọi vai trò tự hết phiên sau **5 phút không tương tác**, cảnh báo trước **30 giây** và có nút **Tiếp tục làm việc**. Heartbeat, polling, autosave và audio phát liên tục không tự gia hạn. Các tab cùng phiên dùng chung deadline; các phiên đăng nhập riêng độc lập. Khi hết phiên, nháp/journal đã lưu tại máy được giữ để đúng user đăng nhập lại và tiếp tục; đây là luồng khác với đăng xuất chủ động có purge. Nếu ghi local bị lỗi hoặc quá thời gian chờ, thông báo nêu rõ phần chưa xác nhận lưu.
 
@@ -53,9 +65,9 @@ Backend và client cần được rebuild cùng nhau; client cũ không có trac
 
 ## M04 — ôn tập cá nhân
 
-Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả đã nộp, hiển thị mục tiêu còn sai, mốc nhắc, số câu mới/cũ và lý do cần ôn. Chọn chủ đề/số câu rồi bắt đầu ôn nội dung cần ôn hoặc mục tiêu còn lỗi sai.
+Đăng nhập STUDENT → **Ôn tập cá nhân**, hoặc bấm **Xem nội dung cần ôn** sau khi nộp. Trang tự cập nhật kết quả và có ba lựa chọn: **Ôn tất cả** (câu sai chưa ôn đúng + toàn bộ câu biến thể), **Ôn ưu tiên** (câu sai + biến thể cùng mục tiêu), **Ôn các câu sai** (chỉ câu gốc sai ở vòng chơi, gồm hướng dẫn và tự làm). Mỗi lựa chọn hiển thị số câu có thể ôn; chọn 1–10 câu mỗi lượt. Tài khoản mới vẫn có thể ôn các câu biến thể đang công bố.
 
-Câu ôn lấy từ ngân hàng M02; ưu tiên REVIEW_VARIANT chưa gặp, cùng mục tiêu và mức cần luyện. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch nhắc mặc định 1–3–7 ngày là quy tắc demo, không phải mô hình đã chứng minh tối ưu. API vẫn tính gợi ý tăng mức khi có đủ dữ liệu; giao diện hiện tập trung vào kiến thức, lý do và mốc ôn. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
+Câu ôn lấy từ bài đang công bố trong ngân hàng M02, không lọc độ khó cho ba lựa chọn mới. Nộp lượt ôn đúng chính câu đó sẽ bỏ khỏi danh sách sai; đúng một biến thể khác không xóa câu gốc. Lịch sử bài nộp giữ nguyên; câu sai lại ở vòng chơi sau được thêm lại. Có thể nhận ít câu hơn yêu cầu khi kho thiếu. Lịch 1–3–7 và gợi ý mức vẫn được tính ở backend cho tiến độ/thưởng; DUE/MISTAKES cũ giữ tương thích phục hồi. Xem [API M04](source/common/M04_API.md) và [kế hoạch chi tiết](docs/M04_IMPLEMENTATION_PLAN.md).
 
 ## M03 — học và luyện tập
 

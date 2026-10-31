@@ -1,7 +1,8 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { Material } from './types';
 import RestrictedAudio from './RestrictedAudio';
-export default function LearningMaterial({ material: m, savedSeconds, restoreVersion = 0, onPosition, attemptId, userId }: { material: Material; savedSeconds?: number; restoreVersion?: number; onPosition?: (seconds: number) => void; attemptId?: number; userId?: number }) {
+import type { ReactNode } from 'react';
+export default function LearningMaterial({ material: m, savedSeconds, restoreVersion = 0, onPosition, readingContent, collapsibleReading = false, attemptId, userId }: { material: Material; savedSeconds?: number; restoreVersion?: number; onPosition?: (seconds: number) => void; readingContent?: ReactNode; collapsibleReading?: boolean; attemptId?: number; userId?: number }) {
   const audio = useRef<HTMLAudioElement>(null);
   const restore = useRef(savedSeconds);
   const latestSaved = useRef(savedSeconds);
@@ -26,7 +27,7 @@ export default function LearningMaterial({ material: m, savedSeconds, restoreVer
     onPosition?.(Math.max(start, Math.min(end, player.currentTime)));
   }
   return <article className="material-presentation learning-material"><h2>{m.title}</h2>
-    {m.kind === 'READING' && <p className="reading-text">{m.readingText}</p>}
+    {m.kind === 'READING' && (collapsibleReading ? <details open><summary>Đọc đoạn văn · Thu gọn / Mở lại</summary>{readingContent ?? <p className="reading-text">{m.readingText}</p>}</details> : readingContent ?? <p className="reading-text">{m.readingText}</p>)}
     {m.kind !== 'AUDIO' && m.asset && <figure><img key={retry} src={m.asset.url + (retry ? '?retry=' + retry : '')} alt={m.altText ?? ''} onError={() => setFailed(true)} />{m.caption && <figcaption>{m.caption}</figcaption>}</figure>}
     {m.kind === 'AUDIO' && m.asset && attemptId !== undefined && userId !== undefined ? <RestrictedAudio material={m} attemptId={attemptId} userId={userId} onPosition={onPosition} /> : m.kind === 'AUDIO' && m.asset && <><audio ref={audio} controls preload="metadata" aria-label={m.title} src={m.asset.url} onError={() => setFailed(true)}
       onLoadedMetadata={() => clamp(true)} onSeeking={() => { clamp(); record(); }} onPause={record}

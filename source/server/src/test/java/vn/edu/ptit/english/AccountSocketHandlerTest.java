@@ -17,7 +17,8 @@ class AccountSocketHandlerTest {
     final LiveConnections live = new LiveConnections(clock, json, 75000);
     final AccountGuard guard = mock(AccountGuard.class);
     final ConnectionService access = mock(ConnectionService.class);
-    final AccountSocketHandler handler = new AccountSocketHandler(json, live, guard, access);
+    final vn.edu.ptit.english.service.ContestService contests = mock(vn.edu.ptit.english.service.ContestService.class);
+    final AccountSocketHandler handler = new AccountSocketHandler(json, live, guard, access, contests);
     record Client(WebSocketSession socket, UserPrincipal actor, List<JsonNode> messages) {}
 
     Client connect(String id, long userId, Role role) throws Exception {
@@ -117,6 +118,24 @@ class AccountSocketHandlerTest {
         assertThat(live.snapshot()).isEqualTo(new LiveConnections.Snapshot(2,2));
         assertThat(admin.messages()).isNotEmpty().allSatisfy(m -> assertThat(m.path("type").asText()).isEqualTo("PRESENCE_CHANGED"));
         verify(failed.socket()).close(any(CloseStatus.class));
+    }
+    @Test void contestEventsAreScopedAndRequireAnAuthorizedSubscription() throws Exception {
+        var owner=connect("contest-owner",1,Role.STUDENT);var other=connect("contest-other",2,Role.STUDENT);var teacher=connect("contest-teacher",3,Role.TEACHER);
+        when(contests.canSubscribe(10,owner.actor())).thenReturn(true);when(contests.canSubscribe(10,other.actor())).thenReturn(true);when(contests.canSubscribe(10,teacher.actor())).thenReturn(true);
+        for(var client:List.of(owner,other,teacher))assertThat(send(client,"SUBSCRIBE",Map.of("resource","CONTEST","contestId",10)).path("type").asText()).isEqualTo("ACK");
+        assertThat(send(owner,"SUBSCRIBE",Map.of("resource","CONTEST","contestId",11)).path("code").asText()).isEqualTo("RESOURCE_NOT_FOUND");
+        assertThat(send(owner,"SUBSCRIBE",Map.of("resource","CONTEST","contestId",10,"userId",2)).path("code").asText()).isEqualTo("INVALID_SUBSCRIPTION");
+        owner.messages().clear();other.messages().clear();teacher.messages().clear();
+        live.contestChanged(new ContestChanged(10,1L));assertThat(owner.messages()).hasSize(1);assertThat(other.messages()).isEmpty();assertThat(teacher.messages()).hasSize(1);
+        assertThat(owner.messages().get(0).size()).isEqualTo(3);
+        send(owner,"UNSUBSCRIBE",Map.of("resource","CONTEST","contestId",10));owner.messages().clear();live.contestChanged(new ContestChanged(10));assertThat(owner.messages()).isEmpty();assertThat(other.messages()).hasSize(1);
+    }
+    @Test void revokingProctorPermissionRemovesContestSubscriptionsWithoutLoggingOutOtherUsers() throws Exception {
+        var teacher=connect("permission-teacher",1,Role.TEACHER);var other=connect("permission-other",2,Role.TEACHER);
+        when(contests.canSubscribe(10,teacher.actor())).thenReturn(true);when(contests.canSubscribe(10,other.actor())).thenReturn(true);
+        send(teacher,"SUBSCRIBE",Map.of("resource","CONTEST","contestId",10));send(other,"SUBSCRIBE",Map.of("resource","CONTEST","contestId",10));teacher.messages().clear();other.messages().clear();
+        live.contestPermissionsChanged(new ContestPermissionsChanged(1,false));live.contestChanged(new ContestChanged(10));
+        assertThat(teacher.messages()).extracting(m->m.path("type").asText()).containsExactly("CONTEST_PERMISSIONS_CHANGED");assertThat(other.messages()).extracting(m->m.path("type").asText()).containsExactly("CONTEST_CHANGED");verify(teacher.socket(),never()).close(any());
     }
     @Test void rewardSubscriptionDoesNotBypassHeartbeatExpiry() throws Exception {
         var client = connect("expiring", 1, Role.STUDENT);

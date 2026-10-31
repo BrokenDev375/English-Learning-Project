@@ -42,8 +42,10 @@ public class RequestReceiptServiceImpl implements RequestReceiptService {
             return new Result(receipt.getResponseStatus(),receipt.getResponseJson(),true);
         }
         Reply reply = action.get();
-        if (reply == null || reply.status() < 200 || reply.status() >= 300)
-            throw new IllegalArgumentException("A receipt requires a successful response");
+        // Explicit 409 replies can commit a deadline settlement. Ordinary conflicts
+        // still throw and roll back, as before.
+        if (reply == null || (reply.status() != 409 && (reply.status() < 200 || reply.status() >= 300)))
+            throw new IllegalArgumentException("A receipt requires a successful or settled conflict response");
         JsonNode body = json.valueToTree(reply.body());
         repository.save(new RequestReceiptEntity(actor.id(),requestId,operation,hash,reply.status(),body));
         return new Result(reply.status(),body,false);

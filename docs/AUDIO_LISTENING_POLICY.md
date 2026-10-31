@@ -13,7 +13,7 @@ Ngày 29/10/2026, working tree trên `3f3b0c5`. Áp dụng cho audio trong lư�
 
 ## Backend và dữ liệu
 
-Flyway **V14__attempt_audio_limits.sql** thêm `attempt_audio_listens`, unique `(attempt_id, material_version_id)`, FK tới Attempt/MaterialVersion và CHECK `plays_used BETWEEN 0 AND 2`. Không sửa migration cũ. Lượt làm có sẵn bắt đầu ở 0 khi chưa có bản ghi; dữ liệu bài làm/nộp/tiến độ cũ giữ nguyên.
+Flyway **V18__attempt_audio_limits.sql** thêm `attempt_audio_listens`, unique `(attempt_id, material_version_id)`, FK tới Attempt/MaterialVersion và CHECK `plays_used BETWEEN 0 AND 2`. Sau tích hợp main, V14 dành cho lesson activities. Database từng chạy V14 audio của nhánh cũ cần chuyển lịch sử riêng trước khi dùng source tích hợp; xem [hướng dẫn tích hợp](ADMIN_MAIN_INTEGRATION.md#database-đã-chạy-trước-tích-hợp). Lượt làm có sẵn theo main bắt đầu ở 0 khi chưa có bản ghi; dữ liệu bài làm/nộp/tiến độ cũ giữ nguyên.
 
 `AttemptAudioController → AttemptAudioService/impl → AttemptAudioRepository/impl → JPA`. Start chạy READ_COMMITTED: kiểm tra STUDENT → receipt/actor lock → lock và đọc lại Attempt owner → xác minh AUDIO thuộc Version đã chốt của ít nhất một câu → tăng bộ đếm → receipt → commit. Replay xảy ra trước kiểm tra đủ hai lượt. Receipt lỗi rollback cả bộ đếm. Nhiều tab/thiết bị cùng user được phân xử bởi actor/Attempt lock; không dựa vào bộ đếm localStorage.
 
@@ -44,7 +44,7 @@ Replay thêm `Idempotent-Replayed: true`. Lần cấp thứ ba trả 409 `AUDIO_
 
 ## Chạy và thử
 
-Rebuild cả backend/frontend bằng `docker compose up -d --build`; V14 chạy trên volume hiện tại, không cần reset dữ liệu. Backend restart làm mất session RAM, cần login lại. Không `down -v`.
+Rebuild cả backend/frontend bằng `docker compose up -d --build`; V18 chạy trên database theo main V1–V17, không cần reset dữ liệu. Backend restart làm mất session RAM, cần login lại. Không `down -v`.
 
 Mở một câu nghe: bấm Nghe lần 1/2, tạm dừng/nghe tiếp, đổi sang câu cùng audio, nghe hết và bấm Nghe lần 2/2. Sau khi hết, nút bị khóa; reload/tab khác không cấp lại lượt. Thanh tiến độ không kéo/bấm để tua. Thử lại file lỗi không trừ thêm quyền phát đã cấp trong cùng document.
 

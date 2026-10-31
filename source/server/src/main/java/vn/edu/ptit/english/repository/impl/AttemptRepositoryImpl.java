@@ -52,6 +52,7 @@ public class AttemptRepositoryImpl implements AttemptRepository {
     public List<AnswerTrialEntity> trials(long item){return trials.findByAttemptQuestionIdOrderByTrialNoAsc(item);}
     public Optional<SubmissionEntity> submission(long attemptId){return submissions.findByAttemptId(attemptId);}
     public Optional<Long> lessonSlot(long lessonVersionId,long questionVersionId){return slots.slot(lessonVersionId,questionVersionId);}
+    public Map<Long,Long> slotLessonVersions(Collection<Long> ids){var result=new HashMap<Long,Long>();if(!ids.isEmpty())slots.findAllById(ids).forEach(s->result.put(s.getId(),s.getLessonVersionId()));return result;}
     public boolean assetReadable(long userId,long assetId){return attempts.assetReadable(userId,assetId);}
     public List<QuestionExposureEntity> exposures(long userId,Collection<String> origins){return origins.isEmpty()?List.of():exposures.findByIdUserIdAndIdOriginKeyIn(userId,origins);}
     public Optional<QuestionExposureEntity> exposure(QuestionExposureKey id,boolean lock){return find(QuestionExposureEntity.class,id,lock);}
